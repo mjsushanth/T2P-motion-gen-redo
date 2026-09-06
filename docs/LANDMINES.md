@@ -779,7 +779,53 @@ counterexample.
 
 ---
 
-## Review-discipline lessons (§16-20), gathered
+## 21. A redaction cannot be documented by quotation
+
+**Status: VERIFIED in this repository, 2026-09-06 (the git-history identifier scrub, review
+SUP-20260906-50) — the sixth review-discipline entry, and the only one about how the record
+itself works rather than about how claims are checked.**
+
+**The trap.** Joel authorized scrubbing six literal identifying strings (a course code, an
+institution name, a group number, a compound archive path) out of this repository's git history.
+Documenting *that* the scrub happened is normal, expected practice — except a document describing
+a literal-string removal necessarily needs to name what was removed, and naming it means quoting
+it. **A ledger entry that quotes the six strings while describing their removal reintroduces
+every one of them into the current, public HEAD of the very repository the scrub was meant to
+clean** — committed normally (not as part of the history rewrite itself), so never touched by
+the rewrite, sitting in plain text on GitHub the moment it is pushed.
+
+**This happened twice, independently, within about an hour, which is the strongest evidence
+behind any of the six lessons in this section.** First in this project's own `LEDGER.md`: an
+entry documenting the scrub's replacement rules quoted the literal mapping verbatim. Caught,
+fixed. Then the exact same pattern turned up in the peer reviewing session's own finding about
+that first mistake — the review *warning that you cannot document a literal-string scrub using
+the literals* itself quoted the literals, in the same paragraph, into the same public repository.
+Two independent authors, warned by the same near-miss, made the identical mistake immediately
+after describing it.
+
+**Why this forces a real exception to append-and-annotate.** Every other correction in this
+project preserves the original wrong text, marked superseded, because the original's wrongness is
+part of the record worth keeping. **This class is different: the original text's wrongness *is*
+the leaked data.** Preserving it to show what was corrected would mean preserving exactly the
+information the correction exists to remove. When the content itself is the defect, annotation
+cannot fix it — only replacement can. This is a real, load-bearing exception to a standing rule,
+not a convenience.
+
+**Do instead.** Describe the *shape* of what was redacted (a course code, a compound path, a
+group number) without reproducing it. Keep the literal mapping in a gitignored file, not a
+committed one — the same pattern already used for this project's own `.archive_path`. If a
+correction to a redaction-related document is ever needed, edit in place and say so explicitly,
+rather than following the append-and-annotate convention that governs every other correction in
+this project.
+
+**Generalisation:** applies to any documentation of a redaction, takedown, or PII/secret removal
+in any project — a changelog entry, a security advisory, an incident postmortem. The instinct to
+show exactly what was removed, for auditability, is correct everywhere else in a project's
+record and is precisely backwards here.
+
+---
+
+## Review-discipline lessons (§16-21), gathered
 
 **Neither collaborator on this project was reliably right; the practice of re-verifying rather
 than trusting was.** Across one day of work between two independent sessions, each caught real
@@ -789,7 +835,7 @@ was caught the same way: not by either party being careful in general, but by ne
 accepting a claim, a correction, or an absence of a hit as settled until it was re-derived from
 source.
 
-Five entries in this file are not about this project's own domain (motion generation, diffusion
+Six entries in this file are not about this project's own domain (motion generation, diffusion
 models, evaluation metrics) but about the process of producing and reviewing research work
 itself. Gathered here as one list because they transfer further than anything else in this
 document — they would apply to a different project in a different field unchanged. Cross-
@@ -811,6 +857,10 @@ referenced from `RESULTS.md`.
 - **§20 — "I did not find X" is only "X does not exist" if the search was exhaustive.** An
   absence claim's strength is bounded by its search scope, which is usually invisible in the
   sentence stating the conclusion.
+- **§21 — A redaction cannot be documented by quotation.** Describe the shape of what was
+  removed, keep the literals outside version control, and accept that this one class of
+  correction must overwrite rather than annotate — the one lesson here about how the record
+  itself works, rather than how a claim gets checked.
 
 Each was found in this project by the same underlying practice: re-deriving a claim (one's own,
 or a peer's) from source before accepting it, rather than trusting that a plausible-looking

@@ -2283,3 +2283,29 @@ was already fixed or that it still needed fixing.
 place. Still open: the generation path's live browser test (CPU-deferred), E1A seed-2's
 decomposition whenever it completes.
 
+## [2026-09-06T18:25:00 UTC] Item 47 — Sixth review-discipline lesson recorded: a redaction cannot be documented by quotation
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-72) pointed out that the git-history-scrub
+incident (Item 34's original leak and the director's own SUP-50 finding making the identical
+mistake immediately after warning against it, both real, both this session, within about an
+hour) was never itself written up as a standalone `LANDMINES.md` lesson — it survives only in
+`LEDGER.md` entries and a superseded finding, despite being, in the director's words, the one
+lesson about how the record itself works rather than how a claim gets checked, and the only one
+that forced a genuine exception to this project's standing append-and-annotate correction rule.
+Verified genuinely absent (`grep -ni "redaction\|cannot be documented by quotation"` against
+`docs/LANDMINES.md` returned nothing) before adding it, per §20's own lesson about absence claims.
+**Files changed:** `docs/LANDMINES.md` (new §21 — "a redaction cannot be documented by
+quotation," covering both independent instances of the same mistake within the hour, the
+append-and-annotate exception it forces, and the do-instead/generalisation sections matching
+every other landmine entry's structure; consolidated list updated from five to six lessons,
+§16-21, with §21 added as its own bullet). `RESULTS.md` (§5 updated from "five findings" /
+`§16-20` to "six findings" / `§16-21`).
+**Environment changes:** none.
+**Verification performed:** the grep above, run before writing rather than assumed; re-read
+`LEDGER.md`'s own Item 34 (the original leak) and Item 44's correction record to confirm the two
+independent instances and the append-and-annotate exception were both accurately characterized
+before writing §21's account of them.
+**Next:** the review-discipline section is now complete at six lessons. Still open: the
+generation path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it
+completes.
+

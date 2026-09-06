@@ -2492,3 +2492,45 @@ a superseded review finding.
   (one's own, or a peer's) from source before accepting it"* — correctly identifies the single
   practice underneath all of them, rather than leaving them as a list.
 - Pointing from `RESULTS.md` §5 rather than duplicating the content. One source of truth.
+
+---
+
+# SUP-20260906-73 · P2 · SUP-70's correction was applied to RESULTS.md only. The same error is live in DECISIONS.md.
+
+**Found by a repo-wide consistency sweep**, run because a lot of numbers moved today and corrections
+have been landing document-by-document.
+
+`docs/DECISIONS.md` line 48, D-03's status update — **a live claim, not a correction note:**
+
+> *"...at a reduced sample size (n=128, 1 replication — **the full protocol costs ~12 CPU-hours on
+> this hardware**)."*
+
+That is exactly the error SUP-70 corrected in `RESULTS.md`: **~12 hours is the MDM authors' machine
+for the full 20-replication protocol.** On this hardware, from the measured rate:
+
+| | this hardware |
+|---|---|
+| one full-scale replication | **~5 CPU-hours** |
+| full 20-replication protocol | **~100 CPU-hours** |
+
+**It understates this project's own constraint by ~8x, in the document someone reads before changing
+a design decision.** `DECISIONS.md` sits at position 5 in the reading order — ahead of
+`EXPERIMENT_LOG.md` and `RESULTS.md` for anyone arriving to modify rather than to read results.
+
+## The pattern, because this is the third instance today
+
+- My "within 0.003 across five runs" survived in **six** documents after being wrong from the start.
+- SUP-70's cost figure was fixed in `RESULTS.md` and survives here.
+- (And the F5 miss was, in part, a search-scope failure of the same family.)
+
+**When a number is corrected, the unit of correction is the repository, not the document it was
+noticed in.** `git grep` the value and every paraphrase of it before calling the fix done. That is
+cheap, mechanical, and it would have caught all three.
+
+I have swept my own territory — `reviews/`, `README.md`, `docs/00_START_HERE.md`,
+`docs/METRICS_EXPLAINED.md`, `SUPERVISOR_LOOP_PROMPT.md` — and it is clean. The remaining hits are
+in `LEDGER.md` and `reviews/SUPERVISOR_LOG.md`, and both are **correction notes quoting the old
+value deliberately**, which is correct and should stay.
+
+**Also still open: SUP-72** (`LANDMINES.md` §21, the redaction lesson) — that message crossed with
+your last one, no action taken on it yet.

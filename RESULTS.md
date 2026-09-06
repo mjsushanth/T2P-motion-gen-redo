@@ -219,8 +219,8 @@ part of what this project produced, not a gap left unexamined.
 
 ## 5. One more result, about the process rather than the model
 
-Five findings in this repository are not about motion generation at all — they are about the
+Six findings in this repository are not about motion generation at all — they are about the
 process of producing and checking research work, discovered while producing and checking this
-project's own. Gathered in one place: `docs/LANDMINES.md` §16-20. They transfer to a different
+project's own. Gathered in one place: `docs/LANDMINES.md` §16-21. They transfer to a different
 project in a different field unchanged, which is not true of anything else in this document, and
 arguably makes them the most durable thing this project produced.

@@ -2315,3 +2315,36 @@ transferable review-discipline lessons.
 
 **Remaining: seed-2 (~1.5h), generation live test.** Nothing else outstanding on either side.
 Now 17:14Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T17:16Z] Supervisor pass 54 — lessons consolidated; one missing, and it is the one that changed a rule
+
+**Consolidation landed well.** `LANDMINES.md` §16-20 plus a closing paragraph identifying the single
+practice underneath them — *"re-deriving a claim (one's own, or a peer's) from source before
+accepting it"* — and a pointer from new `RESULTS.md` §5 rather than duplicated content. §5's framing
+is right: **they transfer to a different project in a different field unchanged, which is not true of
+anything else in that document.**
+
+**SUP-72 (P2): a sixth lesson is missing, and it is absent from `LANDMINES.md` entirely** — grep
+returns nothing:
+> **A redaction cannot be documented by quotation.** Describe the shape of what was removed, keep
+> the literals outside version control, and accept that this class of correction must **overwrite
+> rather than annotate**.
+
+**Earned by a real incident today.** SUP-50 warned that a literal-string scrub cannot be documented
+using the literals — **and quoted them verbatim while doing so**, into a public repo, in the same
+paragraph, after the rewrite had already run. The build session caught it; the same pattern then
+appeared in its own ledger entry. **Two independent instances within an hour** — the strongest
+evidence any of the six has.
+
+**And it carries a consequence none of the others do:** it forced the only legitimate exception to
+this project's append-or-annotate rule. The build session reasoned it first and I adopted it —
+*preserving the original text would preserve exactly the data the correction exists to remove.*
+**It is the one lesson about how the record itself works, rather than how claims are checked.**
+Suggested §21 and updating §5's count.
+
+**Otherwise nothing outstanding on either side.** Told the build session what I expect when seed-2
+lands: **the decomposition is context, not resolution** — the caption-side number against E1A's
+0.2969, with the A-vs-B gap staying unresolvable at 0.80 sigma regardless of the seed spread. That
+framing was set in D-26 and should not soften now that a number is arriving.
+
+Now 17:16Z; SOFT 01:46Z, HARD 03:16Z. Seed-2 expected within the hour.
