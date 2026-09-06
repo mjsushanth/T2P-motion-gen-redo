@@ -179,9 +179,33 @@ In order:
 
 ## 9. The honest state of the science
 
-At the time of writing: **nothing has been measured in this repository.** There is no result
-to report, positive or negative. What exists is a diagnosis of a prior project and a plan.
+**Updated 2026-09-06 — this section previously said nothing had been measured. That is no longer
+true.** Two findings now exist, both from the corrected pipeline.
 
-When that changes, this section gets rewritten with real numbers and honest caveats — and
-if the corrected pipeline turns out to perform no better than the original, that goes here
-too, in the same plain language.
+**1. Caption truncation costs alignment in proportion to volume, not selection.** The original
+project truncated each caption to its first action clause. Measured in a validated retrieval space
+with no model and no training: **R-Precision-top3 falls 0.145-0.157 corpus-wide, ~0.27 on captions
+the rule actually altered.** Three controls decompose it: **~93% of the cost is how much text is
+removed, ~7% is which part** — the position component resolved at 5.9 sigma, and only after
+averaging over 8 random placement draws. **The original's "first-action segmentation" was neither
+clever nor uniquely harmful. It was one of many ways to discard 35% of the words.**
+
+**2. A healthy loss curve on a bad model.** The first model trained here reached ~60% of the way to
+a fully-converged reference loss at **0.63%** of that reference's training budget — while scoring
+**13x worse on FID**. Loss measures training, not quality. That is F6's failure mode reproduced
+deliberately, and it is the clearest available demonstration of why this project is organised
+around measurement.
+
+**What is NOT established.** The harness gate (D-03) is **UNRESOLVED**: the evaluator is validated
+against ground truth — reproducing it to within 0.003 on five independent runs — but reproducing a
+published *generated-model* number did not succeed at affordable sample sizes. **So every number
+here is internally-comparable-only** (D-22). No claim of comparability to published results is
+supported. Nothing has been established about generation quality under truncated conditioning; that
+is E1B and it has not run.
+
+**And the process is part of the record.** Six of the supervising session's own findings were
+withdrawn or corrected by measurement during a single day, including the original specification of
+the headline experiment — which was a tautology, caught before it consumed ~10 hours of compute.
+The front-loading result was called refuted, then downgraded to unresolvable, then confirmed. Those
+reversals are documented in `../reviews/REVIEW_QUEUE.md` rather than tidied away, because the
+sequence is what makes the surviving numbers worth believing.

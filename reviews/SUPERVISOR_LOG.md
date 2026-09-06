@@ -40,15 +40,26 @@ artifact.
 
 ## Next actions, in order
 
-1. **E1A second seed (~2.65h).** *Prerequisite for everything.* The decision rule is "B worse than A
+0. **FIRST, when E1B lands: run SUP-20260906-49's free control.** Score E1A's *cached* generations
+   against **truncated** captions. E1A was evaluated on full captions and E1B will be evaluated on
+   truncated ones, so the raw A-vs-B gap confounds *model degradation* with *captions being harder
+   to retrieve against* — an effect the pilot measured at 0.145 on real motions. Without the middle
+   row, E1B's headline is uninterpretable. Text re-encoding only, minutes.
+1. **E1B is already training** (launched ~13:40Z, `scripts/e1_train_arm.py --arm b`). Arm design
+   verified correct: truncation applied to **both** train and generation captions (faithful to the
+   original, which saw truncated text end-to-end), ground-truth reference left on full captions so
+   the instrument stays constant across arms. **Let it finish.**
+2. **E1A second seed (~2.65h).** *Prerequisite for any A-vs-B statement.* **With one seed of each
+   you have a gap and no spread to judge it against — do not let an A-vs-B conclusion enter
+   `EXPERIMENT_LOG.md` before this exists.** A second seed of B is worth more than a third of A. The decision rule is "B worse than A
    by more than the seed spread," and there is currently **no spread measured at all**.
-2. **E1B: the original's rule, 2 seeds (~5.3h).** Content-neutral length arm dropped as redundant —
+3. **E1B: the original's rule, 2 seeds (~5.3h).** Content-neutral length arm dropped as redundant —
    the pilot showed rule and generic truncation are indistinguishable, so one arm yields both claims.
-3. **Fix the `diversity_times` off-by-one.** One line. Has now fired twice and forced hand-assembled
+4. ~~Fix the `diversity_times` off-by-one~~ — **DONE** (ea34bc9). One line. Has now fired twice and forced hand-assembled
    records twice.
-4. **Design E1C (frame selection).** F3's other half, entirely unmeasured, no cheap analogue. **The
+5. **Design E1C (frame selection).** F3's other half, entirely unmeasured, no cheap analogue. **The
    most valuable remaining experiment.**
-5. **Stage 5 demonstrator** (SUP-43) — show the *finding*, not the model.
+6. **Stage 5 demonstrator** (SUP-43) — show the *finding*, not the model.
 
 ## Standing rules a successor will otherwise violate
 
@@ -1498,3 +1509,61 @@ numbers worth believing**, not despite being unflattering.
 
 **Reached SOFT STOP (13:55Z) with this pass. Taking no new work items.** Remaining time to HARD STOP
 14:40Z is for anything the build session sends back and a clean close.
+
+## [2026-09-06T13:47Z] Supervisor pass 34 — SOFT STOP. Final review; loop closing at hard stop.
+
+**E1B launched before my sequencing message reached the build session.** Not a problem — both arms
+are needed regardless, so the order costs nothing. **Verified the arm design independently and it is
+right:** truncation applied to *both* the training captions and the generation-conditioning captions
+(faithful — the original's model saw truncated text end-to-end, not at one stage), with the
+ground-truth reference left on full captions so the instrument stays constant across arms. It got
+both of those without being told.
+
+**Sent the one constraint that actually binds:** do not let an A-vs-B conclusion enter
+`EXPERIMENT_LOG.md` before E1A seed 2 exists. One seed of each gives a gap with no spread to judge
+it against. Handover's next-actions list updated to lead with this.
+
+**Session closed on the supervising side.** Handover at the top of this file; `docs/00_START_HERE.md`
+§9 and `README.md` now carry both findings and the comparability caveat instead of claiming nothing
+had been measured.
+
+**Final tally, recorded because it is the point rather than an embarrassment:** six supervisor
+findings withdrawn or corrected by measurement in one day — SUP-16, SUP-17, SUP-28, SUP-02's scope,
+the "re-slice not a re-run" advice, and E1's original specification (a tautology, caught by criteria
+I had written an hour earlier to judge someone else's work). Front-loading went refuted ->
+unresolvable -> confirmed at 5.9 sigma. Against two build-session errors caught: the D-03 gate
+misstatement and the deterministic-seed independence misread.
+
+**Neither side's judgement produced the surviving numbers. The exchange did.** A successor should
+expect to be wrong at a similar rate, and should write it down at the same rate.
+
+## [2026-09-06T13:47Z] Supervisor pass 35 — FINAL. SUP-49 filed; handover updated; loop closing.
+
+**Answered the build session's last design question: the arm design is right, I would not scope it
+differently.** But answering it surfaced a confound worth catching before E1B's entry is written.
+
+**SUP-49 (P1).** E1A is evaluated on **full** captions; E1B will be evaluated on **truncated** ones.
+So the raw A-vs-B gap confounds **model degradation** with **captions being intrinsically harder to
+retrieve against** — an effect the pilot already measured at **0.145 on real motions**. Undecomposed,
+E1B could show a pilot-sized gap and be unable to say whether the model degraded at all.
+
+**Free control:** score E1A's *cached* generations against truncated captions. Same motions, same
+model, only the retrieval text changes — text re-encoding, minutes. Three-way decomposition, and
+**E1B minus the middle row is the model effect.** Critically, the pilot's 0.145 cannot simply be
+subtracted: it was measured at R-Precision ~0.80 on real motions, while E1A operates at 0.297, near
+the 0.094 floor. **It has to be measured in this model's own range.**
+
+Same failure shape as the pilot's corpus-wide number before SUP-39's re-slice — which the build
+session fixed itself, so it already knows the pattern.
+
+**Handover updated: SUP-49 is now item 0 in next actions.** `diversity_times` marked DONE (ea34bc9);
+record JSON confirmed complete by parse rather than byte count.
+
+**Loop closing.** Soft stop passed at 13:55Z, hard stop 14:40Z. E1B lands after my window; the build
+session carries it forward, as I carried the power check forward for it.
+
+**Closing note for whoever reads this next.** The value of this arrangement was not that the
+supervising session was right. **Six of its findings died by measurement in one day**, including the
+headline experiment's original specification. The value was that two sessions with different context
+audited each other against fetched sources and cached artifacts, and wrote down every reversal.
+**Expect to be wrong at a similar rate. Write it down at the same rate.**

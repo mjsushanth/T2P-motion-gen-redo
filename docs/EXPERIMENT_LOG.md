@@ -506,8 +506,15 @@ is **3/32 = 0.09375**.
 | FID (generated vs. ground truth) | **7.2093** (secondary only per D-25 — not used to decide this check; expected to be poor at this budget) | n=1 |
 
 **Result: GATE PASSES, decisively.** R-Precision-top3 = 0.2969 against the pre-registered
-chance threshold of 0.09375 — **3.17x chance, ~18x the ~0.016 batching noise floor established
-in E0b.** Not a close call. Trained on the disjoint 4,435-sequence materialized train split,
+chance threshold of 0.09375 — **3.17x chance**. Margin = 0.2031. **Corrected (review
+SUP-20260906-49): against E0b's established ground-truth batching-noise floor (0.016, the
+project's standard reference for R-Precision decisions), that margin is 0.2031/0.016 ≈ **13x**,
+not the "~18x" first written here** — the 18x figure was an arithmetic slip (it matches
+0.2031/0.0117, a different floor measured in a different comparison — the E1-pilot's
+could-vary-subset position-effect check — not the one named in the sentence). Stating which
+floor is used and why, per the director's own instruction after catching exactly this kind of
+silent floor-substitution elsewhere in this arc: **13x the 0.016 E0b ground-truth batching
+floor** is the correct, checked figure for this gate. Not a close call either way. Trained on the disjoint 4,435-sequence materialized train split,
 evaluated on the materialized test split's held-out captions — an above-chance result here
 cannot be memorisation (per the SUP-20260906-37 fix), since the model never saw these
 caption-motion pairs during training. Training took 6,877.9s (1.911h) for 3,000 steps; generation

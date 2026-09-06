@@ -1404,7 +1404,12 @@ now genuinely disjoint).
 **Environment changes:** none (the run itself consumed ~2.64h CPU wall-clock: 1.911h training +
 0.730h generation, both close to the feasibility probe's 1.877h/0.65h projections).
 **Result:** **R-Precision-top3 = 0.2969** against the pre-registered chance threshold of
-**0.09375** — 3.17x chance, ~18x the established noise floor, not a close call. Ground-truth
+**0.09375** — 3.17x chance, ~18x the established noise floor [**CORRECTED, review
+SUP-20260906-49: this was an arithmetic slip.** Margin (0.2031) divided by E0b's established
+0.016 ground-truth batching floor is **13x**, not 18x — 18x came from dividing by 0.0117 (a
+different floor, from a different comparison) while the sentence named 0.016. Corrected in
+`docs/EXPERIMENT_LOG.md`'s E1A-power entry; 13x the 0.016 floor is the checked figure], not a
+close call. Ground-truth
 R-Precision-top3 = 0.7950 (consistent with every prior measurement of this same quantity: 0.7969,
 0.7977, 0.8013, 0.8036 — the evaluator keeps reproducing itself). FID (secondary, not decisive
 per D-25) = 7.2093, poor as expected at this severely undertrained budget. Log-space convergence
@@ -1480,4 +1485,46 @@ Expected wall-clock ~2.5h (matching E1A's 1.911h+0.730h), which will land after 
 result carries forward to whoever picks this up if it lands after their handover is written.
 Report the real E1B result the moment it lands, comparing directly against E1A's R-Precision-top3
 of 0.2969 and ground-truth's 0.7950.
+
+## [2026-09-06T13:50:00 UTC] Item 31 — Noise-floor arithmetic corrected (13x, not 18x); E1C designed, not implemented; director's session handover received
+**Status:** complete (correction + design); E1B still training in background
+**Acceptance criteria:** the director's final review (SUP-20260906-49) caught that this
+project's own "~18x the noise floor" claim for the E1A gate margin didn't match the named floor
+(0.016) — 0.2031/0.016 ≈ 13x, and 18x only comes out if you divide by 0.0117 (a different floor,
+from the E1-pilot's could-vary-subset check) while still calling it "the 0.016 floor." Also
+requested: design E1C now (frame-selection, F3's still-unmeasured half) while the reasoning from
+today's work is fresh, even though it should not be built yet.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (E1A-power entry: corrected 18x -> 13x in place, with
+the arithmetic shown so the mistake and its source are both visible, not just the fixed number).
+`LEDGER.md` (Item 29's own citation of the same wrong figure, corrected the same way).
+`REBUILD_SPEC.md` (new §6a — E1C design proposal: why F3's frame-selection defect doesn't
+transfer cleanly to a full-sequence output space, a concrete proposed construction — substitute a
+real full motion sequence chosen via frame-0 pose-similarity nearest-neighbor matching, corrupting
+the sequence-level pairing the same shallow way the original corrupted frame selection — and an
+explicit statement of what remains a genuine judgment call in that design, with a recommendation
+not to build it until E1A/E1B's results are reviewed).
+**Environment changes:** none.
+**Self-critique:** the 18x figure was my own arithmetic error, not a citation of a different
+source — I named "0.016" in the sentence but had actually divided by 0.0117 while writing it,
+most likely because 0.0117 was the most recently-computed noise-adjacent number in context at
+the time. A concrete instance of the exact failure mode `LANDMINES.md` has been documenting all
+day: using the nearest available number instead of the one actually named. Caught by the
+director's independent re-derivation, not by my own proofreading.
+**Verification performed:** recomputed 0.2031/0.016 by hand (=12.69, rounds to 13x) and
+0.2031/00117 (=17.4, rounds to ~18x, confirming exactly where the wrong figure came from) before
+writing the correction, rather than accepting either number without checking.
+**Also received:** the director's session reached its stop window and wrote its handover at the
+top of `reviews/SUPERVISOR_LOG.md` (reviewer territory, read-only to this session), and updated
+`README.md`'s status table and `docs/00_START_HERE.md` §9 to reflect both real findings from
+today (the caption-truncation decomposition and the loss/FID divergence) in place of their
+previous "nothing has been measured yet" language. Both files were sitting as uncommitted local
+changes; committed alongside this item's own changes rather than left uncommitted, since they
+document real, already-reviewed findings and there is no reason to leave them fragile on disk.
+**Next:** E1B training continues in the background (launched 13:05 UTC per Item 30, ~2.5h
+expected). Per the director's explicit sequencing instruction — received after E1B was already
+launched, and confirmed not to require killing it — **run E1A seed 2 before any A-vs-B statement
+enters `docs/EXPERIMENT_LOG.md`**, since with one seed of each arm there is no seed-to-seed spread
+to judge a gap against. Order: let E1B finish, then launch E1A with a second seed (e.g. seed 20),
+then compare. The director's session has reached its stop window; reporting continues to Joel and
+whoever picks this up next, per their explicit handover instruction.
 

@@ -1492,3 +1492,50 @@ it answered yes with a 13x margin. Combined with the pilot's finding — that tr
 0.145-0.157 corpus-wide and ~0.27 conditional in the *retrieval* space — E1B now tests a specific,
 pre-registered prediction: **does that information loss propagate to generated output?** That is a
 sharp question with a stated expected direction and a model demonstrably capable of showing it.
+
+---
+
+# SUP-20260906-49 · P1 · E1B's A-vs-B gap will be confounded. There is a free control that decomposes it.
+
+**The arm design is right and I would not scope it differently.** Truncating both the training and
+the generation-conditioning captions is the faithful reproduction — the original's model saw
+truncated text end-to-end — and holding the ground-truth reference on full captions keeps the
+instrument constant across arms. Both correct.
+
+**But that design confounds two effects in the headline comparison, and the confound is large.**
+
+E1A is evaluated with **full** captions. E1B will be evaluated with **truncated** captions. So the
+A-vs-B R-Precision gap contains:
+
+1. **the model being worse** (what E1B is meant to measure), and
+2. **the caption being intrinsically harder to retrieve against** — which the pilot already measured
+   at **0.145** on *real motions*, with the motions held identical.
+
+Left undecomposed, E1B could show a gap of roughly the pilot's size and it would be impossible to
+say whether the model degraded at all.
+
+## The free control
+
+**Score E1A's already-cached generations against truncated captions.** Same motions, same model,
+only the retrieval text changes. Text re-encoding only — minutes, no training, no generation.
+
+That yields a three-way decomposition:
+
+| comparison | isolates |
+|---|---|
+| E1A / full captions (**0.2969**, have it) | baseline |
+| **E1A generations / truncated captions** (free) | **caption retrievability alone**, within this model's operating range |
+| E1B / truncated captions | caption retrievability **+** model degradation |
+
+**E1B minus the middle row is the model effect** — the quantity E1B exists to produce. Without the
+middle row, the headline number is uninterpretable in exactly the way the pilot's corpus-wide figure
+was before SUP-39's re-slice.
+
+**Run it before writing E1B's entry.** It costs less than the writeup does, and it is the difference
+between "truncation-trained models generate worse motion" and "we measured something that includes
+an effect we already knew about."
+
+Note the pilot's 0.145 was measured on *real* motions at R-Precision ~0.80; E1A operates near 0.297,
+much closer to the 0.094 floor, so the caption effect will not transfer at the same magnitude.
+**That is precisely why it must be measured in this model's own range rather than subtracted from
+the pilot.**

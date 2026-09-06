@@ -334,6 +334,55 @@ Every rung's actual results go to `artifacts/<NN>_<name>_record.json` and
 
 ---
 
+## 6a. E1C design proposal (designed, not run — review SUP-20260906-48's "design it now while
+the reasoning is fresh")
+
+**Why this needs a design, not just a row in a table.** E1A/E1B are direct, uncontroversial
+isolations of F3's *caption-truncation* half — hold the output space fixed, vary only the
+caption. F3's *frame-selection* half does not transfer as cleanly, because the original defect
+was specifically about picking a single static frame (frame 0) as a proxy for an entire action,
+which is a category that only exists in a static-pose output space. In a full-sequence model
+(this project's actual task, per D-18), there is no single "frame" being predicted for the
+mismatch to attach to — so "frame-0-representative conditioning... full-sequence output space
+still preserved" (the placeholder language in §6's table) needs a concrete construction before it
+means anything, and none of the cheap, zero-training tricks used for E1B transfer here (SUP-30's
+own finding: comparing a static or frame-frozen output against a sequence evaluator reintroduces
+the exact confound the whole E1 redesign exists to avoid).
+
+**The honest core question, restated for a full-sequence world:** F3 was really a claim about
+*pairing quality* — does it matter whether the motion a caption is trained against actually
+represents what the caption describes, moment to moment? Frame-0-mismatch was one instance of a
+mismatched pairing; the general question is broader and does transfer.
+
+**Proposed construction (a judgment call, stated as one, open to challenge before it runs):** for
+a subset of training/eval pairs, **substitute a real, full, moving motion sequence that is NOT
+the one the caption actually describes** — chosen via nearest-neighbor matching on frame-0 pose
+similarity in the F1-corrected pose space (`primary_source/skeleton.py`'s already-vendored
+representation), so the substituted sequence's *starting pose* looks plausible for the caption
+(the same shallow signal the original's frame-0 selection actually exploited) while the sequence
+as a whole does not follow the caption's described action. Output space stays full-sequence
+throughout, matching E1A/E1B — only the (caption, target-sequence) *pairing* is deliberately
+degraded, the same isolation principle as E1B, applied to sequence-level correspondence instead of
+caption length.
+
+**What this would settle:** whether training on systematically mismatched (caption, motion)
+pairs — motion selected for superficial resemblance rather than true correspondence, exactly the
+failure mode F3 diagnosed at the single-frame level — costs measurable text-motion alignment in
+generation, generalizing F3 from "wrong frame" to "wrong sequence, chosen the same shallow way."
+
+**What remains genuinely unresolved about this design, stated rather than hidden:** this is a
+*generalization* of F3, not a literal reproduction of it — a full-sequence model has no frame-0
+prediction step to corrupt directly, so any E1C construction is already one step removed from the
+original defect. Whether nearest-neighbor frame-0 matching is the right corruption mechanism (vs.
+e.g. random substitution, or substitution matched on some other superficial feature) is itself a
+design choice that would benefit from review before implementation, not just before running.
+**Recommendation: do not build this until E1A/E1B's own results are in and reviewed** — if the
+caption-side finding (volume-driven, not selection-specific) generalizes the way the E1-pilot
+suggests it might, that is itself evidence about how much weight E1C's answer could realistically
+carry, and worth weighing before spending the ~2.5h this design would cost to implement and run.
+
+---
+
 ## 7. Compute estimate
 
 **What runs on this Mac — MEASURED, 2026-09-06 (`LEDGER.md` Item 18,

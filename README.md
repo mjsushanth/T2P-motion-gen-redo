@@ -25,10 +25,21 @@ in space — that looks like a human, matches the text, and is not a memorised t
 
 | stage | output | status |
 |---|---|---|
-| 1 — Forensics: which suspected defects are real? | `FORENSICS.md` | in progress |
-| 2 — Landscape + rebuild spec | `LANDSCAPE.md`, `REBUILD_SPEC.md` | not started |
-| 3 — Evaluation harness + measured baseline | `src/t2p/`, `tests/`, `RESULTS.md` | not started |
-| 4 — Experiments | `docs/EXPERIMENT_LOG.md` E-series | not started |
+| 1 — Forensics: which suspected defects are real? | `FORENSICS.md` | **done** — F1-F8 verified |
+| 2 — Landscape + rebuild spec + positioning | `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md` | **done**, reviewed |
+| 3 — Evaluation harness + measured baseline | `docs/EXPERIMENT_LOG.md` E0a/E0b | **partial** — evaluator validated; published-number gate **unresolved** |
+| 4 — Experiments | `docs/EXPERIMENT_LOG.md` E1-pilot, E1A | **in progress** — two findings, see below |
+| 5 — Local demonstrator | `demo/` | designed (`reviews/` SUP-43), not built |
+
+**Findings so far.** Caption truncation costs retrievable text-motion alignment **in proportion to
+how much text is removed** (~0.145-0.157 corpus-wide, ~0.27 conditional), essentially independent
+of which part is removed — ~93% volume, ~7% position. And the first model trained here reached
+~60% of a converged reference loss at 0.63% of its budget while scoring 13x worse on FID: **a
+healthy loss curve on a bad model.**
+
+**Every number here is internally-comparable-only.** The harness reproduces ground truth to within
+0.003 across five independent runs, but reproducing a published generated-model figure did not
+succeed at affordable sample sizes, so comparability to published results is **not** claimed.
 
 **Nothing has been trained or measured here yet.** There is no result to report, positive or
 negative. When that changes, it goes in `docs/EXPERIMENT_LOG.md` with the split, the sample
