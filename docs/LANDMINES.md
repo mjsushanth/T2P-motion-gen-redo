@@ -573,3 +573,45 @@ disabled. In each case, ask whether the stated caveat is a *dial* (the same sign
 or a *different mechanism* that can independently satisfy the pass condition. Only the first kind
 is safely absorbed by a caveat; the second kind requires redesigning the check.
 
+---
+
+## 17. A stochastic arm's across-seed spread is treatment variance, not measurement noise
+
+**Status: VERIFIED in this repository, 2026-09-06 (review SUP-20260906-47, E1-pilot's
+random-window control) — the second time this exact pattern has surfaced (E0a flagged the same
+shape as its own likely explanation via MDM's `repeat_time` averaging, never fully confirmed
+there; this entry is the confirmed instance).**
+
+**The trap.** Comparing a deterministic arm (e.g. a fixed truncation rule) against a stochastic
+arm (e.g. a randomly-placed window) by drawing the stochastic arm **once** and reseeding only the
+retrieval-batch shuffle looks like an apples-to-apples comparison — both arms get "a seed," both
+get re-measured. It is not apples-to-apples. Reseeding the deterministic arm changes only which
+samples land in which batch (measurement noise). Reseeding the stochastic arm changes the
+*treatment itself* — a different random window is a different intervention, not a different
+sample of the same one. A single draw's across-seed swing is therefore dominated by
+treatment variance, and "the two arms scored about the same" from one draw cannot distinguish
+"the manipulation has no effect" from "this particular draw happened to land close to the other
+arm."
+
+**The evidence, from this project's own run:** one random-window placement draw scored
+R-Precision-top3 = 0.5339, close enough to the prefix control (0.5456) to read as "no detectable
+difference." Averaging 8 independent placement draws (same keys, same batch-shuffle seed held
+fixed so only placement varied) gave a mean of **0.5279** with a real spread across draws
+(std 0.0082, range 0.5132-0.5384) — the single draw had simply landed on the higher end of that
+range. The averaged mean vs. the prefix control (gap 0.0177, ~6x the averaged mean's own standard
+error) revealed a real effect the single draw's "no difference" reading had obscured.
+
+**Do instead.** Before comparing a stochastic arm to a deterministic one, ask which seed is doing
+which job. If reseeding changes the treatment (not just the batch order, sample order, or other
+incidental randomness), that arm needs its own averaging loop — treat it the way `repeat_time` /
+`mm_num_repeats`-style parameters already treat MDM's own stochastic generation — before its
+score is compared to anything deterministic. A single draw of a stochastic treatment is a sample
+size of one no matter how large the underlying dataset is.
+
+**Generalisation:** this applies anywhere a comparison mixes a fixed condition against a
+randomized one — A/B tests where "B" is itself a random policy, ablations where one arm samples
+a hyperparameter, benchmarks where one competitor is stochastic and the other isn't. The fixed
+condition's seed controls incidental variance; the randomized condition's seed controls the
+treatment. Averaging the wrong one, or averaging neither, produces a comparison that looks
+symmetric and isn't.
+

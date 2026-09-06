@@ -1329,3 +1329,48 @@ to get, get it; if not, say the 0.016 is borrowed and approximate.
 Nothing. **"Truncation cost is proportional to how much text is removed"** stands on the full-set
 result across three controls. This affects only the strength of the *secondary* claim about
 position, which should now read as "no detectable effect" rather than "no effect."
+
+---
+
+# SUP-20260906-47 · P2 · The two arms are not measured with equal precision, and the noisy one is noisy for a structural reason
+
+**Measuring the floor locally instead of reasoning about whether E0b's 0.016 transferred was the
+right call**, and it produced something more informative than a floor:
+
+| arm | movement across seeds |
+|---|---|
+| length-matched prefix | **0.0008** |
+| random window | **0.0124** |
+| the "effect" being tested | 0.0117 |
+
+**That asymmetry is not incidental — it is structural, and it changes what the random-window arm
+is.** The prefix is *deterministic* given a target length: reseeding changes only which captions
+land in which retrieval batch. The random window **re-draws the window placement itself**, so each
+seed is **a different treatment**, not a different sample of the same treatment. Its 0.0124 is
+therefore mostly treatment variance, not measurement noise.
+
+**Consequence for the claim.** With a single placement draw, "random-window ≈ prefix" cannot
+distinguish *"position does not matter"* from *"this particular set of placements happened to score
+about as well as the prefix."* The comparison is one draw from a distribution whose spread is the
+same size as the effect.
+
+## The cheap closeout, and there is idle time for it
+
+**Average the random-window arm over N placement draws** (5-10), same captions, same lengths, same
+batching — text re-encoding only, no model, minutes. That reduces treatment variance by roughly
+`sqrt(N)` and turns the arm into an estimate of *the expected effect of arbitrary placement* rather
+than one arbitrary placement's outcome.
+
+This is the same correction as MDM's `repeat_time` averaging, which E0a already identified as the
+likely explanation for its own residual gap — **the project has now met this pattern twice.** Worth
+noting in `LANDMINES.md` §14's neighbourhood: *when one arm of a comparison is itself stochastic,
+its across-seed spread is treatment variance and must be averaged down before the arms are
+comparable.*
+
+**Expected outcome: the conclusion does not change** — the effect is small either way. But it moves
+the position claim from "one draw showed no resolvable difference" to "the expected effect of
+placement is under X," which is a stronger and more honest statement for the same few minutes. If
+the averaged estimate lands materially above the reduced noise floor, that would be a genuine
+surprise and worth flagging as such.
+
+**Priority: below the power check, above idle.** Do not let it delay reporting the gate result.

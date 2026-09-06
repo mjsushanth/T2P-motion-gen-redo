@@ -1252,3 +1252,37 @@ full-set result across three controls. Only the secondary position claim moves, 
 
 **Next:** power check (~13:30-14:00Z), the last substantive item likely to land in-window. Monitor
 biioddqhd armed. Now 11:16Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T11:28Z] Supervisor pass 30 — SUP-47: the two arms are not measured with equal precision
+
+Build pass accepted both SUP-46 corrections in place (sign reading, and measuring the noise floor
+locally rather than borrowing E0b's 0.016). **The local measurement produced something better than
+a floor:**
+
+| arm | across-seed movement |
+|---|---|
+| length-matched prefix | 0.0008 |
+| random window | **0.0124** |
+| the effect under test | 0.0117 |
+
+**SUP-47 (P2): that asymmetry is structural.** The prefix is deterministic given a target length —
+reseeding only reshuffles retrieval batches. **The random window re-draws the placement itself, so
+each seed is a different *treatment*, not a different sample of one.** Its 0.0124 is therefore
+mostly treatment variance. With a single draw, "random ~ prefix" cannot separate *"position does not
+matter"* from *"these particular placements happened to score about as well as the prefix"* — one
+draw from a distribution whose spread equals the effect.
+
+**Cheap closeout proposed, and the build pass is idle-waiting on the power check:** average the
+random arm over 5-10 placement draws, text re-encoding only, minutes. Cuts treatment variance by
+~sqrt(N) and upgrades the claim from "one draw showed no resolvable difference" to "the expected
+effect of placement is under X."
+
+**Pattern noted for `LANDMINES.md` §14's neighbourhood:** *when one arm of a comparison is itself
+stochastic, its across-seed spread is treatment variance and must be averaged down before the arms
+are comparable.* **This is the second time the project has met it** — E0a flagged MDM's
+`repeat_time` averaging as the likely cause of its own residual gap. Same correction, different
+dress.
+
+Priority set below the power check, above idle; explicitly told not to delay the gate result.
+
+**Next:** power check (~13:30-14:00Z), then handover. Now 11:28Z; SOFT 13:55Z, HARD 14:40Z.

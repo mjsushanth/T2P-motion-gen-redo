@@ -1317,3 +1317,49 @@ numbers stand unqualified; the position/front-loading question is explicitly unr
 than settled in either direction. Still waiting on the E1A power check (background,
 ~13:30-14:00Z expected) before any E1B-scope decision.
 
+## [2026-09-06T12:40:00 UTC] Item 27 — Averaging the random-window arm over 8 draws reverses the "underpowered" read: front-loading is real, small, and now resolved (SUP-47)
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-47) diagnosed that the random-window arm's
+seed controls the *treatment* (which placement was drawn), not incidental noise like the prefix
+arms' seed does — so its single-draw across-seed swing (0.0124, Item 26) was mostly
+treatment variance, not measurement noise, and one draw cannot distinguish "no position effect"
+from "this draw happened to land close." Average the arm over several independent placement
+draws to separate the two.
+**Files changed:** `scripts/e1_pilot_random_window_averaged.py` (new — imports helper functions
+directly from `e1_pilot_followups.py` rather than duplicating them; runs 8 independent placement
+draws with the batch-shuffle seed held fixed across all of them, so only placement varies).
+`docs/EXPERIMENT_LOG.md` (follow-up-2's "Establishes" line marked superseded, left in place per
+the append-only convention since it was the correct read of the data available at the time; new
+follow-up-3 section with the averaged result and the reversed conclusion). `docs/LANDMINES.md`
+(new §17: "a stochastic arm's across-seed spread is treatment variance, not measurement noise" —
+the second confirmed instance of a pattern E0a had already flagged as a suspicion via MDM's
+`repeat_time` convention). `artifacts/e1/e1_pilot_random_window_averaged_record.json` (new).
+**Environment changes:** none.
+**Result:** 8 placement draws gave R-Precision-top3 values ranging 0.5132-0.5384 (mean 0.5279,
+std 0.0082) — real, substantial placement-to-placement variance confirming the single draw
+(0.5339) was not a stable estimate. Mean vs. the prefix control (0.5456, stable to 0.0008 across
+batch-shuffle seeds): **gap = 0.0177, ~6x the averaged mean's own standard error (0.0029)** — a
+materially resolved effect, reported loudly per the director's own instruction rather than
+absorbed quietly, since it reverses Item 26's "underpowered, can't resolve" conclusion.
+**Establishes:** front-loading is real: HumanML3D captions carry slightly more retrievable
+motion-alignment signal in their prefix than in an average same-length middle span. Scale matters
+for the overall story, though — 0.018 is small next to the corpus-wide truncation cost (0.145-
+0.157) and the conditional cost where the rule fires (~0.27), so the dominant mechanism is still
+*how much* text is removed, with *which part* now a real but secondary and much smaller
+contributor. This is the most complete and best-supported version of the E1-pilot's position
+question across all three follow-up rounds.
+**Self-critique:** none new this item — this is the director's diagnosis, correctly implemented;
+the only judgment call on my end was capping this at 8 draws with the batch-shuffle seed held
+fixed (not also averaging over multiple batch-shuffle seeds), which the EXPERIMENT_LOG entry
+states plainly as a remaining, smaller source of uncertainty rather than treating the 8-draw
+result as a fully closed-out error bar.
+**Verification performed:** ran the actual 8-draw loop and read off each draw's real
+R-Precision-top3 rather than assuming the averaging would land where expected; the reversal from
+"no effect" to "real, ~6-SEM effect" was the actual observed outcome of running the numbers, not
+anticipated going in — the director explicitly flagged this as the possible outcome worth
+reporting loudly, and it is what happened.
+**Next:** the E1-pilot arc is now complete across all three rounds of the director's scrutiny
+(length vs. rule-specificity, prefix vs. position, and treatment-variance-corrected position).
+Report to the director. Still waiting on the E1A power check (background, ~13:30-14:00Z
+expected) before any E1B-scope decision — nothing else queued.
+

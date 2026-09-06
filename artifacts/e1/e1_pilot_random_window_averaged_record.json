@@ -1,0 +1,57 @@
+{
+  "experiment": "E1-pilot-random-window-averaged",
+  "description": "SUP-20260906-47: average the random-window control over N independent placement draws to separate treatment variance (which placement was drawn) from measurement/batching noise, same pattern as MDM's own repeat_time averaging.",
+  "n_draws": 8,
+  "batch_shuffle_seed": 10,
+  "n_could_vary_keys": 2663,
+  "draw_results": [
+    {
+      "draw_idx": 0,
+      "placement_seed": 1000,
+      "r_precision_top3": 0.5342620481927711
+    },
+    {
+      "draw_idx": 1,
+      "placement_seed": 1001,
+      "r_precision_top3": 0.5176957831325302
+    },
+    {
+      "draw_idx": 2,
+      "placement_seed": 1002,
+      "r_precision_top3": 0.5384036144578314
+    },
+    {
+      "draw_idx": 3,
+      "placement_seed": 1003,
+      "r_precision_top3": 0.5274849397590361
+    },
+    {
+      "draw_idx": 4,
+      "placement_seed": 1004,
+      "r_precision_top3": 0.5131777108433735
+    },
+    {
+      "draw_idx": 5,
+      "placement_seed": 1005,
+      "r_precision_top3": 0.5331325301204819
+    },
+    {
+      "draw_idx": 6,
+      "placement_seed": 1006,
+      "r_precision_top3": 0.5338855421686747
+    },
+    {
+      "draw_idx": 7,
+      "placement_seed": 1007,
+      "r_precision_top3": 0.5248493975903614
+    }
+  ],
+  "mean_r_precision_top3": 0.5278614457831325,
+  "std_r_precision_top3": 0.008248833697366956,
+  "min_r_precision_top3": 0.5131777108433735,
+  "max_r_precision_top3": 0.5384036144578314,
+  "reference_length_matched_prefix_could_vary": 0.5456,
+  "reference_single_draw_could_vary": 0.5339,
+  "note": "batch-shuffle seed held fixed across draws; only window placement varies per draw, so std here is placement/treatment variance, not batching noise (that was measured separately in e1_pilot_followups.py's seed2 check).",
+  "mean_effect_vs_prefix": 0.01773855421686743
+}

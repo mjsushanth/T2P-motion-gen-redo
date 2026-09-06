@@ -720,14 +720,59 @@ random-window arm specifically, close in magnitude to the measured "position eff
 (0.0117). **Correct conclusion: no position effect resolvable at this precision; the point
 estimate leans the way front-loading predicts but sits within this comparison's own measured
 noise band, so this is a statement about power, not about the absence of an effect.**
-**Establishes:** the position effect, if any exists, is too small to resolve at this sample size —
-the point estimate favors the prefix (consistent with front-loading) but sits within this
-comparison's own measured batching noise, so the front-loading hypothesis is **not refuted, only
-unresolved** at this precision (corrected from this entry's earlier, wrong claim that the sign
-refuted it). What the whole E1-pilot arc *does* establish without qualification, because it does
-not depend on resolving the position question: **caption truncation destroys retrievable
-text-motion alignment signal roughly in proportion to how much text is removed** — a statement
-about information volume in this embedding space. Whether *which part* is removed also matters is
-now honestly labeled underpowered-to-detect, not settled either way.
+**Establishes (superseded by the averaged result immediately below — left here per the
+append-only convention rather than deleted, since it was the correct read of a single draw):**
+at the time this was written, with one random-window placement draw, the position effect looked
+underpowered-to-detect rather than resolvable.
+
+---
+
+### E1-pilot follow-up 3 — averaging the random-window arm over 8 placement draws resolves a real position effect (review SUP-20260906-47)
+
+**Ran by:** `../scripts/e1_pilot_random_window_averaged.py`   **Date:** 2026-09-06
+**Record:** `../artifacts/e1/e1_pilot_random_window_averaged_record.json`
+**Status:** VERIFIED
+
+**Why the single draw was the wrong instrument:** the director pointed out that the prefix
+controls are deterministic given a target length — reseeding only changes which captions land in
+which retrieval batch. The random-window control is different: reseeding changes the *placement
+itself*, a different treatment each time, not a different sample of the same treatment. Its
+single-draw batching-noise swing (0.0124, measured in follow-up 2 above) was therefore mostly
+**treatment variance** — one arbitrary placement's outcome — not measurement noise, and "random
+scored about the same as prefix" from one draw could not distinguish "position doesn't matter"
+from "this particular placement happened to land close to the prefix."
+
+**Method:** 8 independent placement draws (different `random.seed` per draw, same 2,663 could-vary
+keys, same per-key window length, same evaluator), with the DataLoader batch-shuffle seed held
+fixed across all 8 draws so only placement varies — isolating treatment variance from the
+batching variance already characterized separately in follow-up 2.
+
+**Result — the effect is real once treatment variance is averaged down.** Mean R-Precision-top3
+across 8 draws = **0.5279** (std across draws = 0.0082, min 0.5132, max 0.5384 — real,
+substantial placement-to-placement variance, confirming the director's diagnosis that a single
+draw was not a stable estimate). Standard error of this 8-draw mean ≈ 0.0082/√8 ≈ **0.0029**.
+Compared against the length-matched prefix control (0.5456, itself stable within 0.0008 across
+batch-shuffle seeds): **gap = 0.0177, roughly 6× the standard error of the averaged mean** — a
+materially resolved effect, not noise. **Flagged loudly per the director's own instruction, since
+this reverses follow-up 2's "underpowered to detect" read:** with the treatment-variance problem
+fixed, the prefix control reliably outperforms the *average* random placement by ~0.018
+R-Precision-top3 points on this 2,663-key subset.
+**Establishes:** the front-loading hypothesis is **supported, not merely "not refuted"** — keeping
+the caption prefix retains measurably more retrievable text-motion alignment signal than an
+average arbitrary same-length window. HumanML3D captions front-load motion-relevant content to a
+real, if modest (~0.018 of ~0.15-0.27 total truncation cost), degree. **Revised final position on
+the whole E1-pilot arc:** truncation cost is driven overwhelmingly by *how much* text is removed
+(the corpus-wide 0.145-0.157 and conditional ~0.27 numbers, both far larger than this 0.018), with
+a small, now-resolved, secondary contribution from *which part* — the front of a HumanML3D caption
+carries slightly more than an average middle span, but not by enough to change which mechanism
+dominates the original project's actual truncation cost.
+**Does NOT establish:** whether averaging over multiple batch-shuffle seeds too (not just
+placement draws) would move this further — this run held the batch-shuffle seed fixed
+deliberately, at the director's own instruction, to isolate placement variance cleanly; the
+~0.0008-0.0124 batching-noise band from follow-up 2 is a separate, smaller source of uncertainty
+not re-combined with this estimate's own error bar here. A generalizable methodological note
+added to `LANDMINES.md` (see below): when one arm of a comparison is itself stochastic, its
+across-seed spread is treatment variance, not measurement noise, and must be averaged down before
+that arm is comparable to a deterministic one.
 **Does NOT establish:** Whether this generalizes to a different embedding space or a different corpus's
 caption style. Anything about generation — still entirely E1B's open question.
