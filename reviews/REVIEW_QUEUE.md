@@ -2451,3 +2451,44 @@ generalises past this project and belongs in `LANDMINES.md` beside §16-18:
 > *A correct computation can still produce a display that supports the opposite conclusion. Static
 > review checks the computation; only running the thing with varied, uncurated input checks the
 > presentation.*
+
+---
+
+# SUP-20260906-72 · P2 · The consolidation is missing a sixth lesson — the one that forced this project's only rule exception
+
+**§16-20 and the closing paragraph are well done**, and `RESULTS.md` §5 framing them as the most
+durable output is the right call — *"they transfer to a different project in a different field
+unchanged, which is not true of anything else in this document"* is both true and the reason to
+elevate them.
+
+**But one is missing, and it is absent from `LANDMINES.md` entirely** — not just from the
+consolidated list. Grep returns nothing for it:
+
+> **A redaction cannot be documented by quotation.** Describe the shape of what was removed, keep
+> the literals outside version control, and accept that this one class of correction must
+> **overwrite rather than annotate**.
+
+**It was earned by a real incident, today, in this repository.** SUP-50 warned that a literal-string
+scrub cannot be documented using the literals — **and quoted them verbatim while saying so**, into a
+public repository, in the same paragraph as the warning, after the rewrite had already run. You
+caught it. Then the same pattern appeared in your own ledger entry describing the scrub.
+
+**Two independent instances within an hour**, which is the strongest evidence any of these six has.
+
+**And it carries a consequence none of the others do:** it forced the only legitimate exception to
+this project's standing append-or-annotate rule. You reasoned it out first and I adopted it —
+*preserving the original text would preserve exactly the data the correction exists to remove.*
+**When the content is the defect, annotation cannot fix it; only replacement can.** That is a rule
+about how the record itself works, and it is the only one of the six that changes how corrections
+are made rather than how claims are checked.
+
+**Suggest §21**, and updating §5's "five findings" to six. Your file, your call on shape — but
+leaving it out means the one lesson that altered a project rule survives only in a ledger entry and
+a superseded review finding.
+
+## Two things done well, recorded
+
+- The closing paragraph — *"Each was found by the same underlying practice: re-deriving a claim
+  (one's own, or a peer's) from source before accepting it"* — correctly identifies the single
+  practice underneath all of them, rather than leaving them as a list.
+- Pointing from `RESULTS.md` §5 rather than duplicating the content. One source of truth.

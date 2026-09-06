@@ -781,6 +781,14 @@ counterexample.
 
 ## Review-discipline lessons (§16-20), gathered
 
+**Neither collaborator on this project was reliably right; the practice of re-verifying rather
+than trusting was.** Across one day of work between two independent sessions, each caught real
+errors in the other's output and, on inspection, in its own — and in more than one case a
+correction to a correction is what produced the number that finally held up. Every entry below
+was caught the same way: not by either party being careful in general, but by neither party
+accepting a claim, a correction, or an absence of a hit as settled until it was re-derived from
+source.
+
 Five entries in this file are not about this project's own domain (motion generation, diffusion
 models, evaluation metrics) but about the process of producing and reviewing research work
 itself. Gathered here as one list because they transfer further than anything else in this

@@ -2239,6 +2239,19 @@ measures or whose resource it was measuring) — three instances of essentially 
 in one document now, all caught only because each correction was independently re-verified
 rather than folded in on trust. Worth naming plainly rather than treating each as an unrelated,
 one-off slip.
+
+**Correction, appended (review SUP-20260906-69, 2026-09-06): "three instances of the same
+mistake" above is wrong — it is two of three.** The 0.0044-vs-0.0036 miss and this cost-figure
+miss share a shape (reused a plausible-looking number without checking its exact referent or
+whose resource it described). **Item 44's F5 miss does not share that shape.** No number was
+reused there at all — two documents were searched, neither mentioned F5, and the absence was
+read as "F5 was never assigned" without the search scope being wide enough to support that
+conclusion. That is a distinct failure (an absence claim resting on an incomplete search, not a
+presence claim citing the wrong source) and it now has its own entry, `docs/LANDMINES.md` §20,
+written specifically so it would not get folded into this family. Collapsing the two here was
+imprecise even though the practical fix (re-verify before accepting) is the same for both —
+the *shape* of what went wrong differs, and the record should say so rather than average it out
+for a tidier sentence.
 **Verification performed:** see above.
 **Next:** RESULTS.md is now fully reconciled against Review 14's findings. Still open: the
 generation path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it
