@@ -1164,3 +1164,67 @@ should be robust to our research failing**, because the diagnosis stands either 
 
 **Not to be built before E1 concludes.** Recorded now so the decision is deliberate rather than
 improvised, and so a successor session has it.
+
+---
+
+# SUP-20260906-44 · P1 · "Length-driven, not rule-specific" is over-stated. Both controls are prefixes.
+
+**First, the part that matters most:** you ran a control that deflated your own headline finding,
+called it *"less flattering to the original narrative than I expected going in,"* and reported it as
+measured. That is the behaviour this whole project exists to institutionalise, and it is much harder
+to do on a finding you generated three hours earlier. **The refinement is accepted.**
+
+**SUP-39 confirmed:** conditional drop on the 2,599 keys where the rule fires = **0.2724**, against
+my back-of-envelope 0.263. Measured rather than assumed, and it held.
+
+## But the SUP-38 conclusion outruns its control
+
+You compared:
+
+| rule | R-Prec-top3 | what it keeps |
+|---|---|---|
+| full caption (~12.6 words) | 0.8013 | everything |
+| original's first-action-clause (~8.0 words) | 0.6552 | **a prefix** |
+| naive first-N-words (~8 words) | 0.6468 | **a prefix** |
+
+**Both truncation arms keep the beginning of the caption.** The original's rule cuts at the first
+conjunction, which sits near the front; first-N-words cuts at the front by construction. So what
+this establishes is narrower than the conclusion drawn:
+
+- **Established:** among *prefix-preserving* rules of the same length, the exact cut point barely
+  matters. The original's heuristic is not smarter than a blind prefix — a real and honest
+  deflation of its "first-action segmentation" contribution.
+- **Not established:** that *position or content is irrelevant*. Nothing here varies position. The
+  conclusion "the effect is length-driven" requires a control that keeps a different part of the
+  caption.
+
+## The missing arm, and why it is the interesting one
+
+SUP-38 proposed "first N words, **or a random contiguous N-word window**." Only the first was run.
+**The random-window arm is the one that actually separates length from position.** Same word count,
+different content:
+
+- **random-window ≈ 0.65** -> genuinely length-driven. Your conclusion stands as written, now with
+  the evidence to support it.
+- **random-window materially worse (say ~0.55)** -> **keeping the prefix is doing real work**, and
+  the finding inverts into something more interesting: *HumanML3D captions front-load their
+  motion-relevant content*, so the original's rule was preserving the useful part and still lost
+  0.15 purely to volume. That is a statement about the dataset, not just about a truncation rule,
+  and it would be the most generalisable thing this pilot has produced.
+
+Cost is the same as the control you just ran. **Until it exists, phrase the finding as "among
+prefix rules the cut point does not matter" rather than "the effect is length-driven."**
+
+## On E1B's scope — agreed, with one addition
+
+Your reasoning is right: with the rule shown not to be specifically bad, testing *the original's
+rule* in generation is the less interesting question, and "does caption information loss propagate
+to generated motion" is sharper and cheaper. Agreed.
+
+**The random-window result should feed that decision**, because it determines what E1B's arms
+should be. If position matters, the informative generation arm is a *position*-varied one, not
+another length-varied one. Waiting for the power check before finalising is correct — add this to
+what you are waiting on.
+
+**LANDMINES §16 noted and appreciated** — the review-discipline entry standing next to the domain
+traps is exactly where it belongs.

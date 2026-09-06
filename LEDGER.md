@@ -1190,3 +1190,52 @@ clause-truncation heuristic propagate," which may itself argue for a still-narro
 it proceeds. Awaiting the E1A power check's own result (still running, background) before any
 final scoping decision, since SUP-40 explicitly ties E1B's value to what the power check shows.
 
+## [2026-09-06T11:55:00 UTC] Item 24 — Random-window control closes the E1-pilot arc: position doesn't matter, length does
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-44) caught that Item 23's length-matched
+control and the original truncation rule both keep the caption *prefix*, so that control could
+only show "among prefix rules, the cut point doesn't matter" — not the broader "the effect is
+length-driven" conclusion Item 23 actually stated. Add a random-contiguous-window control (same
+per-key length, different position) to actually separate length from position before treating
+either conclusion as settled.
+**Files changed:** `scripts/e1_pilot_followups.py` (added a fourth `random_window_control` arm —
+fixed-seed `random.randint` window placement per key, degenerating to the full slice when the
+caption is too short to move; re-ran end to end). `docs/EXPERIMENT_LOG.md` (Item 23's entry
+corrected in place — original "mechanism is caption shortening in general" claim marked as an
+overreach from a prefix-only comparison, not retracted outright since the corpus-wide/conditional
+numbers themselves were never in question, only the position-independence claim; a new
+follow-up-2 subsection added with the random-window result). `artifacts/e1/
+e1_pilot_followups_record.json` (re-saved with the fourth arm's numbers; the file was regenerated
+in place rather than versioned, since this is a within-day re-run of the same not-yet-referenced-
+elsewhere artifact, not a case of overwriting a claim someone else has already cited).
+**Environment changes:** none.
+**Result:** random-window control R-Precision-top3 = **0.6470**, essentially identical to the
+length-matched prefix control (0.6468) and the rule-truncated arm (0.6552).
+`position_effect_prefix_minus_random_window` = **0.00022** — a clean null, not a trend that failed
+to reach significance. 1,985/4,648 keys (42.7%) had no room to place a different window (caption
+too short), so the position test is only meaningfully exercised on the remaining 2,663 longer
+captions — stated as a scope limitation, not grounds to discount the null, since the aggregate
+(which includes those 2,663 keys at full weight) still shows no movement.
+**Establishes:** the director's alternative hypothesis — that HumanML3D captions front-load
+motion-relevant content, so the original's truncation rule was accidentally preserving the useful
+part — is directly tested and refuted by this data. "The effect is length-driven, not
+position-driven" is now an earned conclusion, not an overreach from a same-shaped control. The
+E1-pilot arc's final, fully-supported summary: caption truncation destroys retrievable
+text-motion alignment roughly in proportion to how much text is removed, independent of which
+part is removed.
+**Self-critique:** Item 23's original wording ("the effect is length-driven, not specific to the
+original's clause-selection rule") was stated with more confidence than the single prefix-vs-
+prefix control actually supported — I had the right instinct (run a control) but the wrong
+control design to fully support the conclusion I drew from it. Caught by the director's review,
+not by my own re-reading of what I'd written, which is worth naming rather than smoothing over:
+having already run one control does not mean the control set is complete, and "I ran a control"
+is not automatically the same as "I ran the control that isolates the variable I'm claiming about."
+**Verification performed:** re-ran the full script (all four arms) rather than patching in just
+the new arm's number, so the corpus-wide/conditional results could be re-confirmed identical to
+Item 23's (they are, to the same decimal places) rather than assuming the rest of the pipeline
+was unaffected by the edit.
+**Next:** this closes the E1-pilot arc per the director's stated goal ("if the random-window arm
+fits before then it is minutes and it would close the pilot cleanly"). Report to the director;
+continue waiting on the E1A power check (still running, background, ~13:30-14:00Z expected) —
+its result and this closed pilot together are what SUP-40's E1B-scope decision was waiting on.
+

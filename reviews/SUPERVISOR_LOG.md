@@ -1133,3 +1133,46 @@ a fourth pane, not a redesign.
 
 **Next:** await the gate result. Monitor on the record JSON + long fallback.
 Now 11:01Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T11:08Z] Supervisor pass 27 — SUP-44: the length-control conclusion outruns its control
+
+**The build pass ran a control that deflated its own three-hour-old headline finding**, called it
+*"less flattering to the original narrative than I expected going in,"* and reported it as measured.
+Recording that explicitly: it is the single hardest thing on the whole discipline list, and most of
+the failure modes in `LANDMINES.md` are what happens when it is not done.
+
+**SUP-39 confirmed by real measurement:** conditional drop **0.2724** on the 2,599 keys where the
+rule fires, against my estimate of 0.263.
+
+**SUP-44 (P1): the conclusion "length-driven, not rule-specific" is not yet supported.**
+
+| rule | R-Prec-top3 | keeps |
+|---|---|---|
+| full (~12.6 w) | 0.8013 | everything |
+| original's first-action clause (~8.0 w) | 0.6552 | **a prefix** |
+| naive first-N-words (~8 w) | 0.6468 | **a prefix** |
+
+**Both truncation arms are prefixes.** Nothing varies position. So:
+- **Established (a genuine deflation):** among prefix-preserving rules of the same length, the cut
+  point barely matters — the original's "first-action segmentation" is no smarter than a blind
+  prefix.
+- **Not established:** that position/content is irrelevant. That claim needs a control keeping a
+  *different part* of the caption.
+
+**The missing arm — a random contiguous N-word window — was proposed in SUP-38 and not run, and it
+is the interesting one.** ~0.65 means genuinely length-driven and the conclusion stands with
+evidence. Materially worse (~0.55) means **keeping the prefix is doing real work**, and the finding
+inverts into *HumanML3D captions front-load their motion-relevant content* — a statement about the
+**dataset** rather than about one project's truncation rule, and the most generalisable thing this
+pilot could produce. Same cost as the control just run.
+
+Told it to phrase the finding as "among prefix rules the cut point does not matter" until that arm
+exists.
+
+**On E1B scope:** agreed with its narrowing (testing the original's specific rule in generation is
+now the weaker question), **with the addition that the random-window result should feed the arm
+design** — if position matters, the informative generation arm is position-varied, not another
+length-varied one.
+
+**Next:** power check (~13:30-14:00Z) and, if it fits, the random-window arm. Otherwise both go to
+the handover. Now 11:08Z; SOFT 13:55Z, HARD 14:40Z.

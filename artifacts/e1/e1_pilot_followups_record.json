@@ -6,6 +6,7 @@
   "n_fallback_keys": 2049,
   "n_nonfallback_keys": 2599,
   "pct_nonfallback": 0.5591652323580034,
+  "n_keys_window_equals_full_no_room_to_move": 1985,
   "full_corpus_r_precision": {
     "full_caption": [
       0.51875,
@@ -21,12 +22,18 @@
       0.38405172413793104,
       0.5553879310344828,
       0.6467672413793103
+    ],
+    "random_window_control": [
+      0.38038793103448276,
+      0.5512931034482759,
+      0.6469827586206897
     ]
   },
   "full_corpus_matching_score": {
     "full_caption": 2.9441940537814437,
     "truncated_caption": 3.9464788108036437,
-    "length_matched_control": 3.9454760189714104
+    "length_matched_control": 3.9454760189714104,
+    "random_window_control": 3.9326302692807955
   },
   "nonfallback_subset_r_precision": {
     "full_caption_nonfallback": [
@@ -53,7 +60,9 @@
   "summary": {
     "corpus_wide_drop_recomputed": 0.15646551724137936,
     "length_matched_control_drop": 0.1648706896551725,
+    "random_window_control_drop": 0.16465517241379313,
     "rule_specific_drop_beyond_length": -0.008405172413793127,
+    "position_effect_prefix_minus_random_window": 0.00021551724137935935,
     "conditional_drop_on_nonfallback_subset": 0.2723765432098766
   }
 }

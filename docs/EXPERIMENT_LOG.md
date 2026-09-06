@@ -650,12 +650,56 @@ the longer, more heavily truncated ones).
 **Establishes:** Two real numbers, not one: **0.145-0.157 corpus-wide** (what the original
 actually suffered, averaged over its whole caption distribution) and **~0.27 conditional** (what
 happens specifically where truncation fired, roughly double the corpus-wide figure and the
-number that should anchor any comparison to E1B if it proceeds). Separately, that the mechanism is
-caption shortening in general, not the original's specific clause-boundary heuristic — a real,
-if less flattering-to-the-original-narrative, refinement.
-**Does NOT establish:** Whether the length-matched control finding (effect is length-driven) also
+number that should anchor any comparison to E1B if it proceeds). **Corrected below (SUP-44):**
+this entry originally concluded "the mechanism is caption shortening in general, not the
+original's specific clause-boundary heuristic" from the length-matched control alone — that
+control (naive first-N-words) keeps the caption *prefix*, same as the rule being tested, so it
+could only show "among prefix-preserving rules, the cut point doesn't matter," not "position is
+irrelevant." The random-window follow-up below closes that gap.
+**Does NOT establish (as originally written; see the SUP-44 follow-up immediately below for what
+closes this):** Whether the length-matched control finding (effect is length-driven) also
 holds specifically *within* the non-fallback subset — this run did not compute a length-matched
 control restricted to just the 2,599 non-fallback keys, so it cannot rule out that some of the
 0.272 conditional effect is content-selection-specific after all, even though the corpus-wide
 result suggests otherwise. Whether either effect propagates into a trained generative model's
 output — that is still E1B's question, unaddressed by any zero-training check.
+
+---
+
+### E1-pilot follow-up 2 — random-window control separates length from position (review SUP-20260906-44)
+
+**Ran by:** `../scripts/e1_pilot_followups.py` (extended with a fourth arm)   **Date:** 2026-09-06
+**Record:** `../artifacts/e1/e1_pilot_followups_record.json` (same file, re-run with the new arm added)
+**Status:** VERIFIED
+
+**The gap this closes:** both prior controls (the original's rule, and the length-matched
+first-N-words control) keep the caption's *prefix* — the rule cuts at the first conjunction,
+which sits near the front; first-N-words cuts at the front by construction. Neither could
+distinguish "shorter captions retrieve worse" from "keeping the front of the caption matters
+specifically." Added a random contiguous N-word *window* (same per-key length, different
+position, drawn once with a fixed seed) as the control that actually varies position.
+
+**Result — a clean null on position; the length-driven conclusion now holds properly.**
+Random-window control R-Precision-top3 = **0.6470**, statistically indistinguishable from both
+the length-matched prefix control (0.6468) and the rule-truncated arm (0.6552).
+`position_effect_prefix_minus_random_window` = **0.00022** — effectively zero, nowhere near the
+noise floor threshold that would make it interesting. There is no detectable advantage to keeping
+the front of a HumanML3D caption over keeping an arbitrary same-length slice of it.
+**Caveat, stated directly:** 1,985 of the 4,648 keys (42.7%) had no room to move (the caption was
+already short enough that the "random window" and "first N words" are the same slice by
+construction) — the position manipulation is only meaningfully exercised on the remaining 2,663
+longer captions. Reported as a limitation on how much this specific run could vary position, not
+as a reason to discount the null result, since even among captions long enough to vary, the
+aggregate score barely moved.
+**Establishes:** "The effect is length-driven, not position-driven" is now a supported claim, not
+an overreach — the director's own alternative hypothesis (HumanML3D captions front-load
+motion-relevant content, so the original's rule was accidentally preserving the useful part) is
+directly tested and not supported by this data. The honest, now fully-earned summary of the whole
+E1-pilot arc: **caption truncation destroys retrievable text-motion alignment signal roughly in
+proportion to how much text is removed, regardless of which part is removed** — a statement about
+information volume in this embedding space, not about the original project's specific heuristic
+or about which part of a HumanML3D caption carries the motion description.
+**Does NOT establish:** Whether this holds outside the ~2,663-key subset with real room to vary
+position (the 42.7% "no room to move" keys were not separately tested for a position effect, by
+construction). Whether this generalizes to a different embedding space or a different corpus's
+caption style. Anything about generation — still entirely E1B's open question.

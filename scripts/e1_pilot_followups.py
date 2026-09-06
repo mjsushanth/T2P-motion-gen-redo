@@ -8,6 +8,13 @@ on average) than the full captions. Some of the measured 0.145 R-Precision-top3 
 Control: truncate the SAME full captions to the SAME per-caption word count via a content-neutral
 rule (first N words, N = the rule-truncated caption's own length), re-measure.
 
+SUP-20260906-44 -- both the rule and the first-N-words control keep the CAPTION PREFIX, so
+neither separates "shorter" from "keeps the front of the sentence." Added a random contiguous
+N-word WINDOW control (same length, different position) to actually isolate length from
+position: if it scores close to the prefix controls, the effect really is length-driven; if it
+scores materially worse, HumanML3D captions front-load their motion-relevant content and the
+original's rule was accidentally preserving the useful part.
+
 SUP-39 -- conditional effect on captions the rule actually fires on: 44.8% of captions fell
 through to the original's own first-sentence fallback (which changes little for already-short,
 single-sentence captions). The corpus-wide 0.145 drop is diluted by that near-zero-effect share.
@@ -114,12 +121,19 @@ def main():
     trunc_loader = build_loader()
     fixseed(my_args.seed)
     lm_loader = build_loader()
+    fixseed(my_args.seed)
+    rw_loader = build_loader()
 
     t2m_full = make_deterministic_single_caption(full_loader)
     t2m_trunc = make_deterministic_single_caption(trunc_loader)
     t2m_lm = make_deterministic_single_caption(lm_loader)
+    t2m_rw = make_deterministic_single_caption(rw_loader)
+
+    import random as _random
+    _random.seed(my_args.seed)
 
     fallback_keys, nonfallback_keys = [], []
+    n_prefix_equals_full = 0
     for key in t2m_full.data_dict:
         caption, tokens = t2m_full.data_dict[key]["text"][0]["caption"], t2m_full.data_dict[key]["text"][0]["tokens"]
         trunc_caption, trunc_tokens, used_fallback = truncate_tokens_first_action_clause(caption, tokens)
@@ -128,15 +142,31 @@ def main():
         lm_caption = " ".join(words[:n])
         lm_tokens = tokens[:n]
 
+        # SUP-20260906-44: first-N-words and the rule both keep a PREFIX, so the earlier
+        # length-matched control cannot separate "shorter caption" from "keeps the front of the
+        # caption" -- add a random contiguous N-word WINDOW, same length, different position,
+        # to actually isolate length from position.
+        max_start = max(0, len(words) - n)
+        if max_start == 0:
+            n_prefix_equals_full += 1
+            start = 0
+        else:
+            start = _random.randint(0, max_start)
+        rw_words = words[start:start + n]
+        rw_tokens = tokens[start:start + n]
+
         t2m_trunc.data_dict[key]["text"][0]["caption"] = trunc_caption
         t2m_trunc.data_dict[key]["text"][0]["tokens"] = trunc_tokens
         t2m_lm.data_dict[key]["text"][0]["caption"] = lm_caption
         t2m_lm.data_dict[key]["text"][0]["tokens"] = lm_tokens
+        t2m_rw.data_dict[key]["text"][0]["caption"] = " ".join(rw_words)
+        t2m_rw.data_dict[key]["text"][0]["tokens"] = rw_tokens
 
         (fallback_keys if used_fallback else nonfallback_keys).append(key)
 
     print(f"total keys: {len(t2m_full.data_dict)}, fallback: {len(fallback_keys)}, "
-          f"non-fallback (rule actually fired): {len(nonfallback_keys)}")
+          f"non-fallback (rule actually fired): {len(nonfallback_keys)}, "
+          f"keys where window==full (no room to move): {n_prefix_equals_full}")
 
     fixseed(my_args.seed)
     eval_wrapper = EvaluatorMDMWrapper("humanml", device)
@@ -149,6 +179,7 @@ def main():
             "full_caption": full_loader,
             "truncated_caption": trunc_loader,
             "length_matched_control": lm_loader,
+            "random_window_control": rw_loader,
         }
         match_score_a, r_prec_a, _ = evaluate_matching_score(eval_wrapper, motion_loaders_a, f)
 
@@ -181,10 +212,12 @@ def main():
         "n_fallback_keys": len(fallback_keys),
         "n_nonfallback_keys": len(nonfallback_keys),
         "pct_nonfallback": len(nonfallback_keys) / (len(fallback_keys) + len(nonfallback_keys)),
+        "n_keys_window_equals_full_no_room_to_move": n_prefix_equals_full,
         "full_corpus_r_precision": {
             "full_caption": to_list(r_prec_a["full_caption"]),
             "truncated_caption": to_list(r_prec_a["truncated_caption"]),
             "length_matched_control": to_list(r_prec_a["length_matched_control"]),
+            "random_window_control": to_list(r_prec_a["random_window_control"]),
         },
         "full_corpus_matching_score": {k: to_list(v) for k, v in match_score_a.items()},
         "nonfallback_subset_r_precision": {
@@ -203,7 +236,9 @@ def main():
     result["summary"] = {
         "corpus_wide_drop_recomputed": top3(r_prec_a["full_caption"]) - top3(r_prec_a["truncated_caption"]),
         "length_matched_control_drop": top3(r_prec_a["full_caption"]) - top3(r_prec_a["length_matched_control"]),
+        "random_window_control_drop": top3(r_prec_a["full_caption"]) - top3(r_prec_a["random_window_control"]),
         "rule_specific_drop_beyond_length": top3(r_prec_a["length_matched_control"]) - top3(r_prec_a["truncated_caption"]),
+        "position_effect_prefix_minus_random_window": top3(r_prec_a["random_window_control"]) - top3(r_prec_a["length_matched_control"]),
         "conditional_drop_on_nonfallback_subset": top3(r_prec_b["full_caption_nonfallback"]) - top3(r_prec_b["truncated_caption_nonfallback"]),
     }
 

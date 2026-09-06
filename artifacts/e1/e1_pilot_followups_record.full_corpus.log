@@ -4,3 +4,5 @@
 ---> [truncated_caption] R_precision: (top 1): 0.3909 (top 2): 0.5526 (top 3): 0.6552 
 ---> [length_matched_control] Matching Score: 3.9455
 ---> [length_matched_control] R_precision: (top 1): 0.3841 (top 2): 0.5554 (top 3): 0.6468 
+---> [random_window_control] Matching Score: 3.9326
+---> [random_window_control] R_precision: (top 1): 0.3804 (top 2): 0.5513 (top 3): 0.6470 
