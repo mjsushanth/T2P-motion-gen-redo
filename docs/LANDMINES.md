@@ -458,3 +458,53 @@ compare FID across runs with different n. Get n comfortably above d — the publ
 `--repeat_time` averaging is partly what buys this. And before attributing an FID gap to your
 model, sweep n and confirm the gap survives.
 
+---
+
+## 15. A multi-line packed field parsed with a single split silently drops every sample after the first
+
+**Status: VERIFIED (2026-09-06), found while building E0b (`scripts/materialize_humanml3d_test_subset.py`).**
+
+**The trap.** The HF `TeoGchx/HumanML3D` dataset's `caption` field looks like one string, but it
+is actually **multiple newline-separated entries**, each independently in the official
+`"<caption>#<tokens>#<from_tag>#<to_tag>"` format — HumanML3D's own convention for a sequence
+with several human-written annotations. A single `caption_field.split("#")` on the whole
+multi-line string looks completely reasonable and reshapes cleanly into `[caption, tokens,
+from_tag, to_tag]` — the first four `#`-delimited pieces are exactly what you'd expect. What it
+actually produces for `to_tag` is the true first-entry value with the **entire second caption
+entry silently concatenated onto it** (`"0.0\nperson walking at a average pace..."`), and every
+entry after the second is dropped from the parse entirely.
+
+**What it looks like.** No exception at parse time — the corrupted line is written to disk and
+looks like a slightly odd two-line text file. The actual failure surfaces one layer downstream
+and looks like nothing happened at all: MDM's own `Text2MotionDatasetV2.__init__` (and this
+project's own vendored copy of the same class) wraps each sample's per-line processing in a bare
+`try/except: pass`. The malformed second line raises (`list index out of range` trying to read a
+`tokens` field from a line with no `#` in it), the exception is swallowed, and that sample is
+silently dropped from `data_dict`/`name_list` — **not once, but for every sample in the
+materialized set**, because the bug is systemic across all rows, not sample-specific. The
+downstream symptom was `real_num_batches: 0` and an empty generated dataset — no traceback, no
+warning, just a dataset that loads successfully and iterates zero times.
+
+**The evidence.** Found by directly inspecting `repr(ex['caption'])` on a real HF row rather than
+reasoning about the format from a truncated print statement (Stage 1's own earlier caption
+inspection had only ever printed `str(...)[:200]`, which happened to cut off before the second
+caption entry began, and that partial view was carried forward as an assumption without being
+re-checked here). The raw field, verbatim: `'a person is walking in place at a slow pace.#a/DET
+person/NOUN is/AUX walk/VERB in/ADP place/NOUN at/ADP a/DET slow/ADJ pace/NOUN#0.0#0.0\nperson
+walking at a average pace forward, swaying arms and torso with a sense of swagger#person/NOUN
+walk/VERB at/ADP a/DET average/ADJ pace/NOUN forward/ADV sway/VERB arm/NOUN and/CCONJ
+torso/VERB with/ADP a/DET sense/NOUN of/ADP swagger/NOUN#0.0#0.0\n...'` — three complete,
+correctly-formatted entries, joined by newlines, that a whole-field `.split("#")` treats as one.
+
+**Do instead.** Split on newlines *first* to recover the individual entries, then treat each one
+independently — never assume a packed field is single-valued just because a naive parse of it
+produces a plausible-looking, correctly-shaped result. As with §1/§2: validate a parsing
+hypothesis against an invariant (here, "does the resulting dataset have the sample count I
+expect," not "did the split produce four pieces without erroring") rather than trusting that the
+arithmetic came out looking right.
+
+**Generalisation:** any format library that swallows per-record parse errors (a `try/except:
+pass` around per-sample processing, common in dataset-loading code written to tolerate a few bad
+files) will silently absorb a systemic parsing bug as if it were normal missing-data filtering.
+Check the *count* of what survived a bulk load, not just that the load completed without error.
+

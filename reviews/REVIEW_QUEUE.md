@@ -357,3 +357,89 @@ Pre-registering before fetching the checkpoint. Fixing the tolerance before the 
 Reporting FAIL plainly with the actual value. Disclosing the `diversity_times` off-by-one and the
 hand-assembled provenance. Documenting three real macOS/dependency patches. And renaming E0 to
 E0a to match the split rather than leaving the naming ambiguous.
+
+---
+
+# Review 5 — the bundled author log settles E0b, and relocates the defect
+
+**Date:** 2026-09-06 · **Method:** read
+`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/eval_humanml_trans_enc_512_000475000_gscale2.5_wo_mm.log`
+(273 lines, 20 replications) directly, rather than proposing another compute spend.
+
+## SUP-20260906-17 is WITHDRAWN — my hypothesis, disproved by your diagnostic
+
+You checked the three cheapest configuration causes empirically — guidance 2.5 matching the log
+filename byte-for-byte, `num_timesteps=1000` with no respacing, `p_sample_loop` not DDIM — and
+none held. **SUP-17's specific claim was wrong and I withdraw it.** Instantiating the model and
+printing runtime values rather than trusting a code read was the right method.
+
+## SUP-20260906-20 · The published numbers are FULLY reproducible. The field's record is sound.
+
+The author's own bundled log, 20 replications, same checkpoint:
+
+| metric | author's log (20 reps) | paper's published row | match |
+|---|---|---|---|
+| GT R-Prec-top3 | 0.7977 ± 0.0022 | 0.797±.002 | exact |
+| **vald R-Prec-top3** | **0.6110 ± 0.0067** | **0.611±.007** | **exact** |
+| GT FID | 0.0016 | 0.002±.000 | exact |
+| **vald FID** | **0.5443 ± 0.0442** | **0.544±.044** | **exact** |
+| GT Matching Score | 2.9758 ± 0.0081 | 2.974±.008 | exact |
+| vald Matching Score | 5.5659 ± 0.0270 | 5.566±.027 | exact |
+
+**Every published figure reproduces from the released artifacts.** So the E0b FAIL is not a
+finding about the field, and MDM's 0.611 is not an outlier to be curious about — I was wrong to
+float that. **The discrepancy is ours.**
+
+## SUP-20260906-21 · P1 · The defect is localised to the generation path, and E0a's own gap is now explained
+
+Set the two runs side by side against the reference:
+
+| | our E0a | our E0b | author's log |
+|---|---|---|---|
+| GT R-Prec-top3 | **0.720** | **0.7969** | 0.7977 |
+| GT Matching Score | **3.6057** | — | 2.9758 |
+| gen R-Prec-top3 | — | **0.7578** | 0.6110 |
+| gen FID | — | 1.0731 | 0.5443 |
+
+Two conclusions fall straight out.
+
+**First — E0a's R-Precision gap was never about multi-crop averaging.** E0a hand-built its data
+pipeline and got GT R-Prec 0.720 and matching score 3.606. E0b used *MDM's own loader* and got
+0.7969 and the reference is 0.7977. **Same evaluator, same checkpoint, same dataset — the
+difference is E0a's hand-built pipeline.** That closes SUP-11's open half: the FID half was
+small-n covariance bias, and the R-Precision half was a subtly wrong hand-rolled data path. This
+is the F1-shaped risk I flagged when you started reconstructing `opt`, and it did bite — just not
+fatally, and E0b's use of the upstream loader is what exposed it. **Correct E0a's stated
+explanation; the multi-crop hypothesis is superseded.**
+
+**Second — in E0b the ground-truth path is correct (0.7969 vs 0.7977), so the defect is in
+generation.** Our generated motions are simultaneously *easier to text-match* (+0.147 R-Prec) and
+*further from the real distribution* (~2x FID) than the reference. Contamination by real motions
+is ruled out — that would push FID down, not up.
+
+**Strongest leads, cheap, in order:** compare the generated set's **motion length distribution**
+against the GT set's, and check how the driver sets per-sample `n_frames` — generating at a fixed
+or maximum length rather than each sample's own length would plausibly produce exactly this
+signature. Then check the number of **unique captions** actually used in the 128, and confirm
+each generated motion is scored against the caption it was conditioned on.
+
+## SUP-20260906-22 · P2 · Do not run the second 40-minute replication
+
+You proposed it to estimate run-to-run variance. **The log gives you that for free and better:**
+20 replications at full scale, vald FID CInterval **0.0442**, per-replication values spanning
+0.5323-0.7114. Our 1.0731 is far outside that spread, so single-replication noise is not the
+explanation and a second run would not change the conclusion. Spend the 40 minutes on the length
+and caption checks instead.
+
+## SUP-20260906-23 · P2 · Cache generated motions
+Nothing under `artifacts/` or `save/` holds the 128 generated motions, so every metric question
+now costs another ~39 minutes of generation. **Persist generated samples to `artifacts/`** — it
+makes bootstrapping, re-scoring at different n, and length analysis free rather than expensive.
+Worth a `LANDMINES`-adjacent note: in a CPU-bound loop, the artifact to cache is the expensive
+intermediate, not the cheap final number.
+
+## SUP-20260906-24 · P3 · Commended
+Fixing SUP-15 in both files and naming it your own error plainly. Disproving my hypothesis
+empirically rather than deferring to it. And holding before spending another 40 minutes to ask —
+under D-19 you did not have to, and checking when the cost is real rather than the permission is
+required is the right instinct.

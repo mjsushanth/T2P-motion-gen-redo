@@ -288,12 +288,37 @@ to average out exactly this kind of run-to-run generation noise, which this entr
 cannot distinguish from a real effect) and the still-open checkpoint-provenance confound
 (SUP-12 — architecture-verified, not cryptographically verified against the original).
 
+**A cheaper diagnostic than any rerun, per review SUP-20260906-15..19: the checkpoint's own
+bundled 2022 evaluation log already reports R-Precision, not just FID.** Re-read it directly
+rather than rerunning anything:
+```
+========== R_precision Summary ==========
+---> [vald](top 1) Mean: 0.3195 CInt: 0.0048;(top 2) Mean: 0.4978 CInt: 0.0043;(top 3) Mean: 0.6110 CInt: 0.0067;
+```
+**`R-Prec-top3 = 0.6110`, matching the paper's published 0.611 to three decimal places.** This
+resolves the ambiguity this entry originally left open: the published 0.611 is *not* an outlier
+in MDM's own artifacts and this checkpoint *does* reproduce it under the correct (full-scale)
+protocol — so the earlier framing here ("either the paper's number is odd, or mine is") is
+settled in favor of **mine is**. Combined with the guidance/step/sampler check above (all
+clean), the discrepancy is not explained by any driver misconfiguration found so far. The
+leading remaining hypothesis, not yet confirmed: this run's 128-sample subset was **not** a
+random draw comparable to the reference protocol's ~1000-sample pool over the full ~4384-sequence
+test set — it was the first 128 rows (in HF streaming order) that passed the length filter, and
+R-Precision's batch-wise retrieval difficulty depends on the *composition* of the 32-candidate
+pool a caption is matched against, not just on n (this is a distinct mechanism from §14's FID
+covariance-bias finding, which *is* purely an n effect) — a smaller, non-randomly-ordered subset
+could plausibly present an easier or harder retrieval task than the reference's larger, properly
+shuffled pool, in either direction. This is stated as the leading hypothesis, not a confirmed
+finding — distinguishing it from single-replication generation variance would need either a
+proper random draw from the full test set at comparable scale, or a second independent
+replication at the same n=128 to see whether the same pattern recurs.
+
 **Next:** D-03 remains UNRESOLVED; downstream numbers are internally-comparable-only until it
 resolves. Before spending the ~5 CPU-hours a full n~1000 sweep would cost, the cheaper next
-diagnostic is a second independent single-replication run at the same n=128 to check whether the
-better-R-Precision/worse-FID pattern repeats (a real, checkpoint/protocol-level effect) or was
-specific to this one stochastic draw (ordinary generation variance) — proposed, not yet run, per
-the standing instruction not to spend heavily before cheaper checks are exhausted. Also still
+diagnostic is a second independent single-replication run at the same n=128 (to test the
+generation-variance hypothesis) and/or drawing a properly randomized (not streaming-order-first)
+subset at the same n (to test the candidate-pool-composition hypothesis) — proposed, not yet run,
+per the standing instruction not to spend heavily before cheaper checks are exhausted. Also still
 open: fix the `diversity_times` off-by-one; consider a properly-sized (full test split)
 ground-truth reference FID computed once and held fixed as the comparison target, rather than
 recomputing it from the same small `vald`-sized subset each time.

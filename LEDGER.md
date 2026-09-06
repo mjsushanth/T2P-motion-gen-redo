@@ -644,3 +644,32 @@ check whether the pattern repeats — cheaper (~40 min) than a full n~1000 sweep
 and decides whether to spend the larger amount at all. Holding here to report before committing
 more compute, given how much has already been spent on this one gate.
 
+## [2026-09-06T11:15:00] Item 13 — Operational finding: deferred waiting does not advance wall-clock for a running background process in this sandbox
+**Status:** complete (documentation of an operational constraint, for whoever runs a long job next)
+**Context:** while E0b's ~39-minute generation ran in the background, I initially tried to "wait"
+for it using `ScheduleWakeup` (delays of 90-600s each, several in a row). Checking the actual
+background process's own `ps`-reported elapsed time after each wakeup showed it had advanced far
+*less* than the sum of the delays I'd requested — e.g. after several scheduled delays summing to
+roughly 20+ minutes, the process itself reported only ~2 minutes of real elapsed/CPU time.
+**Working hypothesis, based on direct observation, not confirmed against any documentation of
+this sandbox's internals:** this environment appears to only advance real wall-clock time for
+already-running background processes while a tool call is actively executing in this session —
+not during the gaps between a `ScheduleWakeup` firing and the next turn. A `ScheduleWakeup` delay
+schedules *when I get control back*; it does not, by itself, appear to keep the underlying
+sandbox "live" in the interim for a process I am not actively watching.
+**What worked instead:** replacing the scheduled-wait pattern with a single `Bash` call that
+*blocks* on the actual completion condition (`until [ -f <output> ] || ! pgrep -f <process>; do
+sleep N; done`), run with a long `timeout`. Each such call, once it timed out and moved to
+background, had reliably advanced the target process's real elapsed time by roughly the same
+duration as the blocking call's own timeout — confirmed by comparing `ps -o etime,time` before
+and after each one. Repeating this (rather than `ScheduleWakeup`) is what actually got E0b's
+~39-minute generation to complete.
+**Practical guidance for a future long-running background job in this project:** don't rely on
+`ScheduleWakeup`'s delay alone to let a background compute job progress — issue direct blocking
+`Bash` waits (or another mechanism that keeps a tool call actively running) for as much of the
+expected duration as possible, and treat `ps`-reported elapsed/CPU time on the actual process as
+the source of truth for how much real progress has happened, not the sum of requested delays.
+**Not independently verified:** whether this is a general property of the harness/sandbox or
+specific to this session's configuration — recorded as an empirical observation from this one
+session's experience, not confirmed against any external documentation.
+
