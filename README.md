@@ -1,0 +1,63 @@
+# T2P-Reboot — text-to-pose generation, rebuilt around measurement
+
+A 2026 course project spent three months on CLIP-conditioned diffusion for text-to-pose
+generation and produced no measurement — every number in its report is a training loss. This
+repository is the rebuild: **find out what actually went wrong, build an evaluation harness
+that has been validated against a published number, and only then train anything.**
+
+**Start at [`docs/00_START_HERE.md`](docs/00_START_HERE.md).**
+
+---
+
+## The task
+
+Given `"a person raising their right arm"`, generate a single static 3D human pose — 22 joints
+in space — that looks like a human, matches the text, and is not a memorised training example.
+
+## Status
+
+| stage | output | status |
+|---|---|---|
+| 1 — Forensics: which suspected defects are real? | `FORENSICS.md` | in progress |
+| 2 — Landscape + rebuild spec | `LANDSCAPE.md`, `REBUILD_SPEC.md` | not started |
+| 3 — Evaluation harness + measured baseline | `src/t2p/`, `tests/`, `RESULTS.md` | not started |
+| 4 — Experiments | `docs/EXPERIMENT_LOG.md` E-series | not started |
+
+**Nothing has been trained or measured here yet.** There is no result to report, positive or
+negative. When that changes, it goes in `docs/EXPERIMENT_LOG.md` with the split, the sample
+count, the seeds and the spread.
+
+## How the record works
+
+- Every claim is labelled **VERIFIED** (ran or fetched here, output saved) or **UNVERIFIED**.
+- Every measurement lives in `artifacts/*_record.json`. Nothing is re-derived from memory.
+- `LEDGER.md` is append-only and is the memory across interrupted sessions.
+- `reviews/` and `guidance/` belong to other agents; this side never writes there.
+
+## Layout
+
+```
+docs/            the research record and the rules      LEDGER.md      append-only run log
+src/t2p/         the machinery (Stage 3)                BRIEFING.md    forensic read of the original
+tests/           silent-failure tests                   CLAUDE.md      agent instructions
+notebooks/       narrative + experiments                AUTONOMOUS_RUN_PROMPT.md
+artifacts/       *_record.json, figures                 primary_source/  official HumanML3D files
+reviews/         reviewer territory (read-only)         guidance/      collaborator territory (read-only)
+```
+
+## Running an unattended session
+
+Open a session **in this directory**, set permissions to accept-edits, then:
+
+```
+/loop Follow AUTONOMOUS_RUN_PROMPT.md in this repo. Read LEDGER.md first and resume from the last incomplete item.
+```
+
+## Hardware
+
+Apple Silicon. **MPS, not CUDA.** MPS is non-deterministic — every comparison needs multiple
+seeds and a reported spread (`docs/LANDMINES.md` §7).
+
+## Source material
+
+The original project lives at `../<ARCHIVE>/` and is **read-only**.
