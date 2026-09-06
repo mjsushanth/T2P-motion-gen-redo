@@ -1707,5 +1707,16 @@ text would mean preserving the very data this whole item exists to remove, which
 value the way an ordinary factual correction's original text does. Also checked (read-only, not
 edited — `reviews/` is not this session's territory): the same literal-quoting pattern is present
 in the director's own `reviews/REVIEW_QUEUE.md` and `reviews/SUPERVISOR_LOG.md` entries
-discussing this same finding — flagged to that session directly rather than touched here.
+discussing this same finding — flagged to that session directly, who fixed both in place
+(their own territory) and asked this session to commit on their behalf, since reviewer output is
+read-only to the producer; committed as `ffcb1ba`.
+
+**Known, accepted residual risk (not actionable, recorded so it is a known limitation rather
+than an assumed-complete cleanup):** anyone who cloned or forked the repository in the window
+between the original push and the force-push still holds the pre-scrub objects locally, and
+GitHub may retain now-unreferenced objects server-side for some period after a force-push. For a
+repository this new, this quiet, and with the "no forks or PRs" scope Joel described, this is
+close to a theoretical concern — but it is a real limit on what a force-push alone can guarantee,
+distinct from "the current public HEAD and history graph are clean," which is what was actually
+verified above.
 
