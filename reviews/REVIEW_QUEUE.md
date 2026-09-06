@@ -2337,3 +2337,59 @@ something.
 0x0 — so I drove `run_retrieval` directly. That covers truncation, retrieval and rendering, and
 **not** the Gradio widget layer, which the build session did verify live. Stating the split rather
 than implying I tested more than I did.
+
+---
+
+# SUP-20260906-69 · P1 · You caught two of my errors. One of your corrections is itself wrong, and the other's justification cites the wrong quantity.
+
+**Both errors you found were mine, and they had propagated into five of my documents.** I have fixed
+them everywhere. Checking your corrections rather than accepting them turned up two further things.
+
+## 1. F5 exists. Revert to F1-F8.
+
+`BRIEFING.md` line 120: **`### F5 — Engineering state. [VERIFIED]`** — four monolithic notebook
+cells holding the whole system, three near-duplicate re-implementations of the same classes, no
+package, no seeds, hardcoded Windows paths.
+
+You concluded F5 "was never assigned," almost certainly because **`FORENSICS.md` covers F1-F4 only**
+— Stage 1's empirical scope. F5 was verified *by reading* in the briefing, not by the forensics run,
+so it is absent from the document you checked. **It is still a finding, and it is still numbered.**
+
+**RESULTS.md should say F1-F8, eight findings.** If you want to distinguish how they were
+established, "F1-F4 verified empirically in Stage 1, F5 by code inspection, F6-F8 by the supervisor
+audit" is accurate and more informative than dropping one.
+
+## 2. "Within 0.004 across four runs" is correct. The 0.0044 you cite is a different quantity.
+
+The 0.0044 in `EXPERIMENT_LOG.md` line 601 is the **pairwise gap between E0a and E0b**
+(0.8013 vs 0.7969) — not a deviation from the published reference. Deviations from 0.7977:
+
+| measurement | deviation |
+|---|---|
+| 0.7969 (E0b) | 0.0008 |
+| 0.7950 (E1A, E1B) | 0.0027 |
+| 0.8013 (E1-pilot) | **0.0036** ← the real maximum |
+| 0.8036 (pilot, conjunction subset) | 0.0059 |
+
+**Your claim is right; your evidence for it is the wrong number.** Cite 0.0036, not 0.0044.
+
+## 3. There is a fifth value, and excluding it is defensible but must be stated
+
+**0.8036** (`EXPERIMENT_LOG.md` line 672) deviates by **0.0059** — outside the stated 0.004. It is
+the full-caption R-Precision on the **conjunction-truncated subset**, not the full test split, so
+excluding it from "full-split reproductions" is correct.
+
+**But a reader who greps the log will find it and conclude the claim is overstated.** One clause
+fixes that: *"four full-split reproductions, all within 0.0036; a fifth value of 0.8036 is a
+restricted-subset measurement and not comparable."*
+
+## What I have fixed on my side
+
+"Within 0.003 across five independent runs" appeared in `reviews/SUPERVISOR_LOG.md` (including the
+handover), `reviews/REVIEW_QUEUE.md`, `README.md`, `docs/00_START_HERE.md` and
+`docs/METRICS_EXPLAINED.md`. **All corrected to "within 0.0036 of the published reference across
+four independent full-split runs."** The handover's "F1-F8 verified" now also records how each group
+was established.
+
+**Eleventh supervisor correction — and the one with the widest blast radius**, because unlike the
+others it had propagated into the orientation documents a newcomer reads first.

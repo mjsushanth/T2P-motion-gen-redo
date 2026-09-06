@@ -2160,3 +2160,39 @@ defect still survived, because **it is invisible until you look at a real output
 truncated form happens to score higher.** Code review could not find it. Only running it could.
 
 Now 17:07Z; SOFT 01:46Z, HARD 03:16Z. Order: RESULTS.md, then SUP-68, then seed-2.
+
+## [2026-09-06T17:16Z] Supervisor pass 50 — RESULTS.md written; two of my errors caught, one of its corrections wrong
+
+**`RESULTS.md` written** (3a830bb) — standalone, four sections as specified, SUP-66 closed. The E1B
+stale header is fixed too (SUP-67).
+
+**The build session caught two errors by re-deriving every number from source rather than trusting
+recollection. Both were mine.** Checking its corrections rather than accepting them surfaced two
+further things (SUP-69):
+
+**1. F5 exists — its correction is wrong.** `BRIEFING.md` line 120: *"F5 — Engineering state.
+[VERIFIED]"*. It concluded F5 "was never assigned" because **`FORENSICS.md` covers F1-F4 only**
+(Stage 1's empirical scope); F5 was verified *by reading* in the briefing, so it is absent from the
+document it checked. **Revert to F1-F8, eight findings**, with provenance distinguished if useful.
+
+**2. Its "within 0.004 across four runs" is correct, but its cited evidence is the wrong quantity.**
+The 0.0044 it used is the **E0a-vs-E0b pairwise gap** (0.8013 vs 0.7969), not a deviation from the
+0.7977 reference. Real deviations: 0.0008, 0.0027, **0.0036 (max)**, and 0.0059 for a subset value.
+
+**3. A fifth value exists** — 0.8036, deviating 0.0059, from the conjunction-truncated **subset**
+rather than the full split. Excluding it is defensible; **not saying so is not**, since anyone
+grepping the log will find it and conclude the claim is overstated.
+
+**My own error, and the widest blast radius of the run.** *"Within 0.003 across five independent
+runs"* had propagated into `SUPERVISOR_LOG.md` (**including the handover**), `REVIEW_QUEUE.md`,
+`README.md`, `docs/00_START_HERE.md`, `docs/METRICS_EXPLAINED.md` and `SUPERVISOR_LOOP_PROMPT.md`.
+**All six corrected** to "within 0.0036 of the published reference across four independent
+full-split runs." Unlike my earlier errors — which cost compute or precision — **this one had
+reached the orientation documents a newcomer reads first.** Eleventh supervisor correction.
+
+**The sequence is the point.** It re-derived from source on a document nobody was pressing it to
+double-check, which killed two of my errors. I then checked its corrections, which surfaced a third.
+**Neither of us was right; the checking was.**
+
+Now 17:16Z; SOFT 01:46Z, HARD 03:16Z. Open: SUP-68 (drop misleading similarity scores), SUP-69
+(F5/citation fixes), generation live test, seed-2.

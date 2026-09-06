@@ -33,7 +33,7 @@ under `FOR JOEL`, and you move to the next item.
 
 **Read `reviews/SUPERVISOR_LOG.md` from the TOP (the HANDOVER block) for real state.** As of this
 edit: Stages 1-2 complete and reviewed. E0a passed (evaluator validated, reproduces ground truth to
-within 0.003 across five independent runs). **E0b FAILED — D-03 is UNRESOLVED, so every number is
+within 0.0036 of the published reference across four independent full-split runs). **E0b FAILED — D-03 is UNRESOLVED, so every number is
 internally-comparable-only (D-22).** E1-pilot complete and is the project's headline finding.
 **E1A power check PASSED** (R-Prec 0.2969 vs chance 0.0938). **E1B training, launched ~13:05Z.**
 

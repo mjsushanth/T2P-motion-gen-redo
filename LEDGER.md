@@ -2162,3 +2162,43 @@ produces a misleading page.
 own stated priority order — this fix and Item 42 crossed in transit. Still open: the generation
 path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it completes.
 
+## [2026-09-06T17:55:00 UTC] Item 44 — Two real errors in RESULTS.md, both confirmed independently before fixing: F5 exists (F1-F8, not F1-F4/F6-F8), and the "0.0036" citation pointed at the wrong number
+**Status:** complete
+**Acceptance criteria:** the director checked Item 42's two "self-critique" corrections rather
+than accepting them, and found: (1) `BRIEFING.md` line 120 defines **F5 — Engineering state**
+(monolithic notebook cells, triplicated classes, no seeds, hardcoded Windows paths), verified by
+code inspection during the original Stage 1 briefing, absent from `FORENSICS.md` (Stage 1's own
+empirical-only scope) and from `LEDGER.md` Item 7's F6-F8 audit — the two places Item 42 actually
+checked, which is exactly why "F5 was never assigned" looked true and wasn't; (2) the 0.0044
+figure Item 42 cited as evidence for "within 0.004" is the pairwise E0a-vs-E0b gap
+(`docs/EXPERIMENT_LOG.md` line 601), not a deviation from the published reference — the real
+maximum deviation across four full-split runs is 0.0036, and a fifth on-record value (0.8036)
+deviates by 0.0059 but is a restricted-subset measurement, not a full-split one, and needs to be
+named as excluded rather than silently absent.
+**Files changed:** `RESULTS.md` (§1.1 rewritten to enumerate all eight findings explicitly —
+F1-F4 empirical/Stage 1, F5 by code inspection, F6-F8 by the later audit — adding F5 as its own
+bullet rather than omitting it; §1.2's evaluator-reproduction claim rewritten to cite the correct
+supporting numbers, 0.0036 max deviation across four *full-split* runs specifically, with the
+0.8036 restricted-subset value named and its exclusion explained rather than left for a reader to
+find unexplained).
+**Environment changes:** none.
+**Verification performed, independently, before accepting either correction:** (1) read
+`BRIEFING.md` line 120 directly and confirmed F5's exact text matches the director's quote
+verbatim; (2) recomputed all five deviations from the reference (0.7977) by hand — 0.7969→0.0008,
+0.7950→0.0027 (twice), 0.8013→0.0036, 0.8036→0.0059 — confirming the director's table exactly and
+confirming the 0.0044 figure really is the E0a/E0b pairwise gap, not a reference-deviation, by
+reading `docs/EXPERIMENT_LOG.md` line 601's own sentence directly rather than trusting the
+director's characterization of it.
+**Self-critique:** two real errors in one document, both from checking too narrow a set of
+sources (F5: checked `FORENSICS.md` and the F6-F8 audit, not `BRIEFING.md` itself, which is where
+the original Stage 1 task specification actually lived; the citation: reused a nearby number that
+looked like it supported the claim without checking what that number actually measured). Both are
+instances of the same underlying failure — trusting a plausible-looking number or an absence
+without tracing it to its exact source — that this project's own `LANDMINES.md` has been
+cataloguing all day from other angles.
+**Verification performed:** see above; this item's whole content is verification of someone
+else's claims about my own prior work, done the same way this project verifies everything else.
+**Next:** report to the director. Still open: SUP-68 already fixed (Item 43, crossed in transit
+with this correction), the generation path's live browser test (CPU-deferred), E1A seed-2's
+decomposition whenever it completes.
+

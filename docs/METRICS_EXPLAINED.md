@@ -378,8 +378,8 @@ summaries produced by a model trained on this dataset. So:
 - Comparisons are only valid **between systems evaluated with the same encoder weights** — which is
   why the field standardised on one set, and why we vendored exactly that set.
 
-And specific to this project: **our harness reproduces ground truth to within 0.003 across five
-independent runs, but did not reproduce a published *generated-model* number at affordable sample
+And specific to this project: **our harness reproduces ground truth to within 0.0036 of the published reference across
+four independent full-split runs, but did not reproduce a published *generated-model* number at affordable sample
 sizes.** So every number here carries the label **internally-comparable-only** — trustworthy
 against our own other numbers, not against the published leaderboard.
 

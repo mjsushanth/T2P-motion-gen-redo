@@ -15,46 +15,62 @@ research project and a real research question in a few days of work?
 
 ### 1.1 The original project's core numerical pipeline was broken from its first step
 
-The predecessor decoded 3D pose vectors incorrectly — pulling the wrong 66 numbers out of every
-263-number motion frame. This is not a subtle bug: it is confirmed both by reading the official
-dataset's own decode logic and by directly measuring that skeletons built from the wrong slice
-don't have consistent bone lengths (real skeletons do, by construction, once decoded correctly).
-That single defect explains essentially every downstream anomaly the original project's own notes
-described — invented "coordinate system" quirks, joints sinking through the floor, odd hip
-offsets — none of which needed a new explanation once the decode was fixed.
+**Eight findings, verified across three phases of scrutiny: F1-F4 empirically, in this project's
+own Stage 1 forensics run; F5 by direct code inspection; F6-F8 by a later, independent audit
+that re-derived the algebra and re-read the source rather than taking the original report's own
+framing at face value.**
 
-Alongside the decode bug, three more independently verified defects compounded it:
-
-- **The unsupervised clustering used to balance training data was fit on different, mismatched
-  data from what the model actually trained on** — a wiring bug independent of the decode bug.
-- **The task design itself** — predicting a single static pose from only a caption's first
-  clause, using literally the first frame of a clip as the "answer" — mostly taught the model to
-  output a generic standing pose regardless of what the sentence described, because frame 0 is
-  usually close to a generic standing pose no matter the caption.
-- **Classifier-free guidance (a sampling-time technique) was implemented inside the training
+- **F1 — the decode bug, the root cause underneath most of the rest.** The predecessor decoded
+  3D pose vectors incorrectly — pulling the wrong 66 numbers out of every 263-number motion
+  frame. Confirmed both by reading the official dataset's own decode logic and by directly
+  measuring that skeletons built from the wrong slice don't have consistent bone lengths (real
+  skeletons do, by construction, once decoded correctly). This single defect explains essentially
+  every downstream anomaly the original project's own notes described — invented "coordinate
+  system" quirks, joints sinking through the floor, odd hip offsets — none of which needed a new
+  explanation once the decode was fixed.
+- **F2 — a wiring bug independent of F1.** The unsupervised clustering used to balance training
+  data was fit on different, mismatched data from what the model actually trained on.
+- **F3 — the task design itself capped what was learnable.** Predicting a single static pose from
+  only a caption's first clause, using literally the first frame of a clip as the "answer,"
+  mostly taught the model to output a generic standing pose regardless of what the sentence
+  described, because frame 0 is usually close to a generic standing pose no matter the caption.
+- **F4 — no way to know any of the above, because nothing was measured.** No validation loop, no
+  held-out test split, no fixed random seed, no experiment tracking anywhere in either notebook.
+- **F5 — the engineering state made the other four hard to catch.** The entire system lived in
+  four monolithic notebook cells; the same core classes were re-implemented three times, near-
+  duplicated, in one file; no package, no config objects, no tests, no CLI, no seeds, hardcoded
+  Windows paths. A codebase shaped like this resists the kind of inspection that would have
+  caught F1-F4 sooner.
+- **F6 — classifier-free guidance (a sampling-time technique) was implemented inside the training
   loss itself**, not at inference time. Worked through algebraically: if the model's conditional
   and unconditional predictions become identical, the training loss is *exactly zero regardless
-  of the guidance strength* — the objective is fully satisfiable by a model that ignores its
-  text conditioning entirely. Two further, compounding bugs (batch statistics used to normalize
-  the training target frame-by-frame instead of using fixed dataset statistics, and a single
-  timestep applied to an entire batch when timesteps were meant to vary per sample) meant even
-  the auxiliary loss terms the original relied on were computed on corrupted intermediate values.
+  of the guidance strength* — the objective is fully satisfiable by a model that ignores its text
+  conditioning entirely.
+- **F7 and F8 — two further bugs that corrupted the auxiliary loss terms F6's objective still
+  relied on:** batch statistics were used to normalize the training target frame-by-frame instead
+  of fixed dataset statistics, and a single timestep was applied to an entire batch when
+  timesteps were meant to vary per sample.
 
 Because there was never a validation loop, a held-out test split, a fixed random seed, or any
-experiment tracking, the original project's headline number — a "99.995% loss reduction" across
-three training phases — was never a measurement of model quality. It is a training-loss curve
-across three different, non-comparable loss functions. **Whether the model actually generated
-good motion was never measured at all**, on top of training on a decode error and an objective
-with a mathematically guaranteed trivial solution.
+experiment tracking (F4), the original project's headline number — a "99.995% loss reduction"
+across three training phases — was never a measurement of model quality. It is a training-loss
+curve across three different, non-comparable loss functions. **Whether the model actually
+generated good motion was never measured at all**, on top of training on a decode error and an
+objective with a mathematically guaranteed trivial solution.
 
 ### 1.2 A rebuilt evaluation harness reproduces a published reference number
 
 The vendored, MIT-licensed evaluator (Guo et al.'s own text-motion retrieval and FID pipeline,
 the same instrument used across this field's published leaderboard) was validated against its
-own published ground-truth reference (R-Precision-top3 = 0.797 ± 0.002) across four independent
-runs of this project, on real motions with no model involved: 0.7969, 0.8013, 0.7950, 0.7950 —
-every value within 0.0036 of the published figure. **This harness is trustworthy**, which is the
-one property every downstream comparison in this project actually depends on.
+own published ground-truth reference (R-Precision-top3 = 0.797 ± 0.002, and 0.7977 in the
+authors' own bundled evaluation log) across four independent **full-split** runs of this project,
+on real motions with no model involved: 0.7969, 0.8013, 0.7950, 0.7950 — every value within
+**0.0036** of 0.7977 (the largest single deviation, from the 0.8013 run). A fifth value, 0.8036,
+exists in this project's own records but is a measurement on a *restricted subset* (only the
+captions a later truncation-rule check happened to alter), not a full-split reproduction, and is
+excluded from this claim for exactly that reason — stated here rather than left for a reader to
+find it unexplained and doubt the whole claim. **This harness is trustworthy**, which is the one
+property every downstream comparison in this project actually depends on.
 
 ### 1.3 Caption truncation destroys measurable text-motion alignment — a real, resolved finding
 
