@@ -197,7 +197,7 @@ deliberately, and it is the clearest available demonstration of why this project
 around measurement.
 
 **What is NOT established.** The harness gate (D-03) is **UNRESOLVED**: the evaluator is validated
-against ground truth — reproducing it to within 0.003 on five independent runs — but reproducing a
+against ground truth — reproducing it to within 0.0036 of the published reference across four independent full-split runs — but reproducing a
 published *generated-model* number did not succeed at affordable sample sizes. **So every number
 here is internally-comparable-only** (D-22). No claim of comparability to published results is
 supported. Nothing has been established about generation quality under truncated conditioning; that

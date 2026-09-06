@@ -151,11 +151,15 @@ def run_retrieval(caption: str):
         f"{cut_display}\n\n"
         f"{fallback_note}\n\n{outcome_note}"
     )
+    # Similarity scores deliberately omitted (review SUP-20260906-68): TF-IDF cosine similarity
+    # is not comparable between the full and truncated queries -- a shorter query mechanically
+    # scores higher (fewer terms left unmatched in the query vector), independent of whether it
+    # found the right motion. Displaying both numbers side by side invited exactly the wrong
+    # reading (truncated query "matched better"), for a number that added nothing a non-
+    # specialist needed -- which motion was retrieved is already legible from the captions/video.
     match_summary = (
-        f"**Full caption retrieved** (similarity {full_sim:.3f}): \"{full_caption_match}\" "
-        f"(motion id: `{full_id}`)\n\n"
-        f"**Truncated caption retrieved** (similarity {trunc_sim:.3f}): \"{trunc_caption_match}\" "
-        f"(motion id: `{trunc_id}`)"
+        f"**Full caption retrieved:** \"{full_caption_match}\" (motion id: `{full_id}`)\n\n"
+        f"**Truncated caption retrieved:** \"{trunc_caption_match}\" (motion id: `{trunc_id}`)"
     )
     return full_video, trunc_video, truncation_summary, match_summary, truncated_caption
 

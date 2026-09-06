@@ -38,7 +38,8 @@ of which part is removed — ~93% volume, ~7% position. And the first model trai
 healthy loss curve on a bad model.**
 
 **Every number here is internally-comparable-only.** The harness reproduces ground truth to within
-0.003 across five independent runs, but reproducing a published generated-model figure did not
+0.0036 of the published reference across four independent full-split runs, but reproducing a
+published generated-model figure did not
 succeed at affordable sample sizes, so comparability to published results is **not** claimed.
 
 **Nothing has been trained or measured here yet.** There is no result to report, positive or

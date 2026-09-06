@@ -2247,8 +2247,8 @@ This is the deliverable the Stage 3 spec named and D-03's fallback requires ("st
   decomposed as ~93% volume, ~7% position, the position component at 5.9 sigma. **The original's
   "first-action segmentation" was neither clever nor uniquely harmful — one of many ways to discard
   35% of the words.**
-- **A working pipeline** — evaluator reproducing ground truth to within 0.003 across five
-  independent runs; a model trained from scratch passing its pre-registered gate at 3.2x chance.
+- **A working pipeline** — evaluator reproducing ground truth to within 0.0036 of the published
+  reference across four independent full-split runs; a model trained from scratch passing its pre-registered gate at 3.2x chance.
 - **The evaluator-resolution finding** — the field's shared instrument resolves 1-of-32 and not
   1-of-8,198; R-Precision is meaningful only within its batch protocol.
 

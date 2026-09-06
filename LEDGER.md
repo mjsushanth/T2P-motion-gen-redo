@@ -2132,3 +2132,33 @@ after, which is the entire point of checking before writing rather than after.
 decomposition and any future rungs should update it, not just the ledger — but it is complete and
 accurate as of this item for everything currently established.
 
+## [2026-09-06T17:45:00 UTC] Item 43 — Removed misleading TF-IDF similarity scores from the retrieval panel (SUP-20260906-68)
+**Status:** complete
+**Acceptance criteria:** the director independently drove `run_retrieval()` with their own
+uncurated caption ("a person raises both arms above their head and then bends down to touch
+their toes") and found the truncated arm's displayed similarity (0.827) HIGHER than the full
+arm's (0.613) — not a bug in the retrieval itself, but a real display problem: TF-IDF cosine
+similarity is not comparable across queries of different length (a shorter query mechanically
+scores higher, having fewer terms left unmatched in its own vector, independent of whether it
+found the right motion). Displaying both numbers side by side invited the exact wrong reading —
+"truncation improved the match" — on the page whose entire argument is the opposite.
+**Files changed:** `demo/app.py` (`run_retrieval()`'s `match_summary` no longer prints either
+similarity score — the director's own preferred fix among three offered, on the reasoning that
+which motion got retrieved is already fully legible from the printed captions and rendered
+video, and the score added nothing a non-specialist needed while actively costing something).
+**Environment changes:** none.
+**Verification performed:** re-ran the director's own exact reported caption through
+`run_retrieval()` directly and confirmed the match panel now shows only the two retrieved
+captions and motion ids, no numbers to misread.
+**Self-critique:** this is the second real bug in this demo caught only by someone actually
+running it with a fresh, uncurated caption rather than by reading the code (the first was the
+first-two-generated-plot_3d_motion-doesn't-write-its-own-file bug in Item 37; this one required
+noticing a *specific number* looked wrong on a *specific real query*, which static review of the
+retrieval logic would not surface, since the underlying TF-IDF computation is correct — only its
+presentation was misleading). Worth naming as its own category: some defects are visible only by
+generating enough real, varied inputs to hit the case where an individually-correct number
+produces a misleading page.
+**Next:** RESULTS.md (Item 42) already covers the highest-value remaining work per the director's
+own stated priority order — this fix and Item 42 crossed in transit. Still open: the generation
+path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it completes.
+

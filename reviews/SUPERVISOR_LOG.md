@@ -14,7 +14,7 @@ annotate, never silently delete another agent's entry.** `reviews/` and `guidanc
 
 | item | status |
 |---|---|
-| Stage 1 forensics | **DONE.** F1-F8 verified. |
+| Stage 1 forensics | **DONE.** F1-F5 verified by reading/measurement; F6-F8 added by the supervisor audit. Eight findings, F1-F8. |
 | Stage 2 landscape / spec / positioning | **DONE**, reviewed, gate released. |
 | D-03 harness gate | **UNRESOLVED.** E0a passed (evaluator sane); E0b did not reproduce MDM's FID. **Every downstream number is internally-comparable-only** (D-22). |
 | E1-pilot | **DONE — the session's substantive output.** See below. |
