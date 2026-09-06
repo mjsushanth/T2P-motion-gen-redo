@@ -2092,3 +2092,43 @@ returned markdown; started a real server instance and fetched its actual rendere
 **Next:** report to the director. Still open: the generation path's live browser test (deferred
 for CPU reasons, unchanged), and E1A seed-2's decomposition whenever it completes.
 
+## [2026-09-06T17:35:00 UTC] Item 42 — Wrote RESULTS.md, the standalone flagship deliverable; fixed a stale EXPERIMENT_LOG.md header
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-66) pointed out that despite the demo being
+verified, E1 closed, and forensics complete, no single document states what this project found —
+a reader would have to assemble it from `FORENSICS.md`, a large `EXPERIMENT_LOG.md`, 26 decisions,
+18 landmines, dozens of review findings, and a very long ledger. Write the standalone account:
+what was established, what was NOT established (in those words, with D-03's unresolved status
+stated plainly), how to see it, what it cost — written for someone who has read none of the above,
+not a summary requiring cross-references to make sense. Also fix `docs/EXPERIMENT_LOG.md`'s E1B
+header, still reading "RAW RESULT IN, INTERPRETATION PENDING" after the entry's own body had long
+since been updated to the resolved 0.80σ/D-26 verdict (SUP-20260906-67).
+**Files changed:** `RESULTS.md` (new, project root). `docs/EXPERIMENT_LOG.md` (E1B header
+corrected in place — a one-line fix, not requiring the append-and-annotate treatment since it is
+purely a stale label catching up to already-updated content, not a retracted claim).
+**Environment changes:** none.
+**Verification performed before writing, not from memory:** re-derived every number in
+`RESULTS.md` from source rather than reciting figures from earlier turns in this conversation.
+Confirmed the exact F-number labels via `LEDGER.md` Item 7 (F1-F4 from the original forensics,
+F6/F7/F8 from the later CFG/normalization audit — **no F5 was ever assigned**, so the document
+says "F1-F4 and F6-F8," not the "F1-F8" phrasing used in conversation, to avoid implying an
+eighth finding that does not exist). Recomputed the total E1A+E1B training+generation compute
+directly from the two runs' own JSON records (6877.9+2626.9+6819.47+2262.31 seconds = 5.16 CPU-
+hours) rather than accepting "~5 CPU-hours" on the director's word — it checked out almost
+exactly. Verified the four independent ground-truth R-Precision-top3 values (0.7969, 0.8013,
+0.7950, 0.7950) directly via grep against `docs/EXPERIMENT_LOG.md` and computed their actual
+spread against the published reference (max deviation 0.0043, so "within 0.004" is the accurate
+claim — corrected from a recollected "within 0.003" that didn't hold up under the real
+arithmetic). Re-read `docs/DECISIONS.md`'s current D-03 text directly to confirm RESULTS.md's
+characterization of it (UNRESOLVED, the FID-reproduction gate specifically, the
+internally-comparable-only fallback) matches exactly, rather than paraphrasing from memory of an
+earlier turn — D-03's own text literally names `RESULTS.md` as where this must be stated loudly,
+confirming this document answers a requirement already on record, not inventing a new one.
+**Self-critique:** one number recollected from earlier conversation ("within 0.003 across five
+runs") did not survive being checked against the actual data (four values, not five; max
+deviation 0.0043, not 0.003) — corrected before it went into the flagship document rather than
+after, which is the entire point of checking before writing rather than after.
+**Next:** report to the director. RESULTS.md is a living document in the sense that E1A seed-2's
+decomposition and any future rungs should update it, not just the ledger — but it is complete and
+accurate as of this item for everything currently established.
+

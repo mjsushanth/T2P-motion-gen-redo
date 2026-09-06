@@ -2279,3 +2279,61 @@ know what FID is; `docs/METRICS_EXPLAINED.md` exists for the ones who want to.
 Line 865 still reads **"RAW RESULT IN, INTERPRETATION PENDING"**. The interpretation *is* in — 0.80
 sigma, D-26, resolved. You updated the body; the header did not follow. **A reader scanning headers
 gets the wrong status**, and headers are what people scan.
+
+---
+
+# SUP-20260906-68 · P1 · The displayed similarity scores mislead in the direction that undercuts the finding
+
+**Found by running the demo myself** — started an instance, called the real retrieval path with an
+uncurated caption I chose on the spot, and read the actual output panels. **It works**: truncation
+fired on the conjunction, kept/discarded rendered with strikethrough, two different motions
+retrieved, both videos written. Independent confirmation of the build session's own live test.
+
+**But look at what the match panel printed:**
+
+```
+Full caption retrieved      (similarity 0.613): "a person raises their hands above
+                                                 their head and bounces on their toes."
+Truncated caption retrieved (similarity 0.827): "a person squatting raises both their
+                                                 arms above their head."
+```
+
+**The truncated arm shows a HIGHER similarity than the full one — 0.827 against 0.613.**
+
+A viewer reads that as *truncation made the match better.* The page's entire argument is that
+truncation makes things worse.
+
+**It is not a bug, and that is what makes it dangerous.** TF-IDF cosine mechanically favours shorter
+queries: fewer terms means less of the query vector left unmatched, so a truncated caption tends to
+score higher *regardless of whether it found the right motion.* **Similarity is not comparable
+between queries of different length**, and the interface presents two such numbers side by side as
+though it is.
+
+This is exactly the class of error this project exists to catch — a number that is individually
+correct, displayed in a way that supports the opposite of the truth, with no error raised.
+
+## Fix — any of these, cheapest first
+
+1. **Drop the numbers.** A non-specialist gains nothing from a cosine score, and the panel's real
+   content is *which caption came back*, which is already there and legible.
+2. **Keep them, labelled non-comparable:** "similarity scores are not comparable between panes —
+   shorter queries score higher mechanically."
+3. **Replace with something that is comparable** — e.g. whether the retrieved motion's caption
+   contains the discarded content. Nice-to-have, not required.
+
+**I would take option 1.** The demo's argument is carried entirely by *which motion was retrieved*
+and the strikethrough showing what was thrown away. The numbers add nothing and actively cost
+something.
+
+## Also confirmed working, from the same run
+
+- Kept/discarded display with strikethrough, on a conjunction-branch caption.
+- Both retrieval videos rendered to disk (10,430 and 6,902 bytes).
+- The "different motion retrieved" outcome note fired correctly.
+- Page text carries every caveat asked for across Reviews 10-13, including the embedding-collapse
+  explanation and the SUP-64 replication note.
+
+**Note on my own verification:** I could not click through the live browser — the pane rendered at
+0x0 — so I drove `run_retrieval` directly. That covers truncation, retrieval and rendering, and
+**not** the Gradio widget layer, which the build session did verify live. Stating the split rather
+than implying I tested more than I did.

@@ -862,7 +862,7 @@ all of the cost came from the discarding itself, not from where the cut was made
 
 ---
 
-## E1B — truncated caption, trained and evaluated end-to-end, RAW RESULT IN, INTERPRETATION PENDING (director go-ahead after E1A's gate passed)
+## E1B — truncated caption, trained and evaluated end-to-end, RESOLVED as an affordability finding (0.80σ, D-26) (director go-ahead after E1A's gate passed)
 
 **Ran by:** `../scripts/e1_train_arm.py --arm b`   **Date:** 2026-09-06   **Seeds:** 10 (single seed — seed spread not yet established, see below)
 **Data:** HumanML3D train-split materialized subset (4,435 sequences) for training, test-split

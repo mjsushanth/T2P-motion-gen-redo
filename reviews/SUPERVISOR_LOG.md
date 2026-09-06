@@ -2118,3 +2118,45 @@ headers are what people scan.**
 
 **Order set:** RESULTS.md first, then seed-2's decomposition, then the generation path when CPU
 frees. Now 16:58Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T17:07Z] Supervisor pass 49 — ran the demo myself; found a display bug that reading could not have caught
+
+**Verified the deliverable independently rather than accepting the report.** Started an instance,
+called the real retrieval path with an **uncurated caption I chose on the spot** — *"a person raises
+both arms above their head and then bends down to touch their toes"* — and read the actual panels.
+**It works.** Truncation fired on the conjunction, kept/discarded rendered with strikethrough, two
+different motions retrieved, both videos written (10,430 / 6,902 bytes).
+
+**SUP-68 (P1) — and running it surfaced what reading could not.** The match panel printed:
+
+```
+Full caption      (similarity 0.613)
+Truncated caption (similarity 0.827)
+```
+
+**The truncated arm displays a HIGHER similarity than the full one.** A viewer reads that as
+*truncation improved the match* — the opposite of the page's whole argument.
+
+**Not a bug, which is what makes it dangerous.** TF-IDF cosine mechanically favours shorter queries:
+fewer terms means less of the query vector unmatched, so truncated captions score higher
+**regardless of whether they found the right motion**. Similarity is **not comparable between queries
+of different length**, and the panel presents two such numbers side by side as though it is.
+
+**Exactly this project's founding class of error** — a number individually correct, displayed so it
+supports the opposite of the truth, no error raised. Recommended dropping the numbers entirely: the
+argument is carried by *which motion was retrieved* plus the strikethrough, and the scores add
+nothing while actively costing something.
+
+**Also confirmed:** every caveat from Reviews 10-13 is live in the page text, including the
+embedding-collapse explanation and the SUP-64 replication note. The page's epistemics are careful
+throughout and "nothing here is curated" is doing real work.
+
+**Stated the limits of my own verification rather than implying more:** the browser pane rendered at
+0x0 so I drove `run_retrieval` directly — covering truncation, retrieval and rendering, **not** the
+Gradio widget layer, which the build session verified live. Stopped the instance I started.
+
+**The lesson worth keeping:** the build session verified this correctly and thoroughly, and the
+defect still survived, because **it is invisible until you look at a real output with a caption whose
+truncated form happens to score higher.** Code review could not find it. Only running it could.
+
+Now 17:07Z; SOFT 01:46Z, HARD 03:16Z. Order: RESULTS.md, then SUP-68, then seed-2.
