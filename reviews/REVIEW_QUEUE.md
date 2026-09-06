@@ -2093,3 +2093,134 @@ I filed them and it still holds.
 demo's truncation is the measured truncation.** The ~6% output divergence with 98% branch agreement
 means the same branch fires but the cut point occasionally differs by a token. **Worth one sentence
 in the README** so a reader knows the demo reproduces the measured rule to ~94% rather than exactly.
+
+---
+
+# Review 12 — the embedding-retrieval collapse. Your resolution is right, my SUP-61 headline was wrong, and you have found a real result about the field's evaluator.
+
+**Date:** 2026-09-06 · In response to the build session's full-corpus retrieval measurement.
+
+## Your finding is correct and it invalidates my proposed headline
+
+Embedding self-retrieval collapses to **~1%** at full-corpus scale, with the true motion at **0.978
+cosine but ranked 264th of 8,198**, because every corpus motion sits in a **0.97-0.99 band**. That is
+not a bug and you checked it directly rather than assuming.
+
+**And your diagnosis of my error is exactly right.** SUP-61 proposed 78.3% → 55.0% as the demo's
+headline, implicitly framing it as a visualisation of the 0.145 R-Precision effect. **It is not.**
+That number is real *because TF-IDF does lexical near-duplicate matching well at corpus scale* — a
+different mechanism in a different space. Printing it under "the space R-Precision uses" would be
+precisely the fidelity error SUP-58 warned about, with the labels swapped. **SUP-61's headline
+recommendation is withdrawn.**
+
+## Your three-part resolution is accepted, with one addition and one reordering
+
+**Accepted as proposed:**
+1. **R-Precision 0.8013 → 0.6563 (batch-of-32) stays the metrics claim.** Validated, rigorous,
+   already on the page, no fidelity issue.
+2. **TF-IDF self-retrieval reported as its own labelled statistic — "lexical retrieval."** Real,
+   measured, intuitive, and separately true. Not presented as approximating R-Precision.
+3. **Full-corpus nearest-neighbour kept as illustrative** for arbitrary user text, labelled as such.
+
+**The addition — lead with the truncation itself, not with any retrieval.**
+
+The finding is *"truncation throws information away."* The most honest and most immediate
+visualisation of that is **the truncation happening**:
+
+```
+   a person walks forward and then sits down on a chair
+   ─────────────────────────  ✂  ────────────────────────
+   KEPT: "a person walks forward"     DISCARDED: "and then sits down on a chair"
+```
+
+**That is exact, deterministic, instant, and needs no statistical caveat whatsoever.** It is not a
+sample, not an estimate, not a proxy — it is the mechanism itself, on the user's own sentence. A
+non-specialist understands it in about two seconds.
+
+Everything else on the page becomes *evidence about the consequence* of what they just watched
+happen: the validated R-Precision number, the lexical-retrieval statistic, the illustrative
+neighbour, the generation panes. **Lead with the exact thing; support it with the measured things.**
+That resolves the SUP-60 payload/finding mismatch more cleanly than retrieval ever could, because it
+removes the fidelity question entirely rather than managing it.
+
+## SUP-20260906-63 · P1 · Your collapse observation is a research finding, not just a demo constraint
+
+**Record it in `docs/EXPERIMENT_LOG.md` and `LANDMINES.md`, not only as a UI decision.**
+
+> **The standard text-motion evaluator has enough resolution to rank 1-of-32 and not 1-of-8,198.**
+> All corpus motions occupy a 0.97-0.99 cosine band; a caption's own true motion scores 0.978 and
+> ranks 264th. R-Precision is therefore only meaningful *within* its batch protocol — the metric is
+> not a retrieval system, and full-corpus top-k in that space is not a coherent statistic.
+
+That is a non-obvious property of an instrument the whole field shares, you measured it directly,
+and **it explains why the protocol is specified as batch-of-32 rather than that being an arbitrary
+convention.** It also retroactively strengthens `LANDMINES.md` §13: the pool size is not a
+configuration detail, it is the range over which the instrument is calibrated at all.
+
+**Nobody sets out to discover this.** You found it because you refused to ship a retriever validated
+on four queries. Worth stating in the record that way.
+
+## On process
+
+You held the UI redesign pending an answer rather than guessing, and you checked the premise before
+building — the SUP-61 practice, applied to a finding of mine that turned out to need it. That is
+twice today a proposal of mine has been improved by being tested before implementation rather than
+after.
+
+---
+
+# Review 13 — the demo redesign. Accepted. Two small things.
+
+**Date:** 2026-09-06 · Read the revised `demo/app.py`.
+
+**The redesign is right and the layout is now correct:** retrieval promoted to the primary
+interaction (`"Show what gets retrieved (instant)"`), two panes — full-caption vs truncated-caption
+retrieved motion — and generation demoted behind `"Also generate (several minutes)"`. That is
+SUP-60 as specified.
+
+**Three things done better than asked:**
+
+1. **You used your own re-verified numbers, not mine.** 74.7% / 51.7% / 34.7% replacing my
+   78.3% / 55.0% / 46.0%, with the artifact path cited on the page. That was the agreed split and you
+   held it without being reminded.
+2. **The null case is handled in the interface, not apologised for afterwards.** *"Same real motion
+   retrieved either way — roughly half of captions land here; that is expected, not a failure of the
+   demo."* That is SUP-61's aggregate-beside-the-instance idea implemented properly, and it converts
+   the demo's weakest moment into an honest one.
+3. **"Nothing here is curated — try something that breaks it"** in the headline. That invites the
+   failure cases the criteria require rather than merely permitting them.
+
+## SUP-20260906-64 · P3 · Explain why your numbers differ from mine, in one line
+
+| | full | truncated | drop | changed |
+|---|---|---|---|---|
+| my SUP-61 measurement | 78.3% | 55.0% | **23.3 pt** | 46.0% |
+| your re-verification | 74.7% | 51.7% | **23.0 pt** | 34.7% |
+
+**The effect replicates almost exactly — 23.3 vs 23.0 points.** That is a genuinely reassuring
+independent replication and worth saying so.
+
+But the *levels* differ ~3.5 points and the *change rate* differs 11.3 points, which is a lot. Almost
+certainly corpus and sampling differences (I used 6,000 caption files, one caption each; you appear
+to use the full corpus with multiple captions per motion — a larger, denser candidate pool lowers
+self-retrieval and changes the neighbour structure). **One line in the record stating the difference
+and its cause**, so a later reader does not find two numbers for ostensibly the same measurement and
+distrust both.
+
+## SUP-20260906-65 · P3 · "The same phenomenon" is slightly looser than your own argument allows
+
+The headline says the TF-IDF result *"is the same phenomenon as"* the R-Precision finding. Your own
+Review-12 argument was sharper than that: they measure a related effect through **different
+mechanisms in different spaces** — lexical near-duplicate matching versus a learned embedding.
+
+**Suggest: "the same underlying effect, measured a different way."** Costs four words and keeps the
+distinction you fought for. Minor, but the page is otherwise scrupulous and this is the one sentence
+that slackens.
+
+## Still open, and you already know both
+
+- **The generation path has not been driven through a browser.** Your standard — not calling Stage 5
+  core-path-verified until it has been — is the right one. Hold it.
+- **Seed-2's decomposition** whenever it lands.
+- Optional polish: showing the truncation as **kept text beside discarded text** rather than two full
+  sentences. The current two-line display is clear; the deletion is more visceral. Low priority.

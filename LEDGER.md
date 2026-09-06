@@ -1997,3 +1997,59 @@ embedding retrieval for the interactive per-query experience only, framed as ill
 validated statistic) and am holding the UI redesign until hearing back, since the answer changes
 which number becomes the demo's headline.
 
+## [2026-09-06T17:10:00 UTC] Item 40 — Demo redesigned per SUP-60/61/62: retrieval promoted to an instant headline, generation demoted, TF-IDF chosen over the embedding retriever on measured grounds. Live-browser-verified.
+**Status:** complete for the retrieval headline path (verified live); generation path still
+deferred pending CPU availability, as before
+**Acceptance criteria:** the director's message crossed with Item 39's independent finding
+(embedding retriever collapses at full-corpus scale) and confirmed the same conclusion via their
+own SUP-62 reasoning before either party saw the other's number — reconciled by independently
+re-measuring TF-IDF myself (not just quoting the director's number) on the identical 300-caption
+sample used for the embedding retriever, then rebuilding the interface per SUP-60's proposed
+layout: retrieval promoted to the headline (instant, two panes of real retrieved motion, full vs.
+truncated caption), generation demoted below the fold behind its own button, explicitly labelled
+illustrative/not-evidential.
+**Files changed:** `demo/measure_self_retrieval.py` (extended to run both retrievers — TF-IDF and
+embedding — on the identical sample/seed, rather than two separate scripts that could drift).
+`demo/app.py` (full rewrite — `run_retrieval()` is now the primary, instant interaction using
+`NearestNeighborRetriever` [TF-IDF]; `run_generation()` is a separate, secondary handler behind
+its own button; headline markdown states the real measured numbers directly, no metric jargon).
+`demo/README.md` ("What it shows" rewritten to describe the new design and why the old one was
+replaced; "Known limitations" section rewritten to state the TF-IDF-over-embedding decision and
+its reasoning plainly, plus the one-sentence 93.8%-vs-98.1% clarification the director asked for
+— "same branch fires almost every time, exact cut point occasionally lands a token or two off";
+Files list updated).
+**Environment changes:** none.
+**Result — independently re-verified TF-IDF numbers, on the same sample as the embedding
+retriever's ~1%:** 74.7% full-caption self-retrieval, 51.7% truncated, 34.7% of captions'
+retrieval changed by truncation — closely matching the director's own independently-run
+78.3%/55.0%/46.0% (different random sample, same measurement design; the two runs' agreement
+across independent samples is itself a small additional confirmation the effect is real and not
+a sampling artifact). These are the numbers now on the demo's headline, not the director's
+unquoted figures — per the director's own instruction ("its own numbers go on the page").
+**Result — live browser verification, not just curl or a direct function call:** launched the
+app, navigated to it in the actual Browser pane, typed a real caption
+("a person walks forward and then sits down on a chair") into the actual textbox, clicked the
+actual "Show what gets retrieved (instant)" button, and read the resulting page. It worked
+exactly as designed: truncation correctly cut the caption to "a person walks forward" (losing the
+sitting action), the full caption correctly retrieved a real motion captioned "a person sits down
+on a chair" (similarity 0.898) while the truncated caption retrieved "a person walks forward"
+(similarity 1.000) — a genuinely clean, real illustration of the measured effect, with no example
+curation involved (this was the first caption tried). Both video panes rendered as real, playable
+clips (confirmed durations 0:04/0:05 visible in the page text, not just "no error"). This is the
+first time this session's UI work has been driven through an actual browser interaction rather
+than verified only by direct function calls or HTTP status codes.
+**Self-critique:** the earlier design (Item 37) would have shipped a page whose most prominent
+visual element actively invited the exact overclaim its own prose forbade — a real design flaw
+that neither this session nor the director caught until Review 11 looked at the page holistically
+rather than checking each component in isolation. Worth generalizing: verifying that individual
+pieces work correctly is not the same as checking that the finished page's overall *emphasis*
+matches what is actually established — a page can be built entirely from true, individually-
+verified statements and still mislead through what it makes prominent.
+**Verification performed:** the live browser test above; independently recomputed the TF-IDF
+self-retrieval numbers rather than accepting the director's own measurement at face value, per
+this project's established practice.
+**Next:** the generation path (secondary, behind "Also generate") still has not been driven
+through the browser live — deferred, as before, to avoid CPU contention with the still-running
+E1A seed-2 job. `demo/retrieval_embedding.py` and its cache-building step remain in the codebase,
+unused by `app.py`, available for a future rung at a smaller corpus scale rather than deleted.
+

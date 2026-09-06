@@ -1,14 +1,14 @@
-"""SUP-20260906-60/61: measures the real self-retrieval effect for the demo's new headline --
+"""SUP-20260906-60/61/62: measures the real self-retrieval effect for the demo's new headline --
 "a full caption finds its own motion N% of the time; truncated, it finds it M% of the time" --
-using the EMBEDDING retriever (the same space R-Precision itself uses), not TF-IDF.
+with BOTH retrievers (TF-IDF and the embedding retriever) over the SAME sample, so which one
+leads the demo is chosen on stated, measured grounds, not on whichever looked better.
 
-The director's own SUP-61 validated this premise with TF-IDF over HumanML3D's own tags (78.3%
-full self-retrieval -> 55.0% truncated, over 300 sampled captions) specifically to check the
-premise before building on it -- but flagged those numbers as establishing the premise, not as
-display values, since the demo will use the embedding retriever, not TF-IDF, and the measured
-0.145 R-Precision drop was itself measured in the evaluator's embedding space. This script
-re-measures with that same embedding space, using HumanML3D's own real tags for truncation
-(not spaCy) so this measurement is independent of SUP-57's separate spaCy-agreement question.
+The director's own SUP-61 measured this premise with TF-IDF over HumanML3D's own tags (78.3%
+full self-retrieval -> 55.0% truncated, n=300) specifically to check the premise before building
+on it. This script independently re-verifies that TF-IDF number (not just quoting it) and
+compares it against the embedding retriever on the identical sample, using HumanML3D's own real
+tags for truncation (not spaCy) so this measurement is independent of SUP-57's separate
+spaCy-agreement question.
 """
 import glob
 import json
@@ -21,6 +21,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 from retrieval_embedding import EmbeddingRetriever, CORPUS_TEXT_DIR  # noqa: E402
+from retrieval import NearestNeighborRetriever  # noqa: E402
 from e1_pilot_caption_truncation import truncate_tokens_first_action_clause  # noqa: E402
 
 
@@ -44,66 +45,78 @@ def _load_tagged_captions():
 
 
 def main(sample_size: int = 300, seed: int = 10):
-    retriever = EmbeddingRetriever()
-    corpus_motion_ids = retriever.motion_ids  # aligned with retriever.embeddings rows
-    corpus_embeddings = retriever.embeddings
+    emb_retriever = EmbeddingRetriever()
+    corpus_motion_ids = emb_retriever.motion_ids  # aligned with emb_retriever.embeddings rows
+    corpus_embeddings = emb_retriever.embeddings
+    tfidf_retriever = NearestNeighborRetriever()
 
     entries = _load_tagged_captions()
     random.seed(seed)
-    # only sample captions whose motion actually made it into the retriever's corpus (motions
-    # below MIN_MOTION_LEN were filtered out when the retriever built its embedding cache)
+    # only sample captions whose motion actually made it into the embedding retriever's corpus
+    # (motions below MIN_MOTION_LEN were filtered out when its embedding cache was built)
     valid_ids = set(corpus_motion_ids)
     entries = [e for e in entries if e[2] in valid_ids]
     sample = random.sample(entries, min(sample_size, len(entries)))
 
-    def nearest_motion_id(emb):
+    def nearest_motion_id_embedding(emb):
         norms = np.linalg.norm(corpus_embeddings, axis=1) * np.linalg.norm(emb)
         norms[norms == 0] = 1e-8
         sims = (corpus_embeddings @ emb) / norms
         return corpus_motion_ids[int(sims.argmax())]
 
+    def nearest_motion_id_tfidf(caption_text):
+        _, motion_id, _ = tfidf_retriever.nearest(caption_text, k=1)[0]
+        return motion_id
+
+    stats = {method: {"n_shortened": 0, "n_self_full": 0, "n_self_trunc": 0, "n_diff": 0}
+              for method in ("embedding", "tfidf")}
     n_total = 0
-    n_shortened = 0
-    n_self_full = 0
-    n_self_trunc = 0
-    n_different_retrieval = 0
-    examples = []
+    examples = {"embedding": [], "tfidf": []}
 
     for caption, tokens, true_motion_id in sample:
         trunc_caption, trunc_tokens, used_fb, floored = truncate_tokens_first_action_clause(caption, tokens)
         shortened = trunc_caption.strip().lower() != caption.strip().lower()
-
-        full_emb = retriever._embed_text(tokens)
-        trunc_emb = retriever._embed_text(trunc_tokens)
-        full_top1 = nearest_motion_id(full_emb)
-        trunc_top1 = nearest_motion_id(trunc_emb)
-
         n_total += 1
-        n_shortened += int(shortened)
-        n_self_full += int(full_top1 == true_motion_id)
-        n_self_trunc += int(trunc_top1 == true_motion_id)
-        n_different_retrieval += int(full_top1 != trunc_top1)
 
-        if len(examples) < 10 and full_top1 != trunc_top1:
-            examples.append({
-                "caption": caption, "truncated": trunc_caption, "true_motion_id": true_motion_id,
-                "full_retrieval": full_top1, "truncated_retrieval": trunc_top1,
-            })
+        # embedding retriever
+        full_emb = emb_retriever._embed_text(tokens)
+        trunc_emb = emb_retriever._embed_text(trunc_tokens)
+        e_full = nearest_motion_id_embedding(full_emb)
+        e_trunc = nearest_motion_id_embedding(trunc_emb)
+        s = stats["embedding"]
+        s["n_shortened"] += int(shortened)
+        s["n_self_full"] += int(e_full == true_motion_id)
+        s["n_self_trunc"] += int(e_trunc == true_motion_id)
+        s["n_diff"] += int(e_full != e_trunc)
+        if len(examples["embedding"]) < 10 and e_full != e_trunc:
+            examples["embedding"].append({"caption": caption, "truncated": trunc_caption,
+                                            "true_motion_id": true_motion_id,
+                                            "full_retrieval": e_full, "truncated_retrieval": e_trunc})
 
-    result = {
-        "n_total": n_total,
-        "pct_shortened": n_shortened / n_total,
-        "pct_self_retrieval_full": n_self_full / n_total,
-        "pct_self_retrieval_truncated": n_self_trunc / n_total,
-        "self_retrieval_drop": (n_self_full - n_self_trunc) / n_total,
-        "pct_different_retrieval": n_different_retrieval / n_total,
-        "reference_tfidf_measurement_sup61": {
-            "pct_shortened": 0.623, "pct_self_retrieval_full": 0.783,
-            "pct_self_retrieval_truncated": 0.550, "pct_different_retrieval": 0.460,
-            "note": "TF-IDF, HumanML3D's own tags, n=300 -- validated the premise, not a display value",
-        },
-        "sample_disagreement_examples": examples,
-    }
+        # TF-IDF retriever (caption-text based, same truncated/full text)
+        t_full = nearest_motion_id_tfidf(caption)
+        t_trunc = nearest_motion_id_tfidf(trunc_caption)
+        s = stats["tfidf"]
+        s["n_shortened"] += int(shortened)
+        s["n_self_full"] += int(t_full == true_motion_id)
+        s["n_self_trunc"] += int(t_trunc == true_motion_id)
+        s["n_diff"] += int(t_full != t_trunc)
+        if len(examples["tfidf"]) < 10 and t_full != t_trunc:
+            examples["tfidf"].append({"caption": caption, "truncated": trunc_caption,
+                                        "true_motion_id": true_motion_id,
+                                        "full_retrieval": t_full, "truncated_retrieval": t_trunc})
+
+    result = {"n_total": n_total}
+    for method in ("embedding", "tfidf"):
+        s = stats[method]
+        result[method] = {
+            "pct_shortened": s["n_shortened"] / n_total,
+            "pct_self_retrieval_full": s["n_self_full"] / n_total,
+            "pct_self_retrieval_truncated": s["n_self_trunc"] / n_total,
+            "self_retrieval_drop": (s["n_self_full"] - s["n_self_trunc"]) / n_total,
+            "pct_different_retrieval": s["n_diff"] / n_total,
+        }
+    result["sample_disagreement_examples"] = examples
     return result
 
 

@@ -1,87 +1,163 @@
 {
   "n_total": 300,
-  "pct_shortened": 0.5666666666666667,
-  "pct_self_retrieval_full": 0.01,
-  "pct_self_retrieval_truncated": 0.006666666666666667,
-  "self_retrieval_drop": 0.0033333333333333335,
-  "pct_different_retrieval": 0.5266666666666666,
-  "reference_tfidf_measurement_sup61": {
-    "pct_shortened": 0.623,
-    "pct_self_retrieval_full": 0.783,
-    "pct_self_retrieval_truncated": 0.55,
-    "pct_different_retrieval": 0.46,
-    "note": "TF-IDF, HumanML3D's own tags, n=300 -- validated the premise, not a display value"
+  "embedding": {
+    "pct_shortened": 0.5666666666666667,
+    "pct_self_retrieval_full": 0.01,
+    "pct_self_retrieval_truncated": 0.006666666666666667,
+    "self_retrieval_drop": 0.0033333333333333335,
+    "pct_different_retrieval": 0.5266666666666666
   },
-  "sample_disagreement_examples": [
-    {
-      "caption": "a person casually takes 3 steps forwards and then goes into a sumo squat .",
-      "truncated": "a person casually takes 3 steps",
-      "true_motion_id": "sample000372",
-      "full_retrieval": "sample003773",
-      "truncated_retrieval": "sample000634"
-    },
-    {
-      "caption": "a person drops their arms from shoulder height, claps their hands once, steps forward and to the right and sits down.",
-      "truncated": "a person drops their arms from shoulder height, claps their hands once, steps forward",
-      "true_motion_id": "train_sample001142",
-      "full_retrieval": "train_sample000742",
-      "truncated_retrieval": "sample003949"
-    },
-    {
-      "caption": "a person appears to be dancing while moving their arms.",
-      "truncated": "a person appears to be dancing",
-      "true_motion_id": "train_sample002227",
-      "full_retrieval": "train_sample003768",
-      "truncated_retrieval": "train_sample004165"
-    },
-    {
-      "caption": "the man is laying down and getting up",
-      "truncated": "the man is laying down",
-      "true_motion_id": "sample002356",
-      "full_retrieval": "train_sample002962",
-      "truncated_retrieval": "train_sample001737"
-    },
-    {
-      "caption": "the person is jumping up and down.",
-      "truncated": "the person is jumping up",
-      "true_motion_id": "train_sample001242",
-      "full_retrieval": "train_sample001612",
-      "truncated_retrieval": "train_sample003970"
-    },
-    {
-      "caption": "a person leans over, grabbing object with left hand. walk over and commences rubbing motion with left hand/ arm.",
-      "truncated": "a person leans over, grabbing object with left hand. walk over",
-      "true_motion_id": "sample003174",
-      "full_retrieval": "train_sample000595",
-      "truncated_retrieval": "train_sample003464"
-    },
-    {
-      "caption": "a person sits criss cross and then stands back up.",
-      "truncated": "a person sits criss cross",
-      "true_motion_id": "train_sample003099",
-      "full_retrieval": "sample000840",
-      "truncated_retrieval": "train_sample000412"
-    },
-    {
-      "caption": "a person has something in their left hand, and brings it to their face.",
-      "truncated": "a person has something in their left hand,",
-      "true_motion_id": "sample000394",
-      "full_retrieval": "sample003627",
-      "truncated_retrieval": "sample001817"
-    },
-    {
-      "caption": "while standing his arms go folding into the chest and out.",
-      "truncated": "while standing his",
-      "true_motion_id": "train_sample001579",
-      "full_retrieval": "train_sample000364",
-      "truncated_retrieval": "train_sample002839"
-    },
-    {
-      "caption": "a person, whose hands is swaying front to back, is walking in a clockwise circle while bringing their knees up as they walk.",
-      "truncated": "a person, whose hands is swaying front to back, is walking in a clockwise circle",
-      "true_motion_id": "sample003746",
-      "full_retrieval": "train_sample001003",
-      "truncated_retrieval": "sample000502"
-    }
-  ]
+  "tfidf": {
+    "pct_shortened": 0.5666666666666667,
+    "pct_self_retrieval_full": 0.7466666666666667,
+    "pct_self_retrieval_truncated": 0.5166666666666667,
+    "self_retrieval_drop": 0.23,
+    "pct_different_retrieval": 0.3466666666666667
+  },
+  "sample_disagreement_examples": {
+    "embedding": [
+      {
+        "caption": "a person casually takes 3 steps forwards and then goes into a sumo squat .",
+        "truncated": "a person casually takes 3 steps",
+        "true_motion_id": "sample000372",
+        "full_retrieval": "sample003773",
+        "truncated_retrieval": "sample000634"
+      },
+      {
+        "caption": "a person drops their arms from shoulder height, claps their hands once, steps forward and to the right and sits down.",
+        "truncated": "a person drops their arms from shoulder height, claps their hands once, steps forward",
+        "true_motion_id": "train_sample001142",
+        "full_retrieval": "train_sample000742",
+        "truncated_retrieval": "sample003949"
+      },
+      {
+        "caption": "a person appears to be dancing while moving their arms.",
+        "truncated": "a person appears to be dancing",
+        "true_motion_id": "train_sample002227",
+        "full_retrieval": "train_sample003768",
+        "truncated_retrieval": "train_sample004165"
+      },
+      {
+        "caption": "the man is laying down and getting up",
+        "truncated": "the man is laying down",
+        "true_motion_id": "sample002356",
+        "full_retrieval": "train_sample002962",
+        "truncated_retrieval": "train_sample001737"
+      },
+      {
+        "caption": "the person is jumping up and down.",
+        "truncated": "the person is jumping up",
+        "true_motion_id": "train_sample001242",
+        "full_retrieval": "train_sample001612",
+        "truncated_retrieval": "train_sample003970"
+      },
+      {
+        "caption": "a person leans over, grabbing object with left hand. walk over and commences rubbing motion with left hand/ arm.",
+        "truncated": "a person leans over, grabbing object with left hand. walk over",
+        "true_motion_id": "sample003174",
+        "full_retrieval": "train_sample000595",
+        "truncated_retrieval": "train_sample003464"
+      },
+      {
+        "caption": "a person sits criss cross and then stands back up.",
+        "truncated": "a person sits criss cross",
+        "true_motion_id": "train_sample003099",
+        "full_retrieval": "sample000840",
+        "truncated_retrieval": "train_sample000412"
+      },
+      {
+        "caption": "a person has something in their left hand, and brings it to their face.",
+        "truncated": "a person has something in their left hand,",
+        "true_motion_id": "sample000394",
+        "full_retrieval": "sample003627",
+        "truncated_retrieval": "sample001817"
+      },
+      {
+        "caption": "while standing his arms go folding into the chest and out.",
+        "truncated": "while standing his",
+        "true_motion_id": "train_sample001579",
+        "full_retrieval": "train_sample000364",
+        "truncated_retrieval": "train_sample002839"
+      },
+      {
+        "caption": "a person, whose hands is swaying front to back, is walking in a clockwise circle while bringing their knees up as they walk.",
+        "truncated": "a person, whose hands is swaying front to back, is walking in a clockwise circle",
+        "true_motion_id": "sample003746",
+        "full_retrieval": "train_sample001003",
+        "truncated_retrieval": "sample000502"
+      }
+    ],
+    "tfidf": [
+      {
+        "caption": "a person casually takes 3 steps forwards and then goes into a sumo squat .",
+        "truncated": "a person casually takes 3 steps",
+        "true_motion_id": "sample000372",
+        "full_retrieval": "sample000372",
+        "truncated_retrieval": "train_sample000922"
+      },
+      {
+        "caption": "a person appears to be dancing while moving their arms.",
+        "truncated": "a person appears to be dancing",
+        "true_motion_id": "train_sample002227",
+        "full_retrieval": "train_sample002227",
+        "truncated_retrieval": "sample004274"
+      },
+      {
+        "caption": "the person is jumping up and down.",
+        "truncated": "the person is jumping up",
+        "true_motion_id": "train_sample001242",
+        "full_retrieval": "train_sample003699",
+        "truncated_retrieval": "train_sample001704"
+      },
+      {
+        "caption": "while standing his arms go folding into the chest and out.",
+        "truncated": "while standing his",
+        "true_motion_id": "train_sample001579",
+        "full_retrieval": "train_sample001579",
+        "truncated_retrieval": "train_sample003363"
+      },
+      {
+        "caption": "the person picks up a cup, drinks, and places it back down.",
+        "truncated": "the person picks up a cup, drinks,",
+        "true_motion_id": "sample002855",
+        "full_retrieval": "sample000663",
+        "truncated_retrieval": "sample002855"
+      },
+      {
+        "caption": "the figure takes a step back with the hind leg and places one fist in the other fist while swinging both fists to the left of their body. the figure draws back the left arm and flins it forward as if to throw something.",
+        "truncated": "the figure takes a step back with the hind leg",
+        "true_motion_id": "sample004130",
+        "full_retrieval": "sample004130",
+        "truncated_retrieval": "sample001938"
+      },
+      {
+        "caption": "someone is pushed backwards, but manages to regain his balance.",
+        "truncated": "someone is pushed backwards,",
+        "true_motion_id": "sample004058",
+        "full_retrieval": "sample001866",
+        "truncated_retrieval": "train_sample002308"
+      },
+      {
+        "caption": "a man swings his arms to pick up a bucket and pour it out.",
+        "truncated": "a man swings his arms to pick up a bucket",
+        "true_motion_id": "sample004365",
+        "full_retrieval": "sample002173",
+        "truncated_retrieval": "sample004365"
+      },
+      {
+        "caption": "walking forward then suddenly moving left then back in step",
+        "truncated": "walking forward then",
+        "true_motion_id": "train_sample003347",
+        "full_retrieval": "train_sample003347",
+        "truncated_retrieval": "train_sample003853"
+      },
+      {
+        "caption": "a person walks forward and stands still.",
+        "truncated": "a person walks forward",
+        "true_motion_id": "sample001998",
+        "full_retrieval": "sample004190",
+        "truncated_retrieval": "train_sample002355"
+      }
+    ]
+  }
 }

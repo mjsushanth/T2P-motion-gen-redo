@@ -1956,3 +1956,129 @@ numbers go on the page. And confirmed SUP-56 is withdrawn — with retrieval ins
 aggregate makes a null result informative rather than confusing, which beats curated examples.
 
 Now 16:53Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T17:02Z] Supervisor pass 45 — Review 12: embedding retrieval collapses; my SUP-61 headline withdrawn
+
+**The build session checked the premise of my own proposal before building on it and found it does
+not hold in the space I assumed.** Embedding self-retrieval collapses to **~1%** at full-corpus
+scale: a caption's true motion scores **0.978 cosine but ranks 264th of 8,198**, because every corpus
+motion sits in a **0.97-0.99 band**. Verified directly, not inferred.
+
+**SUP-61's headline is withdrawn, and its diagnosis of my error is correct.** I proposed
+78.3% -> 55.0% while implicitly framing it as a visualisation of the 0.145 R-Precision effect. **It is
+not.** That number is real *because TF-IDF does lexical near-duplicate matching well at corpus
+scale* — different mechanism, different space. Printing it under "the space R-Precision uses" would
+have been the exact fidelity error SUP-58 warned about, labels swapped. **Tenth supervisor
+correction, and the build session caught it, not me.**
+
+**Its three-part resolution accepted as proposed:** R-Precision 0.8013->0.6563 stays the metrics
+claim; TF-IDF reported as its own labelled *lexical retrieval* statistic; full-corpus NN kept
+explicitly illustrative.
+
+**One addition that I think finishes the design: lead with the truncation itself, not any retrieval.**
+The finding is "truncation throws information away," and the most honest visualisation is **the
+truncation happening on the user's own sentence** — kept text beside discarded text. **Exact,
+deterministic, instant, no statistical caveat possible.** Everything else on the page then becomes
+evidence about the *consequence* of what they just watched. **That resolves SUP-60's payload/finding
+mismatch by removing the fidelity question rather than managing it.**
+
+**SUP-63 (P1) — the collapse is a research finding, not a UI constraint.** Asked for it in
+`EXPERIMENT_LOG.md` and `LANDMINES.md`:
+> The standard text-motion evaluator resolves 1-of-32 and **not** 1-of-8,198. R-Precision is
+> meaningful only *within* its batch protocol; full-corpus top-k in that space is not a coherent
+> statistic.
+
+**A non-obvious property of an instrument the whole field shares**, measured directly — and it
+explains why the protocol specifies batch-of-32 rather than that being arbitrary convention. It also
+strengthens §13 retroactively: **pool size is the range over which the instrument is calibrated at
+all**, not a configuration detail. Nobody sets out to find this; it surfaced because the build
+session refused to ship a retriever validated on four queries.
+
+**Twice today a proposal of mine has been improved by being tested before implementation.**
+
+Now 17:02Z; SOFT 01:46Z, HARD 03:16Z.
+
+---
+
+## FOR JOEL (running)
+
+22. **A genuine finding about the field's standard evaluation tool fell out of building the demo.**
+    The shared text-motion evaluator everyone benchmarks against can tell the right caption from 31
+    wrong ones, but cannot find it among 8,198 — every motion in the corpus sits in a razor-thin
+    similarity band. That is why the published protocol always uses batches of 32, which had looked
+    like an arbitrary convention. It is not: it is the range over which the instrument works at all.
+    Worth knowing if you ever reuse that evaluator for anything other than its intended benchmark.
+
+## [2026-09-06T17:06Z] Supervisor pass 46 — disambiguated my own ambiguous phrasing before it cost a rebuild
+
+**Build session's message crossed with Review 12.** It read SUP-62's *"lead with TF-IDF"* as a
+page-level instruction; I meant it **among retrievers**. Left alone, it would have promoted TF-IDF to
+the demo's headline — **reintroducing, one layer up, the exact fidelity error it had just caught in
+my SUP-61**: TF-IDF's number is real *because lexical near-duplicate matching works at corpus scale*,
+not because it approximates R-Precision's space.
+
+**Sent a short disambiguation with the slot assignment explicit:**
+
+| slot | content |
+|---|---|
+| headline | **the truncation itself** — kept vs discarded text, deterministic, no caveat possible |
+| measured claim | **R-Precision 0.8013 -> 0.6563**, batch-of-32, unchanged |
+| secondary, labelled | **TF-IDF "lexical retrieval"** 78.3% -> 55.0% — not framed as approximating R-Precision |
+| illustrative only | full-corpus nearest-neighbour for arbitrary text |
+
+**The headline is the one element that needs no caveat at all.** Everything else is evidence about
+its consequence.
+
+**Confirmed its instinct to independently re-verify my 78.3%/55.0% before display** — mine
+established a premise, its become display values. That is the right split and it proposed it
+unprompted.
+
+**Also flagged: do not let SUP-63 survive only as a code comment.** The embedding collapse is a
+**research finding** — *the standard evaluator resolves 1-of-32 and not 1-of-8,198* — and belongs in
+`EXPERIMENT_LOG.md` and `LANDMINES.md`, because it explains why the published protocol specifies 32
+rather than that being arbitrary, and strengthens §13 retroactively.
+
+**Worth noting the failure mode this pass:** the risk was not a wrong finding, it was an **ambiguous
+one** — a phrase that meant something narrower than it read. Caught only because the build session
+reported its intended action before taking it. **That reporting habit is what made the ambiguity
+recoverable.**
+
+Now 17:06Z; SOFT 01:46Z, HARD 03:16Z. Awaiting: seed-2 decomposition, TF-IDF re-verification,
+SUP-60 layout.
+
+## [2026-09-06T16:55Z] Supervisor pass 47 — Review 13: demo redesign accepted; independent replication to 0.3pt
+
+**SUP-60's layout landed correctly:** retrieval primary (`"Show what gets retrieved (instant)"`),
+two panes full-vs-truncated, generation demoted behind `"Also generate (several minutes)"`.
+
+**Three things better than asked:**
+1. **Used its own re-verified numbers, not mine** (74.7/51.7/34.7 replacing my 78.3/55.0/46.0), with
+   the artifact path cited on the page. Held the agreed split unprompted.
+2. **The null case handled *in* the interface** — "roughly half of captions land here; that is
+   expected, not a failure of the demo." SUP-61's aggregate-beside-instance idea implemented
+   properly; it converts the demo's weakest moment into an honest one.
+3. **"Nothing here is curated — try something that breaks it"** in the headline: actively invites the
+   failure cases the criteria require rather than merely permitting them.
+
+**SUP-64 (P3) — an independent replication worth naming as one.**
+
+| | full | truncated | **drop** | changed |
+|---|---|---|---|---|
+| mine | 78.3% | 55.0% | **23.3 pt** | 46.0% |
+| its re-verification | 74.7% | 51.7% | **23.0 pt** | 34.7% |
+
+**Two independent measurements, different code, agreeing to 0.3 points on the quantity that
+matters.** Levels differ ~3.5pt and change-rate 11.3pt — almost certainly corpus/sampling (mine:
+6,000 files, one caption each; its: full corpus, multiple captions per motion — denser pool lowers
+self-retrieval and reshapes neighbour structure). Asked for one line stating the cause so a reader
+does not find two numbers for the same measurement and distrust both.
+
+**SUP-65 (P3):** the headline calls the TF-IDF result *"the same phenomenon as"* the R-Precision
+finding — looser than its own Review-12 argument, which correctly distinguished **different
+mechanisms in different spaces**. Suggested "the same underlying effect, measured a different way."
+The page is otherwise scrupulous; this is the one sentence that slackens.
+
+**Open, both known to it:** generation path not yet driven through a browser (its standard, correct,
+told it to hold); seed-2 decomposition pending.
+
+Now 16:55Z; SOFT 01:46Z, HARD 03:16Z. ~9h to soft stop.
