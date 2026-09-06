@@ -673,3 +673,49 @@ the source of truth for how much real progress has happened, not the sum of requ
 specific to this session's configuration — recorded as an empirical observation from this one
 session's experience, not confirmed against any external documentation.
 
+## [2026-09-06T11:45:00] Item 14 — Bundled log resolves R-Precision ambiguity; E0a's own bug found; three leads ruled out
+**Status:** complete (leads exhausted for now; root cause of the FID/R-Precision gap not found)
+**Acceptance criteria:** review (SUP-20260906-20..24) asked to (a) read the bundled log's
+R-Precision, not just FID (cheap, decisive); (b) reconcile E0a's own R-Precision gap explanation
+against E0b's correct ground-truth numbers; (c) check the three cheapest leads (length
+distribution, caption uniqueness, caption-motion pairing) for the generation-side defect,
+caching the generated motions this time so no further question costs another regeneration; (d)
+do not run a second replication for variance alone (already answered by the bundled log's own
+20-replication spread).
+**Files changed:** `scripts/e0b_mdm_reproduction.py` (now builds the generated-motion loader
+directly instead of via `eh.evaluation()`'s lazy lambda, caches motions+metadata to
+`artifacts/e0/e0b_generated_cache/`, computes and prints a length/caption diagnostic before
+scoring). `docs/EXPERIMENT_LOG.md` (E0b entry: "Round 2" section with the bundled-log
+cross-check and all three ruled-out leads; E0a entry: correction block retracting the
+multi-crop-averaging explanation, pointing to E0b's correct ground-truth numbers as the reason).
+`artifacts/e0/e0b_mdm_reproduction_record_v2.json`, `artifacts/e0/e0b_generated_cache/` (new —
+128 cached generated motions + metadata, reusable for any future re-analysis at zero
+regeneration cost).
+**Environment changes:** none.
+**Self-critique defects found:** E0a's own multi-crop-averaging explanation (my own hypothesis,
+stated as "plausible, not confirmed" — correctly hedged at the time, but still wrong) is now
+known to be wrong; the actual cause was a bug in my own hand-built `opt`/data-loading
+reconstruction for that script, exposed only by comparison against E0b's use of MDM's real
+upstream loader. Corrected in place per the append-only convention (original text kept, marked
+superseded) rather than silently rewritten.
+**Verification performed:** re-read the bundled log's `R_precision Summary` section directly
+(not just its FID section, which is all that had been checked before) — confirmed `[vald] (top
+3) Mean: 0.6110`, matching the published 0.611 to three decimals, settling that MDM's number is
+correct and this project's discrepancy is entirely on this project's side. Modified the driver
+to cache generated motions and ran once more (n=128, 1 replication, same ~39-minute cost),
+computing length statistics and caption uniqueness directly from the cached data rather than
+assuming: generated-vs-ground-truth length means differ by 0.7 frames (not a fixed-length
+bug); all 128 captions unique (not a duplication bug); confirmed by code inspection that
+`CompMDMGeneratedDataset.__getitem__` reuses the identical caption/tokens entry attached at
+generation time (not a caption-motion desync bug). The qualitative pattern (better R-Precision,
+worse FID than published) reproduced across both independent runs despite different batch
+shuffling, further confirming it is not single-replication noise.
+**Next:** all of round 2's cheap leads are exhausted without finding a fixable bug. Remaining,
+not yet tested: whether this project's 128-sample subset (first rows in HF streaming order
+passing the length filter) is representative of the full ~4384-sequence test set the reference
+protocol draws from. Testing this needs either a properly randomized subset draw at the same n,
+or the full n~1000 scale (~5 CPU-hours) to remove the question. Holding before spending either —
+reporting the exhausted-leads status to the director first, consistent with checking in before
+further compute spend rather than continuing unilaterally (SUP-24's commendation for doing this
+last time still applies; not treating it as a one-time exception).
+

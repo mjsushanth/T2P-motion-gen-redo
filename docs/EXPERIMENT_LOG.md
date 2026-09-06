@@ -121,6 +121,21 @@ confirmed: this script uses a single random unit-length crop per motion, while t
 `final_evaluations.py` protocol conventionally evaluates with `--repeat_time` averaging over
 multiple crops/seeds per sample — this project's version does not yet replicate that averaging.
 
+**CORRECTION (2026-09-06, per review SUP-20260906-21 — this paragraph's explanation was wrong,
+kept above rather than deleted, per the append-only convention):** E0b's own ground-truth numbers
+(same evaluator, same checkpoint, same dataset, but using **MDM's own upstream
+`Text2MotionDatasetV2` loader** instead of this entry's hand-built `prepare_sample`/`opt`
+reconstruction) landed at R-Prec-top3 0.7969 and matching score ~2.90-2.98 — both close to the
+author's own reference (0.7977, 2.9758), not close to this entry's 0.720/3.6057. **Since the only
+thing that differs between this entry and E0b's ground-truth path is which data-loading code
+built the batches, the multi-crop-averaging hypothesis above was not the cause of this entry's
+own R-Precision gap — this entry's own hand-rolled data pipeline had a real, uncorrected bug.**
+This is precisely the F1-shaped risk that was flagged when the `opt`-reconstruction work for this
+script began (a plausible reconstruction that runs cleanly and produces wrong numbers, with no
+error raised) — it did bite here, just not fatally, and the move to MDM's upstream loader for
+E0b is what exposed it. The specific bug in this script's own crop/normalisation/windowing logic
+has not been further isolated as of this correction; recorded as an open item, not resolved.
+
 **Establishes:** the vendored evaluator harness (checkpoint + encoders + this project's own data
 pipeline) is functioning and produces results in the correct ballpark on real data, not degenerate
 or broken. The checkpoint's architecture-match to the official evaluator (documented in
@@ -131,9 +146,12 @@ shape-corroborated.
 - **This is NOT the D-03 gate.** D-03 requires reproducing a *published generated-model* number
   (e.g. MDM's FID 0.544) to a stated tolerance. This entry only validates the harness against
   real data, which has no generative model in the loop at all yet.
-- Does not establish that the ~0.72 vs. 0.797 R-Precision gap and ~0.029 vs. 0.002 FID gap are
-  fully understood — the multi-crop-averaging hypothesis above is a plausible, not confirmed,
-  explanation.
+- Does not establish that the ~0.72 vs. 0.797 R-Precision gap is fully understood — the
+  multi-crop-averaging explanation above is now known to be wrong (see correction above); the
+  gap traces to this script's own hand-built data pipeline, not to missing crop-averaging, and
+  the specific bug has not yet been isolated. The ~0.029 vs. 0.002 FID gap is separately and
+  adequately explained by small-n covariance bias (`LANDMINES.md` §14), unaffected by this
+  correction.
 - Does not establish the checkpoint is byte-identical to the original Google-Drive-hosted file —
   only that it is architecturally and behaviorally consistent with it (see PATCHES.md).
 - Does not establish anything about MPS — this ran entirely on CPU (the evaluator's BiGRU
@@ -313,12 +331,63 @@ finding — distinguishing it from single-replication generation variance would 
 proper random draw from the full test set at comparable scale, or a second independent
 replication at the same n=128 to see whether the same pattern recurs.
 
+**Round 2 (2026-09-06), per review SUP-20260906-20..24: the bundled log settles more than round 1
+knew.** The checkpoint's bundled 2022 log is 20 full-scale replications of *this exact
+checkpoint*, and it matches **every** published number, not just FID: GT R-Prec-top3
+0.7977±.0022 (paper 0.797±.002), vald R-Prec-top3 0.6110±.0067 (paper 0.611±.007), GT FID
+0.0016 (paper ~0.002), vald FID 0.5443±.0442 (paper 0.544±.044), both matching scores. **MDM's
+published 0.611 is confirmed correct, not an outlier — the earlier framing in this entry that
+entertained "maybe the paper's number is the odd one" is retracted; the discrepancy is entirely
+on this project's side.** The 20-replication spread for vald FID (individual replications
+0.5323-0.7114) also directly answers whether single-replication noise could explain a miss this
+large: **it cannot** — our 1.0731 sits far outside that entire spread, and a second replication
+would not have told us anything the author's own 20 already didn't.
+
+**This also relocates a claim in `E0a`'s own entry.** Comparing E0a's ground-truth numbers
+(hand-built data pipeline: R-Prec-top3 0.720, matching score 3.606) against this entry's
+ground-truth numbers (MDM's own upstream `Text2MotionDatasetV2` loader: R-Prec-top3 0.7969,
+matching score 2.8995-2.9758 across two runs here, both near the author's 2.9758/0.7977) shows
+**E0a's earlier "multi-crop-averaging" explanation for its own R-Precision gap was wrong** — same
+evaluator, same checkpoint, same dataset, and the only thing that differs between E0a and this
+entry is which data-loading code built the batches. **E0a's hand-rolled `opt`/data pipeline had a
+real, uncorrected bug** — exactly the F1-shaped risk flagged when that reconstruction began.
+E0a's own entry is corrected separately with a pointer to this finding, per the append-only
+convention (not silently rewritten).
+
+**With the ground-truth path now confirmed correct here, the defect is isolated to generation.**
+Checked the three cheapest leads for the "generated R-Precision better than published, generated
+FID worse" signature, per review SUP-20260906-21, by modifying the driver
+(`scripts/e0b_mdm_reproduction.py`) to **cache the generated motions and their metadata this
+time** (per SUP-23 — the expensive intermediate, not just the cheap final metric) and rerunning
+once (n=128, 1 replication, same ~39-minute cost as before):
+
+1. **Generated motion length distribution vs. ground truth** — nearly identical (generated:
+   min 44, max 196, mean 136.66; ground truth: min 44, max 196, mean 137.34 — means within 0.7
+   frames of each other; 28/128 generated at the max length, consistent with natural variation
+   rather than a fixed/max-length generation bug). **Ruled out.**
+2. **Unique caption count** — 128/128 captions in this subset are unique. No duplication.
+   **Ruled out.**
+3. **Caption-to-motion pairing at scoring time** — confirmed by direct code inspection that
+   `CompMDMGeneratedDataset.__getitem__` reuses the exact same caption/tokens dict entry that was
+   attached to each motion at generation time (`self.generated_motion[item]`); no
+   re-fetch-by-index step that could desynchronize conditioning text from scored text.
+   **Ruled out.**
+
+This second run's own numbers (GT R-Prec-top3 0.8125, vald R-Prec-top3 0.7578 — top-3 identical
+to round 1's 0.7578; GT FID 0.1428, vald FID 1.3997) **reproduce the same qualitative pattern as
+round 1** despite a different random draw (the added diagnostic code shifted the RNG state before
+`gt_loader`'s own `shuffle=True`, so batch composition differs slightly between the two runs) —
+further evidence this is not single-run noise. Full diagnostic and both runs' numbers in
+`../artifacts/e0/e0b_mdm_reproduction_record_v2.json` and the cached generation itself in
+`../artifacts/e0/e0b_generated_cache/` (available for any future re-analysis at zero
+regeneration cost).
+
 **Next:** D-03 remains UNRESOLVED; downstream numbers are internally-comparable-only until it
-resolves. Before spending the ~5 CPU-hours a full n~1000 sweep would cost, the cheaper next
-diagnostic is a second independent single-replication run at the same n=128 (to test the
-generation-variance hypothesis) and/or drawing a properly randomized (not streaming-order-first)
-subset at the same n (to test the candidate-pool-composition hypothesis) — proposed, not yet run,
-per the standing instruction not to spend heavily before cheaper checks are exhausted. Also still
-open: fix the `diversity_times` off-by-one; consider a properly-sized (full test split)
-ground-truth reference FID computed once and held fixed as the comparison target, rather than
-recomputing it from the same small `vald`-sized subset each time.
+resolves. All of round 2's cheap leads are now exhausted without finding a fixable driver bug.
+The one hypothesis not yet directly tested: this project's 128-sample subset was selected as the
+first rows in HF streaming order that passed the length filter, not a random draw comparable to
+the reference protocol's much larger pool drawn from the full ~4384-sequence test set — testing
+this would need either a properly randomized subset draw at the same n, or accepting the full
+n~1000 scale (~5 CPU-hours) to remove the question entirely. Holding before spending either,
+to report the exhausted-leads status first. Still open, lower priority: fix the
+`diversity_times` off-by-one (now free to do without regeneration, since motions are cached).

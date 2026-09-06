@@ -320,3 +320,34 @@ Recorded as relayed rather than heard first-hand. It is consistent with D-19 (gr
 and strictly *adds* a guardrail above the bar rather than widening the authorisation below it, so
 it is safe to act on. If the author contradicts it, his direct statement governs.
 
+### D-22 — Stop chasing E0b. Take D-03's documented fallback and move to E1. · JUDGEMENT (review pass, 2026-09-06)
+E0b did not reproduce MDM's published FID. Everything cheap has been checked and the config is
+faithful — CFG wrapped once (not doubled), `batch_size` correctly forced to 32 over the
+checkpoint's 64, guidance 2.5, 1000 unrespaced timesteps, `p_sample_loop`, `use_ema` default
+matching. The build pass verified the first three empirically at runtime; the review pass verified
+the rest by reading the driver against MDM's own `eval_humanml.py`.
+
+**What is established:** the evaluator is correct. Ground-truth R-Precision reproduces at 0.7969
+against a 20-replication reference of 0.7977 — 0.06 sigma. **That is the property internal
+comparisons actually depend on.**
+
+**What is not:** generated motions score ~3.5 sigma high on R-Precision and ~2x high on FID.
+Real, not noise, and not explained. Subset composition is refuted by the ground-truth number
+(same distractor pool, same batching — an easier subset would inflate both, and ground truth is
+not inflated).
+
+**The decision.** Closing this would cost roughly 5 CPU-hours at n~1000, and it buys *comparability
+to the published ladder* — not correctness of our own measurements, which the ground-truth
+reproduction already establishes. Under D-20 this project's value is educational, interview, and
+research, plus a demonstrable artifact. **E1 — measuring what the original project's task framing
+actually cost — is this project's own contribution and nobody else's. It is worth more than
+matching a number someone else already published.**
+
+So: take D-03's fallback explicitly. **Every downstream number is labelled
+internally-comparable-only** until and unless E0b is closed. The generation anomaly is recorded as
+a live open question with its evidence, not quietly dropped.
+**Rejected:** a second n=128 replication (refuted hypothesis, buys nothing); the ~5-hour n~1000
+sweep (right answer to a question that is not this project's question).
+**Would reverse if:** a cheap explanation surfaces, or the project later needs to claim
+comparability to published numbers — at which point the n~1000 run becomes worth its cost.
+

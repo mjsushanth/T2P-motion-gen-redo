@@ -1,0 +1,16 @@
+{
+  "n_generated": 128,
+  "n_ground_truth": 128,
+  "generated_length_stats": {
+    "min": 44,
+    "max": 196,
+    "mean": 136.65625
+  },
+  "ground_truth_length_stats": {
+    "min": 44,
+    "max": 196,
+    "mean": 137.34375
+  },
+  "n_unique_generated_captions": 128,
+  "n_generated_at_max_length_196": 28
+}

@@ -1,0 +1,10 @@
+==================== Replication 0 ====================
+Time: 2026-09-06 03:04:31.507139
+---> [ground truth] Matching Score: 2.8995
+---> [ground truth] R_precision: (top 1): 0.5234 (top 2): 0.7500 (top 3): 0.8125 
+---> [vald] Matching Score: 3.4683
+---> [vald] R_precision: (top 1): 0.4922 (top 2): 0.6719 (top 3): 0.7578 
+Time: 2026-09-06 03:04:32.798568
+---> [ground truth] FID: 0.1428
+---> [vald] FID: 1.3997
+Time: 2026-09-06 03:04:33.723049

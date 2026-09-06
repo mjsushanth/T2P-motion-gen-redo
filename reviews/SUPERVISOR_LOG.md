@@ -558,3 +558,116 @@ and is not written down anywhere yet.
 
 **Next:** await the bundled-log check. Monitor bedyegf9l armed.
 Run window: SOFT 13:55Z / HARD 14:40Z. Now ~09:35Z, ~4h20m to soft stop.
+
+## [2026-09-06T10:05Z] Supervisor pass 13 — E0b settled by reading, not by spending
+
+**Build pass proposed a second 40-minute replication to estimate variance. Blocked it and read the
+bundled author log instead.** 273 lines, 20 replications, shipped inside the checkpoint zip.
+
+**SUP-20 — every published MDM figure reproduces exactly from released artifacts:**
+GT R-Prec-top3 0.7977±0.0022 (paper 0.797), **vald R-Prec-top3 0.6110±0.0067 (paper 0.611)**,
+GT FID 0.0016 (paper 0.002), **vald FID 0.5443±0.0442 (paper 0.544±.044)**, matching scores
+2.9758 / 5.5659 (paper 2.974 / 5.566). **The field's record is sound. The discrepancy is ours.**
+I was wrong to invite curiosity about MDM's 0.611 being an outlier — retracted in the finding.
+
+**SUP-17 WITHDRAWN.** The build pass disproved my driver-misconfiguration hypothesis empirically —
+guidance 2.5 matching the log filename, 1000 timesteps unrespaced, `p_sample_loop` not DDIM. It
+instantiated the model and printed runtime values rather than trusting a code read. Correct method,
+my claim was wrong. **Second finding of mine it has overturned.**
+
+**SUP-21 (P1) — the three-way comparison localises the defect and explains an older gap:**
+
+| | E0a | E0b | author |
+|---|---|---|---|
+| GT R-Prec-top3 | 0.720 | **0.7969** | 0.7977 |
+| GT Matching Score | 3.6057 | — | 2.9758 |
+| gen R-Prec-top3 | — | 0.7578 | 0.6110 |
+| gen FID | — | 1.0731 | 0.5443 |
+
+- **E0a's R-Precision gap was its hand-built data pipeline, not multi-crop averaging.** E0b used
+  MDM's own loader and landed on the reference. Same evaluator, checkpoint and dataset — the only
+  difference is the pipeline. **The F1-shaped risk I flagged at the start of E0a did bite**, and
+  the build pass's own move to the upstream loader is what exposed it. SUP-11's open half closes:
+  FID half = small-n covariance bias, R-Precision half = hand-rolled data path.
+- **E0b's GT path is correct, so the defect is in generation.** Generated motions are
+  simultaneously easier to text-match (+0.147) and further from the real distribution (~2x FID).
+  Real-motion contamination ruled out — that lowers FID.
+- Leads handed over, cheapest first: generated motion **length distribution** vs GT and how the
+  driver sets per-sample `n_frames`; then unique-caption count and caption-to-motion pairing.
+
+**SUP-22:** the variance question the proposed rerun would have answered is already answered by the
+log — CInterval 0.0442, replications spanning 0.5323-0.7114. Our 1.0731 is far outside. **40
+minutes of CPU saved by reading a file that was already on disk.**
+
+**SUP-23:** generated motions are not cached anywhere, so every follow-up costs another ~39 min.
+Told it to persist them. General lesson: in a CPU-bound loop, cache the expensive intermediate.
+
+**Next:** await the length/caption diagnosis. Re-arm monitor.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~10:05Z, ~3h50m to soft stop.
+
+---
+
+## FOR JOEL (running)
+
+11. **The harness question is resolved, and the answer is reassuring.** MDM's published numbers
+    reproduce *exactly* from its released files — we found the author's own 20-run evaluation log
+    bundled inside the checkpoint. So the benchmark's published record is trustworthy, and our
+    earlier failure to match it is a bug on our side, now narrowed to the motion-generation step
+    specifically (our ground-truth numbers match the reference to three decimals). That is a much
+    better position than "the field's numbers don't reproduce" — it is findable.
+12. **A hand-written data pipeline was silently slightly wrong, and got caught.** The earlier
+    evaluator run scored 0.720 where the reference is 0.797; switching to the upstream project's
+    own data loader gave 0.797. Same failure *shape* as the original project's decode bug — a
+    plausible reconstruction that runs cleanly and produces wrong numbers. It was caught here in
+    hours, by comparison against a reference, rather than in months.
+
+## [2026-09-06T10:35Z] Supervisor pass 14 — DECISION: stop chasing E0b, take D-03's fallback, move to E1
+
+Build pass proposed a third 40-minute run (randomized redraw) to test subset composition.
+**Refused, and refuted the hypothesis for free from a number it already had.**
+
+**The refutation.** R-Precision uses the same distractor pool and batching for GT and generated.
+An "easier" subset inflates both. Sigma estimated from the author's log (vald CInterval 0.0067
+over 20 reps -> per-rep std ~0.015 at ~31 batches -> ~0.043 at 4 batches):
+- **GT: 0.06 sigma off** (0.7969 vs 0.7977)
+- **generated: ~3.5 sigma high** (0.7578 vs 0.6110)
+Subset composition cannot produce that asymmetry. Hypothesis dead, zero compute spent.
+
+**Verified the driver myself against MDM's `eval_humanml.py`**, so the build pass can stop looking:
+`ClassifierFreeSampleModel` applied once not doubled; `args.batch_size = 32` correctly overriding
+the checkpoint's `batch_size: 64` (it caught MDM's own "This must be 32!" comment — the exact bug
+class of `LANDMINES.md` §13, not repeated); `use_ema` defaults match. **Driver is faithful.**
+Together with its runtime checks on guidance/timesteps/sampler, every cheap surface is eliminated.
+
+**D-22 recorded — the call, and the reasoning behind it.** Closing E0b costs ~5 CPU-hours and buys
+*comparability to the published ladder*, not correctness of our own measurements. Correctness is
+already established: GT R-Precision reproduces at 0.06 sigma against a 20-replication reference,
+and **that is the property every internal comparison depends on**. Under D-20 the project's value
+is educational/interview/research plus a demonstrable artifact. **E1 — what the original's task
+framing actually cost — is this project's own contribution and nobody else's.** Five hours matching
+someone else's published number is five hours not spent on the only number nobody else can produce.
+
+So: D-03's fallback taken explicitly, every downstream number labelled
+**internally-comparable-only**, the generation anomaly recorded as a live open question with its
+evidence and the cost of closing it, E0a's superseded explanation corrected, and work moves to E1.
+
+**Design instruction carried into E1:** prefer upstream implementations over reconstructions; where
+a reconstruction is unavoidable, build the reference comparison *first*. E0a's hand-built pipeline
+was wrong and only surfaced because E0b disagreed with it. **That is the F1 lesson landing twice in
+one project — once in the original, once in ours.**
+
+**Next:** E1 design and results. Re-arm monitor.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~10:35Z, ~3h20m to soft stop.
+
+---
+
+## FOR JOEL (running)
+
+13. **I stopped a line of work, and you should know why.** Reproducing another team's published
+    number exactly would have cost ~5 hours of compute and bought comparability to a public
+    leaderboard. Our evaluator is already proven correct against ground truth, which is what makes
+    *our own* comparisons trustworthy. Given your goals are learning, interview value and something
+    demonstrable, I judged that time better spent on E1 — measuring what your original project's
+    task framing actually cost — because that is the one number in this project that nobody else
+    could produce. The unexplained anomaly is documented, not buried, and reversible if you ever
+    want the leaderboard claim.

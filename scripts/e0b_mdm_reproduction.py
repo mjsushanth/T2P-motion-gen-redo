@@ -79,14 +79,54 @@ def main():
     num_samples_limit = my_args.num_samples_limit
     replication_times = my_args.replication_times
 
-    eval_motion_loaders = {
-        "vald": lambda: get_mdm_loader(
-            args, model=model, diffusion=diffusion, batch_size=args.batch_size,
-            ground_truth_loader=gen_loader, mm_num_samples=0, mm_num_repeats=0,
-            max_motion_length=gt_loader.dataset.opt.max_motion_length,
-            num_samples_limit=num_samples_limit, scale=args.guidance_param,
-        )
+    # Build the generated-motion loader ONCE, directly (not via eh.evaluation()'s lazy lambda),
+    # so we can cache the actual generated motions/lengths/captions to disk -- per review
+    # SUP-20260906-23: cache the expensive intermediate (the ~39-minute generation), not just
+    # the cheap final metric, so every follow-up diagnostic question is free from here on.
+    print("Generating (once, will be cached and reused for evaluation below)...")
+    motion_loader, mm_motion_loader = get_mdm_loader(
+        args, model=model, diffusion=diffusion, batch_size=args.batch_size,
+        ground_truth_loader=gen_loader, mm_num_samples=0, mm_num_repeats=0,
+        max_motion_length=gt_loader.dataset.opt.max_motion_length,
+        num_samples_limit=num_samples_limit, scale=args.guidance_param,
+    )
+
+    gen_records = motion_loader.dataset.generated_motion  # list of dicts: motion/length/caption/tokens/cap_len
+    cache_dir = Path(my_args.out_json).parent / "e0b_generated_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    import numpy as np
+    np.savez(cache_dir / "generated_motions.npz",
+              **{f"motion_{i}": r["motion"] for i, r in enumerate(gen_records)})
+    gen_meta = [{"length": int(r["length"]), "caption": r["caption"], "cap_len": int(r["cap_len"])}
+                for r in gen_records]
+    with open(cache_dir / "generated_meta.json", "w") as f:
+        json.dump(gen_meta, f, indent=2)
+    print(f"Cached {len(gen_records)} generated motions + metadata to {cache_dir}")
+
+    # Diagnostic per SUP-20260906-21: length distribution and unique-caption count, generated
+    # vs ground truth, checked directly against the actual generated set rather than assumed.
+    gen_lengths = [int(r["length"]) for r in gen_records]
+    gen_captions = [r["caption"] for r in gen_records]
+    gt_lengths = []
+    for _, _, _, _, gt_motions, gt_lens, _ in gt_loader:
+        gt_lengths.extend(int(x) for x in gt_lens.tolist())
+    diagnostic = {
+        "n_generated": len(gen_lengths),
+        "n_ground_truth": len(gt_lengths),
+        "generated_length_stats": {"min": min(gen_lengths), "max": max(gen_lengths),
+                                    "mean": sum(gen_lengths) / len(gen_lengths)},
+        "ground_truth_length_stats": {"min": min(gt_lengths), "max": max(gt_lengths),
+                                       "mean": sum(gt_lengths) / len(gt_lengths)},
+        "n_unique_generated_captions": len(set(gen_captions)),
+        "n_generated_at_max_length_196": sum(1 for l in gen_lengths if l >= 196),
     }
+    print("DIAGNOSTIC (length/caption check, SUP-21):")
+    print(json.dumps(diagnostic, indent=2))
+    with open(cache_dir / "diagnostic.json", "w") as f:
+        json.dump(diagnostic, f, indent=2)
+
+    # Reuse the already-generated loader for the actual metric computation -- no regeneration.
+    eval_motion_loaders = {"vald": lambda: (motion_loader, mm_motion_loader)}
 
     eval_wrapper = EvaluatorMDMWrapper(args.dataset, device)
 
