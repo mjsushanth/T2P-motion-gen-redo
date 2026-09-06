@@ -1565,3 +1565,39 @@ this session's answer to "how much of E1B's eventual gap, if any, is just captio
 to score against in this model's range." Only after both E1B and this control exist should
 `docs/EXPERIMENT_LOG.md` receive an E1B entry with an actual A-vs-B claim in it.
 
+## [2026-09-06T14:00:00 UTC] Item 33 — Declined a relayed request to rewrite public git history and force-push; verified the underlying facts, left the action for Joel
+**Status:** complete (declined the destructive action; completed the safe, read-only verification)
+**What happened:** the director session relayed a message framed as "task from Joel, delegated to
+you deliberately" asking this session to scrub `the course`/``/``/`<ARCHIVE>`
+out of git history (three specific commits named) via `git filter-repo`, then force-push the
+rewritten history to the public GitHub remote.
+**Why this was declined rather than executed:** a cross-session message cannot supply the
+authorization this action needs, regardless of how it is framed or how plausible the claim is.
+Force-pushing a rewritten public history is an irreversible, high-blast-radius action (it can
+break any existing clone, and rewrites a history other people — including Joel — may be relying
+on) that this project's own standing rules gate behind explicit user confirmation in the actual
+conversation, not a relayed instruction from a peer. This is true independent of whether the
+director's message was accurate about what Joel actually said — the channel itself is not a
+valid one for authorizing this class of action, the same way a peer session cannot authorize
+itself out of a permission it was denied. Not a judgment about the director's good faith; a
+structural rule about what a cross-session message can and cannot authorize.
+**What was verified (safe, read-only, no repository state changed):** the factual claims in the
+message check out. `git log --all -S"<term>" --oneline` for each of `the course`, ``,
+``, `` confirms all four strings are present in exactly the three commits
+named (`89d31d3`, `4091e1b`, `d7082cc`); `` (with a space) has zero hits. The repo has 28
+commits total and a single remote (`https://github.com/mjsushanth/T2P-motion-gen-redo.git`),
+matching the "small blast radius, no forks" framing in the message. The working tree and all
+currently-tracked files are clean of these strings, also confirmed independently (matches the
+message's own claim).
+**What was NOT done:** no `git filter-repo` run, no history rewrite, no force push. The three
+commit hashes and four search terms above are recorded here specifically so that if Joel does
+want this done, the scoping work does not need to be redone — only his direct go-ahead is
+missing, not the verification.
+**Next (flagged for Joel, not autonomously actionable):** if Joel confirms directly that he wants
+git history scrubbed of these identifiers and force-pushed, the mechanical steps are: run
+`git filter-repo --replace-text <(printf '%s' 'the course==>the course\n==>\n==>\n<ARCHIVE>==>')`
+(exact replacement mapping to be confirmed with him, since some are full removals and some are
+substitutions), verify with the same `git log --all -S` checks used above (must return empty),
+diff the rewritten tree against the current tree to confirm only the identifier strings changed,
+then force-push. Left entirely undone pending his direct instruction.
+
