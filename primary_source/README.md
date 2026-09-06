@@ -2,15 +2,15 @@
 <!-- ![tesear_image](./HumanML3D/dataset_showcase.png) -->
 HumanML3D is a 3D human motion-language dataset that originates from a combination of [HumanAct12](https://github.com/EricGuo5513/action-to-motion) and [Amass](https://github.com/EricGuo5513/action-to-motion) dataset. It covers a broad range of human actions such as daily activities (e.g., 'walking', 'jumping'), sports (e.g., 'swimming', 'playing golf'), acrobatics (e.g., 'cartwheel') and artistry (e.g., 'dancing'). 
 
-<div  align="center">    
+<div  align="center">
   <img src="./dataset_showcase.png"  height = "500" alt="teaser_image" align=center />
 </div>
 
 <br>
 <details> 
-  
+
   **<summary>Statistics of HumanML3D</summary>**
-  
+
 ### :bar_chart: Statistics
 Each motion clip in HumanML3D comes with 3-4 single sentence descriptions annotated on Amazon Mechanical Turk. Motions are downsampled into 20 fps, with each clip lasting from 2 to 10 seconds. 
 
@@ -28,9 +28,9 @@ We double the size of HumanML3D dataset by mirroring all motions and properly re
 
 If this dataset is usefule in your projects, we will apprecite your star on this codebase. 😆😆
 ## Checkout Our Works on HumanML3D
-:ok_woman: [T2M](https://ericguo5513.github.io/text-to-motion) - The first work on HumanML3D that learns to generate 3D motion from textual descriptions, with *temporal VAE*.  
-:running: [TM2T](https://ericguo5513.github.io/TM2T) - Learns the mutual mapping between texts and motions through the discrete motion token.  
-:dancer: [TM2D](https://garfield-kh.github.io/TM2D/) - Generates dance motions with text instruction.  
+:ok_woman: [T2M](https://ericguo5513.github.io/text-to-motion) - The first work on HumanML3D that learns to generate 3D motion from textual descriptions, with *temporal VAE*.
+:running: [TM2T](https://ericguo5513.github.io/TM2T) - Learns the mutual mapping between texts and motions through the discrete motion token.
+:dancer: [TM2D](https://garfield-kh.github.io/TM2D/) - Generates dance motions with text instruction.
 :honeybee: [MoMask](https://ericguo5513.github.io/momask/) - New-level text2motion generation using residual VQ and generative masked modeling.
 
 ## How to Obtain the Data
@@ -52,9 +52,9 @@ conda activate torch_render
 In the case of installation failure, you could alternatively install the following:
 ```sh
 - Python==3.7.10
-- Numpy          
-- Scipy          
-- PyTorch        
+- Numpy
+- Scipy
+- PyTorch
 - Tqdm 
 - Pandas
 - Matplotlib==3.3.4     // Only for animation

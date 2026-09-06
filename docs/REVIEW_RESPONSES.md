@@ -56,7 +56,7 @@ finding, cited to this review. `../REBUILD_SPEC.md` §1, §2, and the vendor-dec
 all updated from "flagged as unconfirmed" / "likely SMPL (unconfirmed)" to confirmed, with the
 consequence (PoseScript's licence stacks CC BY-NC-SA 4.0 on top of the full SMPL chain, not
 instead of it) stated explicitly. `../POSITIONING.md` §1 updated from "likely inherits" to
-"VERIFIED, peer review."
+"VERIFIED, review."
 **Verification:** none performed independently by the producing agent — this finding is taken on
 the reviewing session's direct fetch, as the review states. Not re-fetched here; if that matters,
 say so and it will be re-verified independently before being relied on further.

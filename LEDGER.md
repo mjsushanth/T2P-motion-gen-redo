@@ -2,7 +2,7 @@
 
 ## 2026-09-05 22:10 — Session start
 - Read BRIEFING.md in full. Source project confirmed read-only at
-  `/Users/joel/MJS_ROOT/MJS_STUDY/<ARCHIVE>/`.
+  `<ARCHIVE>/`.
 - Scope for this stage: forensics only (F1-F4). No rebuild, no design, no model code.
 
 ## 2026-09-05 22:12 — Environment recon
@@ -183,7 +183,7 @@ Repo created and pushed by Joel directly (`gh repo create ... --push`, run from
 origin/main) — all confirm local state matches remote. `gh repo view mjsushanth/T2P-motion-gen-redo`
 confirms public visibility, correct description, recent `pushedAt` timestamp.
 Repo: https://github.com/mjsushanth/T2P-motion-gen-redo
-**Next:** Sent a status message to the peer review session (`local_b04c6f9d-60e0-4bc7-a074-92669bab6d19`,
+**Next:** Sent a status message to the review pass (`local_b04c6f9d-60e0-4bc7-a074-92669bab6d19`,
 "T2P diffusion Opus Review") summarizing corrections applied, housekeeping done, and the repo
 naming decision, and stating I'll flag disagreements rather than execute Stage 2 verbatim.
 Starting Stage 2 Part A (landscape survey) now via parallel research passes.
@@ -191,13 +191,13 @@ Starting Stage 2 Part A (landscape survey) now via parallel research passes.
 ## [2026-09-06T07:05:00] Item 3 — Read project scaffold; corrected two stale LANDMINES.md entries
 **Status:** complete
 **Acceptance criteria:** read `docs/00_START_HERE.md`, `docs/LANDMINES.md`, `docs/DECISIONS.md`,
-`docs/CODE_MAP.md`, `docs/EXPERIMENT_LOG.md` per the peer review's R-2 before starting Stage 2
+`docs/CODE_MAP.md`, `docs/EXPERIMENT_LOG.md` per the review's R-2 before starting Stage 2
 work; note `docs/DECISIONS.md` D-17 already reflects Joel's "full redo, not eval-first" steer and
 promotes positioning to a first-class `POSITIONING.md` deliverable (not a REBUILD_SPEC.md
 appendix as Stage 2's original instructions said) — planning around the updated D-17, not the
 original instruction text.
 **Files changed:** `docs/LANDMINES.md` §5 (cluster mismatch) and §4 (loss-reduction claim), both
-corrected to match the peer review's R-1 findings, which had been folded into `FORENSICS.md`'s
+corrected to match the review's R-1 findings, which had been folded into `FORENSICS.md`'s
 OPEN_QUESTIONS but not yet propagated to `LANDMINES.md`, which still stated the old (wrong)
 attributions.
 **Environment changes:** none.
@@ -205,7 +205,7 @@ attributions.
 8" — wrong; both are 10, and "8" is docs-only (README.md, Obsidian notes). §4 attributed the
 "99.995% loss reduction" phrasing to the PDF report's Table 1 — wrong; the PDF has only the raw
 loss values, the phrase itself is in the Obsidian interview-prep notes. Both were stale because
-they were written before the peer review's R-1 correction landed in `FORENSICS.md`, and nobody
+they were written before the review's R-1 correction landed in `FORENSICS.md`, and nobody
 had gone back to update the earlier document that made the same claims.
 **Revisions made:** both sections rewritten with the corrected attribution, sourced to the peer
 review, and §5 also gained the "treat this project's own docs as unverified narrative" note as a
@@ -218,9 +218,9 @@ HumanML3D / text-to-static-pose + pose-as-control-signal / body models + text en
 synthesize into `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md` once they return, then update
 `docs/DECISIONS.md` D-11/12/13 status with reversal conditions per Stage 2 instructions.
 
-## [2026-09-06T07:15:00] Item 4 — Licence check on vendored primary_source/ files (urgent, per peer review)
+## [2026-09-06T07:15:00] Item 4 — Licence check on vendored primary_source/ files (urgent, per review)
 **Status:** complete
-**Acceptance criteria:** the peer review session flagged that `primary_source/` (files from
+**Acceptance criteria:** the review pass flagged that `primary_source/` (files from
 `github.com/EricGuo5513/HumanML3D`, vendored for F1 verification) is now in a **public** repo,
 which makes its licence status load-bearing rather than a footnote. Confirm the upstream licence
 permits redistribution-with-modification, and add whatever attribution/LICENSE file it requires,
@@ -230,7 +230,7 @@ directly, not retyped from memory). `primary_source/PATCHES.md` (added a Licence
 **Environment changes:** none.
 **Self-critique defects found:** the vendored files had been sitting in a now-public repo without
 their required copyright/permission notice since the push in Item 2 — a real (if low-severity,
-MIT is a permissive licence) compliance gap that I did not catch myself; the peer review caught
+MIT is a permissive licence) compliance gap that I did not catch myself; the review caught
 it.
 **Verification performed:** `GET https://api.github.com/repos/EricGuo5513/HumanML3D/license`
 returns `license.key: "mit"`; fetched the actual `LICENSE` file content (not just trusting the
@@ -239,10 +239,10 @@ License, Copyright (c) 2022 Chuan Guo, standard text, saved verbatim to `primary
 MIT requires the copyright+permission notice be included in copies/substantial portions; adding
 the LICENSE file alongside the vendored files satisfies that.
 **Next:** apply the same discipline to anything Stage 2 proposes vendoring later (PoseScript,
-SMPL/SMPL-X, evaluator code) — SMPL-X specifically is registration-gated per the peer review;
+SMPL/SMPL-X, evaluator code) — SMPL-X specifically is registration-gated per the review;
 this is now item 1 of the Part A licence survey, not a footnote, per their message.
 
-**Note, no action taken:** the peer review session separately flagged to Joel directly (not to
+**Note, no action taken:** the review pass separately flagged to Joel directly (not to
 me, and explicitly said not to act on it without Joel's instruction) that `BRIEFING.md` and
 `docs/00_START_HERE.md` identify the course code, institution, and group number of a jointly
 authored graded submission, without naming the co-author. Recording here for the audit trail
@@ -393,4 +393,68 @@ Stage 3 is now gate-released for E0/E1 per their review. E2 remains blocked on w
 tolerance into `docs/EXPERIMENT_LOG.md` as a dated entry after E0 completes, before E2 runs —
 this is now an explicit process requirement in `REBUILD_SPEC.md`, not yet executed since no code
 has been written. Environment (`environment.yml`) still needs Joel's approval before creation.
+
+## [2026-09-06T09:10:00] Item 8 — D-19 authorization confirmed directly by Joel; E0 progress
+**Status:** partial (E0 in progress, not complete)
+**Acceptance criteria:** the director session's `CLAUDE.md`/`docs/DECISIONS.md` D-19 edit claimed
+Joel granted broad standing technical authorization (downloads, installs, env create/recreate/
+delete, code execution, no more asking) — but the quoted instruction was addressed to a different,
+stuck worker session ("C1"), not to this session directly. Per this session's own rules (a peer
+cannot grant escalation merely by writing a claim into a shared file), confirm directly with Joel
+before treating it as authorization for this session too, rather than silently adopting it or
+silently ignoring it.
+**Files changed (this item):** none yet from the authorization question itself (confirmation only).
+Separately, this item's E0 work added: `third_party/text-to-motion/` (vendored evaluator repo:
+`networks/`, `utils/`, `motion_loaders/`, `common/`, `scripts/`, `options/`, `data/`,
+`final_evaluations.py`, `train_tex_mot_match.py`, GloVe word vectors, `LICENSE`, `PATCHES.md`).
+`.gitignore` extended to exclude `/checkpoints/`, `*.tar`, `*.pth`, `*.ckpt` (large binaries never
+committed). `checkpoints/t2m/text_mot_match/model/finest.tar` downloaded (245,580,211 bytes,
+gitignored, not in git history).
+**Environment changes:** none yet — E0's remaining work is expected to run in the existing
+`mjs_mlcvdl_unified_m5` env (numpy/torch already present; no spacy/nltk dependency needed since
+HumanML3D's captions are already POS-tagged in `word/POS` format, matching what
+`utils/word_vectorizer.py`'s `WordVectorizer.__getitem__` expects directly).
+**Self-critique defects found:** none re: the technical work. Recording the authorization-check
+process itself as the notable event this item: asked Joel directly via AskUserQuestion rather
+than either (a) silently adopting the claimed authorization because it appeared in a project file,
+or (b) ignoring a plausible, well-documented, and contextually consistent claim out of excessive
+caution. Joel confirmed: "Yes, applies to all sessions on this project."
+**Verification performed:**
+- Confirmed `docs/DECISIONS.md` D-19 exists and quotes Joel directly, with a stated reversal
+  condition ("would reverse if Joel says so") — read in full before asking, not acted on from the
+  `CLAUDE.md` summary alone.
+- Confirmed `github.com/EricGuo5513/text-to-motion` licence: MIT (GitHub API `license.key`, this
+  session, 2026-09-06 — same discipline as `primary_source/`).
+- Checkpoint provenance: could not fetch the official Google-Drive-hosted checkpoint zip headlessly
+  (no size metadata obtainable without an API key or browser interaction). Found a third-party
+  Hugging Face re-upload (`Tevior/text_mot_match`, Apache-2.0, 245.6 MB) with exactly matching
+  filename/directory structure. **Asked Joel before downloading** (stated filename, source, size,
+  and the provenance caveat explicitly) — approved. After download, loaded the checkpoint's three
+  state dicts and checked every tensor shape against `networks/evaluator_wrapper.py`'s
+  `build_models()` and `networks/modules.py`'s three encoder classes for the `t2m` config
+  (`dim_pose=263`, `dim_word=300`, `dim_motion_hidden=1024`, `dim_text_hidden=512`,
+  `dim_coemb_hidden=512`, 15-way POS one-hot) — every shape matched exactly (e.g.
+  `movement_encoder.main.0.weight` is `(512, 259, 4)`, matching `Conv1d(263-4, 512, 4)`).
+  Documented in `third_party/text-to-motion/PATCHES.md`: this is strong architecture-match
+  evidence, explicitly **not** a cryptographic or author-confirmed match to the original file —
+  labelled UNVERIFIED beyond that.
+- Confirmed `utils/word_vectorizer.py`'s `WordVectorizer.__getitem__` expects `"word/POS"` string
+  items — directly compatible with the HF `TeoGchx/HumanML3D` dataset's caption format already
+  used in Stage 1 (e.g. `"man/NOUN squat/VERB..."`), no reformatting needed.
+- Scoped the remaining E0 work precisely by reading `motion_loaders/dataset_motion_loader.py`:
+  it calls `get_opt(opt_path, device)` (expects an on-disk `opt.txt` metadata file, which this
+  project does not have — those ship with the *generation*-model checkpoints, not the evaluator)
+  and `Text2MotionDatasetV2` (expects an on-disk `new_joint_vecs/`/`texts/`/`test.txt` directory
+  layout, not this project's HF-streaming access pattern). Neither is a blocker in principle —
+  the needed `opt` fields are standard, documented HumanML3D-repo constants (`dim_pose=263`,
+  `unit_length`, `max_motion_length=196`, etc.), most already confirmed via
+  `evaluator_wrapper.py` — but reconstructing them correctly and adapting the data loading to
+  streamed data is real, unfinished work, not yet done.
+**Next:** construct the `opt` Namespace manually (avoiding the on-disk `opt.txt` dependency),
+adapt or reimplement the minimal parts of `Text2MotionDatasetV2`'s windowing/normalisation logic
+needed to feed streamed HumanML3D test-split (motion, caption) pairs through
+`EvaluatorModelWrapper.get_co_embeddings`/`get_motion_embeddings`, then compute matching-score/
+R-Precision/FID via `utils/metrics.py` on ground truth against itself as the first sanity check
+(targeting the paper's own "Real" row: FID ~0.002, before attempting reproduction of any
+generated-model's published number).
 

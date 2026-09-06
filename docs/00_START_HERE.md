@@ -10,8 +10,8 @@
 
 **This project exists because a three-month research project produced no measurement.**
 
-In spring 2026 Joel and a partner built a CLIP-conditioned diffusion model for text-to-pose
-generation on HumanML3D, for the course at . It ran. It trained. It produced a
+I built a CLIP-conditioned diffusion model for text-to-pose
+generation on HumanML3D, as a graduate course project. It ran. It trained. It produced a
 9-page NeurIPS-format report. And every number in that report is a **training loss**.
 
 There is no validation loop, no test-split evaluation, no seeding, no experiment tracking,
@@ -106,7 +106,7 @@ is expected to propose changes the original never considered — not to rebuild 
 
 ### Real
 ```
-../BRIEFING.md              forensic read of the original project by Opus 5, 2026-09-05.
+../BRIEFING.md              forensic read of the original project by the review pass, 2026-09-05.
                             Findings F1-F5, each with a confidence label and a test recipe.
 <ARCHIVE>/...           the original project. READ-ONLY. 2 notebooks, a PDF report,
                             3 READMEs, a Windows/CUDA conda env, EDA artifacts.

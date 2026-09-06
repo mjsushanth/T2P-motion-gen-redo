@@ -67,7 +67,7 @@ numbers, while diffusion variants (StableMoFusion) closed most of the gap. MDM's
 is a useful sanity floor: **a rebuilt diffusion baseline that cannot beat roughly this number is
 not yet in the range where the field's numbers are comparable.**
 
-**R-Precision is saturated at the frontier — flagged by peer review (`reviews/REVIEW_QUEUE.md`
+**R-Precision is saturated at the frontier — flagged by review (`reviews/REVIEW_QUEUE.md`
 SUP-20260906-02), independently checkable from the table above.** StableMoFusion's R-Prec-top3
 (0.841) and MoMask's (0.807) both **exceed the "Real"/ground-truth row's own 0.797.** Generated
 motion outscoring real motion on a metric means that metric has no dynamic range left at the
@@ -278,7 +278,7 @@ licence in §4.1/4.2, inherited by anything built on it.
   data-scale artifact, though partially fixable with targeted synthetic data.
 - ["Left-Right Symmetry Breaking in CLIP-style VLMs"](https://arxiv.org/abs/2601.12809) (ICML
   2026): left-right competence is a fragile, trained-in artifact tied to a specific "horizontal
-  attention gradient," not a robust representation. **Scope caveat (peer review,
+  attention gradient," not a robust representation. **Scope caveat (review,
   `reviews/REVIEW_QUEUE.md` SUP-20260906-01):** this paper is a controlled **1D synthetic
   testbed** — Transformer encoders trained on synthetic spatial-relation data, not CLIP ViT-B/32
   evaluated on real captions. It is mechanistic evidence that this failure mode *can* arise
@@ -321,7 +321,7 @@ licence in §4.1/4.2, inherited by anything built on it.
 
 ## OPEN_QUESTIONS carried from Part A research
 
-1. ~~Whether PoseScript's poses are literally SMPL pose parameters~~ **RESOLVED (peer review,
+1. ~~Whether PoseScript's poses are literally SMPL pose parameters~~ **RESOLVED (review,
    `reviews/REVIEW_QUEUE.md` SUP-20260906-03):** confirmed directly from
    `github.com/naver/posescript` — PoseScript's poses are **SMPL+H G format**, i.e. genuine SMPL
    body-model parameters. The load-bearing assumption in this document and in `REBUILD_SPEC.md`

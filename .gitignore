@@ -5,3 +5,12 @@ __pycache__/
 .env
 *.egg-info/
 .pytest_cache/
+
+# large binary checkpoints/data -- never committed, re-downloaded via a documented fetch step
+/checkpoints/
+*.tar
+*.pth
+*.ckpt
+
+# local pointer to the read-only original-project archive (not published)
+.archive_path

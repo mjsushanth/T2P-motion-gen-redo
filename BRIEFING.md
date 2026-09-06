@@ -1,10 +1,10 @@
-# T2P Reboot — Forensic Briefing (Opus 5, 2026-09-05)
+# T2P Reboot — Forensic Briefing (the review pass, 2026-09-05)
 
 Source project (READ-ONLY, do not modify):
-`/Users/joel/MJS_ROOT/MJS_STUDY/<ARCHIVE>/`
+`<ARCHIVE>/`
 - `DL_T2P_IMPL.ipynb` (87 cells; implementation lives in 4 monolithic cells: #13, #31, #41, #47 — 44k/46k/52k/101k chars)
 - `DL_T2P_V2 (EDA).ipynb` (48 cells)
-- `the original project report (PDF)` — NeurIPS-format report, 9 pages
+- the original project report (PDF) — NeurIPS-format report, 9 pages
 - `README.md`, `RESEARCH_README.md`, `DESIGN_README.md`, `dl_t2p_proj_0321.yml` (win-64 + CUDA 11.8 conda env)
 
 Obsidian notes (READ-ONLY):
@@ -76,9 +76,9 @@ EDA `extract_static_poses` clusters poses taken from a **random frame** per sequ
 un-normalised `[:66]` slice (which under F1 includes root height and root velocity, so K-means is
 partly clustering *how fast the root is moving*). Training then uses the **first frame** of the same
 sequences with those cluster labels. The labels do not describe the vectors being trained on.
-**CORRECTED 2026-09-05 (Opus 5, after C1's Stage 1):** the briefing originally said "EDA
+**CORRECTED 2026-09-05 (after the Stage 1 forensics):** the briefing originally said "EDA
 `main()` uses `n_clusters=10`; the paper and sampling config use 8." That framing was wrong.
-Both notebooks use **10** consistently, as C1 verified. The "8" comes from the *documentation*
+Both notebooks use **10** consistently, as the build pass verified. The "8" comes from the *documentation*
 — `README.md` ("8-cluster balanced sampling strategy") and the Obsidian deep dive ("8 pose
 clusters (K-means)") — never from the code. The PDF states no cluster count at all. So the
 discrepancy is real but it is **docs-vs-code**, not EDA-vs-IMPL. Resolves C1's OPEN_QUESTION 1.
@@ -87,7 +87,7 @@ Two further docs-vs-code contradictions found while resolving this, both VERIFIE
 - The PDF (§1.1.2) says "K-means clustering was then performed **on the reduced embeddings**."
   The code fits KMeans on the **raw 66-d** vectors (`cluster_poses(poses)` where `poses` is the
   un-reduced slice). The PCA/t-SNE outputs were used for plotting only.
-- `README.md` claims the sampling "avoided 49.6% cluster dominance." C1 measured cluster 0 at
+- `README.md` claims the sampling "avoided 49.6% cluster dominance." the build pass measured cluster 0 at
   **38.77%** directly from `clusters.npy`. The 49.6% figure is not reproducible from the saved
   artifacts.
 
@@ -105,8 +105,8 @@ experiment tracking (no wandb/mlflow/tensorboard). The only numbers reported any
 different objects (Phase 1's 1.5e15 is a bug artifact, not a measurement), so the
 "99.995% loss reduction" framing is not a valid comparison.
 
-**CORRECTED 2026-09-05 (Opus 5):** the briefing originally called that the *paper's* headline.
-It is not. The string "99.995" appears **zero times** in `the original project report (PDF)`
+**CORRECTED 2026-09-05 :** the briefing originally called that the *paper's* headline.
+It is not. The string "99.995" appears **zero times** in the original project report (PDF)
 (VERIFIED by `pdftotext` + grep). The PDF reports only the raw Table 1 values. The 99.995%
 framing appears five times in the **Obsidian deep dive** — including in the scripted interview
 answer at line 3139. That makes it a *study-notes* claim rather than a published one, which
@@ -143,7 +143,7 @@ No package, no config objects, no tests, no CLI, no seeds, hardcoded Windows pat
 ## Findings added after Stage 1 (supervisor audit of the generative core)
 
 Stage 1 covered the data pipeline. These come from an audit of the diffusion math in
-`DL_T2P_IMPL.ipynb` cell 47, done while C1 was running the Stage 2 landscape survey.
+`DL_T2P_IMPL.ipynb` cell 47, done while the build pass was running the Stage 2 landscape survey.
 All three are **VERIFIED by direct code reading**; full detail in `docs/LANDMINES.md` §11-12.
 
 ### F6 — CFG is applied to the training objective. [VERIFIED — root-cause grade]
@@ -153,6 +153,12 @@ always > 1 in Phase 3. The objective has a zero-loss solution at `c = u = eps`, 
 does not require the model to use the caption. This is the mechanism-level explanation for
 "semantically random poses" that F1 alone does not supply — and it means Phase 3's lower loss
 is not evidence that text conditioning worked. `docs/LANDMINES.md` §11.
+
+**F6 was intentional, not a slip** (found by the audit, verified independently 2026-09-06):
+cell 46's markdown states "implementation uses progressive guidance scaling **during training**"
+and "**loss uses** `run two parallel forward` concept." The report lists "Dual-Path
+Classifier-Free Guidance" as a headline Phase 3 improvement. The code matched the intent; the
+intent was wrong. No amount of code review finds this — only a measurement does.
 
 ### F7 — One timestep steps the whole batch. [VERIFIED]
 `scheduler.step(..., timestep=t[0].item(), sample=noisy_poses)` while `t` is per-sample. The

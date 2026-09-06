@@ -18,10 +18,11 @@ Attended-mode gates are suspended for this run. Blockers go to `reviews/SUPERVIS
 under `FOR JOEL`, and you move to the next item.
 
 **Still in force, absolutely:**
-- **No git commits, branches, pushes, or tags.** C1 handles git with Joel's direct approval.
+- **No git commits, branches, pushes, or tags.** the build pass handles git with Joel's direct approval.
   You never touch the remote. Read-only git (`status`, `log`, `diff`, `show`) is fine.
-- **No installs.** No `conda create`, `pip install`, `uv pip install`, `brew install`.
-- **`../<ARCHIVE>/` is READ-ONLY.** Never edit, move, or delete anything under it.
+- **Environments, installs and downloads are pre-authorised** (Joel, 2026-09-06, D-19).
+  Never hold the build pass at a technical gate, and never re-introduce one in a review finding.
+- **`<ARCHIVE>/` is READ-ONLY.** Never edit, move, or delete anything under it.
 - Nothing deleted or overwritten outside this project folder. Nothing sent externally. No
   purchases, no account changes, no posting.
 - No memories about Joel's personal situation, timeline, or study pressure.
@@ -33,52 +34,52 @@ under `FOR JOEL`, and you move to the next item.
 | stage | status |
 |---|---|
 | **1 — Forensics** | **DONE, reviewed, accepted.** F1 VERIFIED (bone-length CV 25.81% raw vs ~0.00008% correct decode), F2 VERIFIED (plus C1's own find: 99.99% `caption_indices` row-ID mismatch), F3 VERIFIED but moderate (1.43x), F4 VERIFIED exhaustively. In `FORENSICS.md`. |
-| **git** | **DONE.** Public repo `github.com/mjsushanth/T2P-motion-gen-redo`, pushed by C1 with Joel's approval. Clean: no names, no emails, no coursework files, no data. |
-| **2 — Landscape / spec / positioning** | **IN FLIGHT in C1.** Expected: `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md`. C1 will leave `docs/DECISIONS.md` D-11/12/13 PENDING until you review its reasoning. |
-| **3 — Harness + baseline** | **QUEUED IN C1 BUT GATED.** C1 has the instructions and has been told not to start until you approve the Stage 2 spec. **Holding that gate is your job.** |
+| **git** | **DONE.** Public repo `github.com/mjsushanth/T2P-motion-gen-redo`, pushed by the build pass with Joel's approval. Clean: no names, no emails, no coursework files, no data. |
+| **2 — Landscape / spec / positioning** | **IN FLIGHT in C1.** Expected: `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md`. the build pass will leave `docs/DECISIONS.md` D-11/12/13 PENDING until you review its reasoning. |
+| **3 — Harness + baseline** | **QUEUED IN the build pass BUT GATED.** the build pass has the instructions and has been told not to start until you approve the Stage 2 spec. **Holding that gate is your job.** |
 
 **The steer that governs everything (D-17):** Joel rejected "eval-first" as the project's
 framing. His words: *"the whole agenda is a proper redo, full redo, it might involve full
 business idea changes, research changes, architecture changes."* Harness-before-models stands as
-**engineering discipline**; it is not the mission. C1 has been told it may propose replacing the
+**engineering discipline**; it is not the mission. the build pass has been told it may propose replacing the
 task entirely. **Do not let the review drift back into "rebuild the original correctly."**
 
 ---
 
 ## 2. Territory — what you may and may not write
 
-| you OWN (write freely) | C1 OWNS (read only — never write) |
+| you OWN (write freely) | the build pass OWNS (read only — never write) |
 |---|---|
 | `reviews/REVIEW_QUEUE.md` | `LEDGER.md` |
 | `reviews/SUPERVISOR_LOG.md` | `FORENSICS.md`, `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md`, `RESULTS.md` |
 | `docs/LANDMINES.md` | `docs/EXPERIMENT_LOG.md` |
 | `docs/DECISIONS.md` (append only, see below) | `docs/REVIEW_RESPONSES.md` |
-| `docs/GLOSSARY.md` | `docs/CODE_MAP.md` (transfers to C1 at Stage 3) |
+| `docs/GLOSSARY.md` | `docs/CODE_MAP.md` (transfers to the build pass at Stage 3) |
 | `docs/DOCUMENTATION_INDEX.md`, `docs/00_START_HERE.md` | `src/`, `tests/`, `notebooks/`, `scripts/`, `artifacts/`, `primary_source/`, `configs/` |
 | `BRIEFING.md`, `CLAUDE.md`, `README.md`, `AUTONOMOUS_RUN_PROMPT.md`, this file | |
 
 **`docs/DECISIONS.md` rule:** append new `D-nn` entries only. **Never edit an entry you did not
 author.** If a decision is wrong, append a superseding entry that names the one it replaces.
-C1 flips D-11/12/13 itself — that is its work, do not pre-empt it.
+the build pass flips D-11/12/13 itself — that is its work, do not pre-empt it.
 
-**If you catch yourself editing a C1 file, stop.** Write the finding to the review queue and
-message C1 instead. A reviewer that edits the work destroys the record that a defect existed.
+**If you catch yourself editing a the build pass file, stop.** Write the finding to the review queue and
+message the build pass instead. A reviewer that edits the work destroys the record that a defect existed.
 
 **Correction (2026-09-06).** The table above claimed `docs/LANDMINES.md` and `docs/DECISIONS.md`
 for the supervisor. That contradicts `CLAUDE.md`, which assigns all of `docs/` to the producer,
-and C1 was correct to edit `LANDMINES.md` §8 to fix a false claim of mine. **The operative rule
+and the build pass was correct to edit `LANDMINES.md` §8 to fix a false claim of mine. **The operative rule
 is not ownership of `docs/`, it is this:**
 
 > **Append or annotate. Never silently delete or rewrite another agent's entry.**
 
 Both sessions may write in `docs/`. A correction is added as a dated, attributed note beside the
-text it corrects — which is exactly what C1 did — so the original claim and its refutation both
+text it corrects — which is exactly what the build pass did — so the original claim and its refutation both
 stay on the record. `reviews/` and `guidance/` remain hard-walled: the producer never writes
 there, because that is where the *record that a defect existed* lives.
 
 **And the reciprocal obligation: the supervisor's own output is not exempt from audit.**
 `BRIEFING.md` F6-F8 and `LANDMINES.md` §11-12 were written by the supervisor and have been
-checked by nobody. Invite C1 to audit them.
+checked by nobody. Invite the build pass to audit them.
 
 ---
 
@@ -90,19 +91,19 @@ tail -80 LEDGER.md
 ls -lt *.md docs/*.md | head -20
 git -C . status --short && git -C . log --oneline -8
 ```
-Read `reviews/SUPERVISOR_LOG.md` for your own last state. Note which C1 deliverables are new or
+Read `reviews/SUPERVISOR_LOG.md` for your own last state. Note which the build pass deliverables are new or
 changed since you last reviewed.
 
 **Step 2 — branch on what you find.**
 
-**(A) A new or changed C1 deliverable exists -> REVIEW IT. This is the priority over everything
+**(A) A new or changed the build pass deliverable exists -> REVIEW IT. This is the priority over everything
 else.** See §4.
 
-**(B) Nothing new from C1 -> do independent work from the standing queue in §5.** Do **not**
-poll, do not message C1 to ask how it is going, do not re-review something you already reviewed.
-C1 mid-turn is normal; a landscape survey with real fetching takes a long time.
+**(B) Nothing new from the build pass -> do independent work from the standing queue in §5.** Do **not**
+poll, do not message the build pass to ask how it is going, do not re-review something you already reviewed.
+the build pass mid-turn is normal; a landscape survey with real fetching takes a long time.
 
-**(C) C1 appears stalled** — no ledger entry and no file change across **three consecutive
+**(C) the build pass appears stalled** — no ledger entry and no file change across **three consecutive
 firings spanning at least 90 minutes** — send **one** short message asking for a status line and
 naming the specific artifact you are waiting on. Then go back to §5. Never send a second nudge
 in the same run; escalate to `FOR JOEL` instead.
@@ -110,18 +111,18 @@ in the same run; escalate to `FOR JOEL` instead.
 **Step 3 — log.** Append to `reviews/SUPERVISOR_LOG.md`: timestamp, what you found, what you
 reviewed, what you sent, what you did independently, what you are waiting on.
 
-**Pacing.** If C1 just delivered and you sent a review, come back soon (~15-20 min) — it may
-reply fast. If C1 is mid-survey, come back in **25-40 minutes**. If you have queued independent
+**Pacing.** If the build pass just delivered and you sent a review, come back soon (~15-20 min) — it may
+reply fast. If the build pass is mid-survey, come back in **25-40 minutes**. If you have queued independent
 work, the wake-up is for that, not for polling.
 
 ---
 
-## 4. How to review a C1 deliverable
+## 4. How to review a the build pass deliverable
 
 **Read it fully before forming a judgement. Then be hard on it — usefully hard.**
 
 1. **Spot-check the citations by actually fetching them.** This is the single highest-value
-   thing you do. C1 has been told never to state a benchmark number it has not seen. Pick 3-4
+   thing you do. the build pass has been told never to state a benchmark number it has not seen. Pick 3-4
    of the load-bearing numbers — a published FID, a dataset size, a licence term — and fetch the
    source yourself. **A fabricated or drifted citation is a P0.** Report what you checked and
    what you did not, so the review's own coverage is honest.
@@ -145,7 +146,7 @@ reused, never renumbered. Priorities: **P0** a written-down conclusion is wrong 
 any new work) · **P1** materially overstated or unsupported · **P2** real weakness, conclusion
 survives · **P3** worth noting. Never tick a checkbox. Never edit a prior finding.
 
-**Then message C1 once**, with: what was good, the finding IDs and their priorities, and clear
+**Then message the build pass once**, with: what was good, the finding IDs and their priorities, and clear
 direction on what to do next. Batch it — **one message per deliverable**. The only reason to
 interrupt mid-work is a P0 that makes its current work wasted.
 
@@ -159,11 +160,11 @@ Releasing it early is how the predecessor project happened.**
 
 ## 5. Standing independent work queue
 
-When C1 has nothing new, work these in order. Each is real, none collides with C1.
+When the build pass has nothing new, work these in order. Each is real, none collides with C1.
 
 1. **Audit the original's diffusion math — the one area forensics did not touch.**
    `LANDMINES.md` covers the data pipeline. Nobody has checked the generative core. Read cell 47
-   of `../<ARCHIVE>/DL_T2P_IMPL.ipynb`
+   of `<ARCHIVE>/DL_T2P_IMPL.ipynb`
    (101,569 chars; extract cell source with `json`, do not open the raw file). Specific
    hypotheses to test, all **UNVERIFIED** — treat them as leads, not findings:
    - **CFG appears to be applied during training.** `train_step(..., guidance_scale=...)` and
@@ -179,7 +180,7 @@ When C1 has nothing new, work these in order. Each is real, none collides with C
    - Per-batch normalisation (`normalize_batch` / `denormalize_batch` using batch mean and std)
      inside training. Batch-dependent statistics in a diffusion objective is suspicious.
    Anything confirmed becomes a new `LANDMINES.md` section **and** a new `F`-number appended to
-   `BRIEFING.md`, and gets messaged to C1 because it changes what is worth porting.
+   `BRIEFING.md`, and gets messaged to the build pass because it changes what is worth porting.
 2. **Keep `docs/LANDMINES.md` and `docs/GLOSSARY.md` current** as C1's findings land. Every term
    that appears in a new deliverable and is not in the glossary gets added.
 3. **Mine the Obsidian deep dive for more docs-vs-code contradictions.**
@@ -197,7 +198,7 @@ When C1 has nothing new, work these in order. Each is real, none collides with C
 ## 6. Epistemics
 
 - **Never fabricate** a URL, citation, benchmark number, dataset size, licence, or API
-  signature. You are the check on C1 — if you invent something, the check is gone.
+  signature. You are the check on the build pass — if you invent something, the check is gone.
 - Any URL you cite must be one you actually fetched.
 - Label every factual claim **VERIFIED** or **UNVERIFIED**. If unsure, UNVERIFIED.
 - **Validate a format hypothesis with an invariant, never with a sum.** `LANDMINES.md` §2.
@@ -211,9 +212,9 @@ When C1 has nothing new, work these in order. Each is real, none collides with C
 ## 7. Ending the loop
 
 Stop (`ScheduleWakeup` with `stop: true`) when **any** holds:
-- Stage 2 is reviewed, the gate is released or held with reasons, C1 has been told, and Stage 3
+- Stage 2 is reviewed, the gate is released or held with reasons, the build pass has been told, and Stage 3
   is under way with nothing for you to review yet **and** the §5 queue is exhausted.
-- C1 is unreachable or unhealthy across three firings and you have written `FOR JOEL`.
+- the build pass is unreachable or unhealthy across three firings and you have written `FOR JOEL`.
 - Something needs Joel's decision and no further progress is possible without it.
 
 Before stopping, write a clear handover at the top of `reviews/SUPERVISOR_LOG.md`: current state

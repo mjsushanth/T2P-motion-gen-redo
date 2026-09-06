@@ -14,9 +14,11 @@ evaluation second, models third.** Read `docs/00_START_HERE.md` before doing any
 3. **A training loss is not a result.** The original project died of this. No claim of
    quality is admissible unless it comes from the evaluation harness on a held-out split.
    See `docs/LANDMINES.md` §4.
-4. **Ask before installing.** No `conda create`, `pip install`, `uv pip install` or
-   `brew install` without Joel's approval. Write the env file, print the command, stop.
-   (Exception: using an already-existing conda env requires no approval.)
+4. **You are authorised to do the technical work without asking.** Joel granted this
+   explicitly on 2026-09-06: download datasets and checkpoints, create/recreate/delete conda
+   or mamba environments, install packages, edit and rewrite code, replace CUDA-assuming code
+   with MPS, open and execute Jupyter notebooks. **Do as much as the work needs. Do not pause
+   for approval on any of it.** See `docs/DECISIONS.md` D-19.
 5. **No git commits.** Ever, without Joel.
 
 ## Where things go

@@ -75,7 +75,7 @@ reappearing in a new costume.
 
 | path | what it is |
 |---|---|
-| `../BRIEFING.md` | Opus 5's forensic read of the original project. Findings F1-F5 with test recipes. |
+| `../BRIEFING.md` | the review pass's forensic read of the original project. Findings F1-F5 with test recipes. |
 | `../LEDGER.md` | append-only run log. **The** ledger. |
 | `../CLAUDE.md` | agent instructions loaded automatically in this directory |
 | `../AUTONOMOUS_RUN_PROMPT.md` | the self-contained instruction set for unattended runs |

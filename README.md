@@ -67,4 +67,4 @@ seeds and a reported spread (`docs/LANDMINES.md` §7).
 
 ## Source material
 
-The original project lives at `../<ARCHIVE>/` and is **read-only**.
+The original project lives at `<ARCHIVE>/` and is **read-only**.

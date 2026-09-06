@@ -2,7 +2,7 @@
 
 Stage: forensics only, per `BRIEFING.md`. No rebuild, no design, no model code written.
 Source project (read-only, untouched):
-`/Users/joel/MJS_ROOT/MJS_STUDY/<ARCHIVE>/`
+`<ARCHIVE>/`
 
 All primary-source files fetched for verification live in `T2P-Reboot/primary_source/`
 (copies from `github.com/EricGuo5513/HumanML3D`, default branch, fetched 2026-09-05).
@@ -184,11 +184,11 @@ against the precomputed artifacts in `pose_diversity_results/` (`caption_indices
 Every sub-claim is backed by quoted code plus directly-inspected precomputed artifacts. The
 99.99% index mismatch is a hard, artifact-verified number, not an inference.
 
-### Addendum — docs-vs-code contradictions (found in peer review follow-up, 2026-09-05)
-Two further discrepancies, both VERIFIED by a peer review session and consistent with F2's
+### Addendum — docs-vs-code contradictions (found in review follow-up, 2026-09-05)
+Two further discrepancies, both VERIFIED by a review pass and consistent with F2's
 overall finding that the project's documentation describes a cleaner pipeline than the code
 actually implements:
-- The PDF report (`the original project report (PDF)`, section 1.1.2) states K-means was "performed
+- The PDF report (the original project report (PDF), section 1.1.2) states K-means was "performed
   on the reduced embeddings." The code fits `KMeans` directly on the raw 66-d slice
   (`kmeans.fit_predict(poses)`, EDA cell 21) — PCA/t-SNE are used only for the separate
   visualization plots, never feed into the actual clustering.
@@ -240,7 +240,7 @@ directionally clear effect supporting F3, though "near-neutral" is a matter of d
 than an all-or-nothing collapse — a nontrivial fraction of frame-0 poses are still meaningfully
 distinct from the corpus average (this is expected: not every clip starts from a dead stop).
 
-**Caveat for downstream use (added after peer review, 2026-09-05):** F3 is the weakest of the
+**Caveat for downstream use (added after review, 2026-09-05):** F3 is the weakest of the
 four verdicts precisely because 1.43x is directionally clear but not dramatic. It supports the
 *mechanism* (frame 0 collapses toward a common pose more than a mid-sequence frame does) but does
 not by itself establish a hard ceiling on achievable model performance — that would need the
@@ -308,7 +308,7 @@ a task design that caps what's learnable regardless.
 
 ## OPEN_QUESTIONS
 
-1. ~~F2's "8 vs 10" claim did not reproduce as stated.~~ **RESOLVED 2026-09-05 (peer review).**
+1. ~~F2's "8 vs 10" claim did not reproduce as stated.~~ **RESOLVED 2026-09-05 (review).**
    Both notebooks do use 10, as I found. The "8" in the original briefing came from
    documentation, not code or the paper: `README.md` says "8-cluster balanced sampling
    strategy" and the Obsidian deep dive says "8 pose clusters (K-means)"; the PDF report states
@@ -328,8 +328,8 @@ a task design that caps what's learnable regardless.
    cross-checked by me.** I did not personally fetch/read the PDF; I'm relying on that agent's
    quoted excerpt (p. 5157, "Pose Representation" section). The code-level confirmation (which I
    did fetch and verify directly, twice, independently) is solid regardless.
-4. ~~Report PDF (`the original project report (PDF)`) was not read in this stage at all.~~
-   **RESOLVED 2026-09-05 (peer review).** A reviewing session read it via `pdftotext -layout` +
+4. ~~Report PDF (the original project report (PDF)) was not read in this stage at all.~~
+   **RESOLVED 2026-09-05 (review).** A reviewing session read it via `pdftotext -layout` +
    grep: the string `99.995` appears **zero times** in the PDF — it reports only the raw Table 1
    loss values, no derived percentage. `99.995% loss reduction` instead appears **five times in
    the Obsidian deep-dive notes** (`DL - T2P Deep Dive.md`), including inside a scripted

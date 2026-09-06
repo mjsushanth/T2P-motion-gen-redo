@@ -45,7 +45,7 @@ run**.
 - **No installs without asking** — `conda create`, `pip install`, `uv pip install`, `brew
   install`. Write the environment file, print the exact command, log it under `OPEN_QUESTIONS`,
   and *work around it* rather than idling. Using an already-existing environment is fine.
-- **`../<ARCHIVE>/` is read-only.** Never edit, move, rename or delete anything under it.
+- **`<ARCHIVE>/` is read-only.** Never edit, move, rename or delete anything under it.
 - No deleting or overwriting anything outside this project folder.
 - Absolute imports only — never `sys.path` manipulation, never `parent.parent` chains.
 - No emojis in code. Python: 4-space indent, type hints on every function signature.
@@ -58,7 +58,7 @@ run**.
 
 ```
 Root:      /Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/
-Archive:   ../<ARCHIVE>/       READ-ONLY. the project being rebuilt.
+Archive:   <ARCHIVE>/       READ-ONLY. the project being rebuilt.
 Notes:     ~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Study_Notes_Obsd/
              091 AI Coursework - Project Deepdives/DL - T2P Deep Dive.md   (86 KB, the
              original author's own notes — mental models, phase narrative, troubleshooting)
@@ -78,14 +78,14 @@ number that raises no error.
 
 ## 2. Environment
 
-**You may use any environment that already exists on this machine without asking.** Check first:
-`conda env list`, and test-import what you need before assuming.
+**STANDING AUTHORISATION, granted by Joel 2026-09-06 — this supersedes the earlier
+ask-first rule.** Create, recreate, and delete conda/mamba environments freely. Install what you
+need. Download datasets and model checkpoints. Prefer `mamba` with a `.yml`, and `uv` over `pip`
+where it fits. A clean rebuild always beats fighting a broken env.
 
-**You may not create or install into one without my approval.** When you need something absent:
-1. Write the full `environment.yml` (mamba solver, macOS ARM) or `pyproject.toml`.
-2. Print the exact create/install command.
-3. Log it under `OPEN_QUESTIONS` in `LEDGER.md`.
-4. **Then keep working on something that does not need it.** Never idle waiting for me.
+**Never pause for approval on technical work.** Downloads, environments, installs, code edits,
+CUDA-to-MPS rewrites, notebook execution — all pre-authorised. Log what you did in the ledger so
+it can be reconstructed; do not ask first.
 
 **Hardware, non-negotiable:** Apple Silicon, ~24 GB unified memory, **no CUDA, no NVIDIA GPU**.
 Use `torch` with MPS (`torch.backends.mps.is_available()`). Never write CUDA-assuming code.
@@ -335,8 +335,8 @@ Assume you will be interrupted, compacted, or restarted at any moment.
 ## 13. Guardrails (restated — these do not relax as the run gets long)
 
 - No git commits, branches, or pushes.
-- No installs without asking (§2). Existing environments are fine.
-- `../<ARCHIVE>/` is read-only. Nothing outside this project folder is deleted or
+- Environments, installs and downloads are pre-authorised (§2). Log them; do not ask.
+- `<ARCHIVE>/` is read-only. Nothing outside this project folder is deleted or
   overwritten.
 - Stay within the ~15 GB data budget. Do not circumvent licence gates.
 - Nothing sent externally, no purchases, no account changes, no posting.

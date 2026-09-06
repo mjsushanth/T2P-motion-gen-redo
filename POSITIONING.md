@@ -10,7 +10,7 @@ as F1 got. No claim here is asserted without the licence/evidence chain that sup
 
 ## 1. The headline, not a caveat: on these datasets, there is no commercial product at the end of this road
 
-**Stated as plainly as the evidence supports, per peer review (`reviews/REVIEW_QUEUE.md`
+**Stated as plainly as the evidence supports, per review (`reviews/REVIEW_QUEUE.md`
 SUP-20260906-04): this is not "consult a lawyer." The prohibition is explicit, and it covers the
 trained model, not just the data.**
 
@@ -19,7 +19,7 @@ policy of AMASS dataset, we are not allowed to distribute the data directly" —
 inherits AMASS/SMPL's licence terms, which are (`LANDSCAPE.md` §4.1/4.2, both VERIFIED by direct
 fetch of the licence pages): non-commercial research/education/art only, no redistribution,
 **explicit prohibition on "training methods/algorithms/neural networks/etc. for commercial use."**
-**VERIFIED, peer review, SUP-20260906-03:** PoseScript's poses are SMPL+H G format — genuine SMPL
+**VERIFIED, review, SUP-20260906-03:** PoseScript's poses are SMPL+H G format — genuine SMPL
 parameters — so it inherits the identical chain, stacked on top of its own CC BY-NC-SA 4.0. The
 `smplx` Python package itself is bundled under the same non-commercial terms as the model data,
 not separately permissively licensed (`LANDSCAPE.md` §4.3).
@@ -59,7 +59,7 @@ matters enough to shape §4 below.
 
 ## 2. As a learning artifact — real, and already partly delivered
 
-Four separately-verified findings (F1-F4, `FORENSICS.md`) plus two more found by a peer review's
+Four separately-verified findings (F1-F4, `FORENSICS.md`) plus two more found by a review's
 deeper audit (`docs/LANDMINES.md` §11, §12 — CFG folded into the training loss making the
 objective trivially satisfiable by ignoring conditioning; per-batch normalisation and a
 mis-indexed timestep corrupting the anatomy-loss computation) constitute a genuinely rare
@@ -84,12 +84,12 @@ project" is a genuinely good story — process, not just outcome, and it demonst
 kind of scepticism ("does the arithmetic summing to 263 actually mean the layout is right?
 No — validate with an invariant") that a technical interviewer wants to see.
 
-**The specific caution, already surfaced by peer review and explicitly not mine to act on:**
+**The specific caution, already surfaced by review and explicitly not mine to act on:**
 the "99.995% loss reduction" framing that this whole project exists to debunk was found, by the
-peer review session, sitting in the Obsidian deep-dive notes **inside a scripted 60-second
+review pass, sitting in the Obsidian deep-dive notes **inside a scripted 60-second
 interview-answer passage** (`LANDMINES.md` §4). That means the number this project disproves is
 specifically one Joel has been rehearsing to say out loud. This document is not the place to
-decide what to do about that — the peer review already raised it with Joel directly, separately
+decide what to do about that — the review already raised it with Joel directly, separately
 from this repo's content, and explicitly said not to act on it without instruction. Recorded here
 only because it's directly relevant to "interview artifact" value: **the corrected story (a real
 bug, found and fixed, with a measured before/after) is a strictly better interview answer than

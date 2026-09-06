@@ -132,7 +132,7 @@ numbers, three different objectives, the first a bug artifact. It reads like a r
 It is not one. It cannot be — a loss is only comparable to another loss over the same
 objective on the same data.
 
-**The evidence.** Table 1 of the original `the original project report (PDF)` reports the three raw
+**The evidence.** Table 1 of the original the original project report (PDF) reports the three raw
 loss values (1.52e15, 1.17, 0.69) with no derived percentage. **Correction (2026-09-05, peer
 review):** the "99.995% loss reduction" phrasing itself does not appear in the PDF at all — a
 `pdftotext -layout` + grep found the string `99.995` zero times in the report. It appears five
@@ -168,7 +168,7 @@ notebook never loads — empirically, `caption_indices[i] != i` for 23,382/23,38
 (99.99%), so training selects essentially arbitrary rows, not merely mislabelled ones
 (`FORENSICS.md` F2).
 
-**Correction (2026-09-05, peer review):** an earlier version of this entry said "the paper and
+**Correction (2026-09-05, review):** an earlier version of this entry said "the paper and
 the sampling config say 8" clusters vs. EDA's 10. That was wrong. Both notebooks, as read, use
 10 consistently — the code never uses 8 anywhere. The "8" traces to **documentation only**:
 `README.md` ("8-cluster balanced sampling strategy") and the Obsidian deep-dive ("8 pose
@@ -284,7 +284,7 @@ single most important thing this project does differently from its predecessor.
 
 ## 11. Classifier-free guidance applied to the TRAINING objective
 
-**Status: VERIFIED (2026-09-05, Opus 5 supervisor audit of `DL_T2P_IMPL.ipynb` cell 47).
+**Status: VERIFIED (2026-09-05, review audit of `DL_T2P_IMPL.ipynb` cell 47).
 This is a root-cause-grade defect on par with §1.**
 
 **The trap.** CFG is an *inference-time* extrapolation. At training time the only correct
@@ -339,6 +339,24 @@ downstream observation is consistent with a working system that just needs more 
    shared-weight network carry coefficients `+7` and `-6`, largely cancelling. The
    `5*tanh(x/5)` output squash and the gradient clipping that the project treats as
    architectural insights are compensations for an amplification the objective created.
+
+**It was not an oversight — it was the documented design.** (Corroboration found by the audit
+of this entry, 2026-09-06; verified independently by the author before adding.) Cell 46's own
+markdown, verbatim:
+
+> "implementation uses progressive guidance scaling **during training** (2.0->7.0 over 50, 100
+> epochs)."
+>
+> "we use `self._forward_with_text` twice, once with `null_text_emb` and once with `text_emb`,
+> helping us on CFG formula. similarly, **loss uses** `run two parallel forward` concept, two
+> predictions are co[mbined]"
+
+This raises the severity rather than lowering it. A typo gets caught by the next reader; a
+believed-correct design gets *written up as a contribution* and defended. The original report
+lists "Dual-Path Classifier-Free Guidance" among Phase 3's seven headline improvements. Nobody
+was going to find this by re-reading the code, because the code matched the intent exactly —
+the intent was wrong. **The only thing that catches this class of error is an evaluation that
+would have shown the text conditioning doing nothing.** Which is the whole argument for D-02.
 
 **Do instead.** Conditioning dropout at training:
 ```python

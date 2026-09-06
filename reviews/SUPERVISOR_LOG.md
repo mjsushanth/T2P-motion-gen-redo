@@ -5,11 +5,11 @@
 
 ## [2026-09-06T03:20Z] Supervisor pass 1 — diffusion-core audit
 
-**C1 state:** Stage 2 Part A in flight (3 research agents). Licence item closed correctly
+**the build pass state:** Stage 2 Part A in flight (3 research agents). Licence item closed correctly
 (HumanML3D = MIT, verified from LICENSE file, vendored verbatim + PATCHES.md). No deliverable
 to review; worked standing queue item 1 instead.
 
-**Reviewed:** nothing from C1 (nothing new).
+**Reviewed:** nothing from the build pass (nothing new).
 
 **Independent work:** audited `DL_T2P_IMPL.ipynb` cell 47 (2,558 lines, extracted via json).
 Three findings, all VERIFIED by direct code reading:
@@ -21,10 +21,10 @@ Three findings, all VERIFIED by direct code reading:
 - **F8** `normalize_batch` rescales `x_0` per batch before noising.
 
 **Files written (my territory):** `docs/LANDMINES.md` §11, §12 (new); `BRIEFING.md` new section
-"Findings added after Stage 1". No C1 file touched.
+"Findings added after Stage 1". No the build pass file touched.
 
 **Sent to C1:** one message — the three findings, plus four concrete consequences for
-`REBUILD_SPEC.md`. Flagged that **D-14 was my error**: I told C1 to preserve the three phases as
+`REBUILD_SPEC.md`. Flagged that **D-14 was my error**: I told the build pass to preserve the three phases as
 an ablation ladder so the F1 fix would be a measured delta; F6 undermines that premise, since
 the phases differ by three interacting bugs rather than by design choices. Proposed keeping one
 reference run and dropping the ladder, invited disagreement.
@@ -44,7 +44,7 @@ dive for further docs-vs-code contradictions; five found so far).
 1. **Public-repo disclosure, your call.** `BRIEFING.md` and `docs/00_START_HERE.md` name the
    course code, institution and group number of a jointly-authored submission whose failures the
    repo documents. Co-author is not named. Scrubbing the three identifiers or making the repo
-   private are both one-minute fixes. C1 told not to act.
+   private are both one-minute fixes. the build pass told not to act.
 2. **Your interview answer contains a claim that is now doubly wrong.** The deep dive's scripted
    60-second answer (line 3139) says the key innovation "reduced loss by 99.995% from baseline."
    That number is not in the paper, compares three different loss functions, and — with F6 — the
@@ -56,8 +56,8 @@ dive for further docs-vs-code contradictions; five found so far).
 
 ## [2026-09-06T04:05Z] Supervisor pass 2 — LANDSCAPE.md reviewed
 
-**C1 state:** `LANDSCAPE.md` written (21.5 KB). `REBUILD_SPEC.md` and `POSITIONING.md` not yet
-present — C1 mid-synthesis, has not reported. Reviewed anyway (reading does not disturb it) so
+**the build pass state:** `LANDSCAPE.md` written (21.5 KB). `REBUILD_SPEC.md` and `POSITIONING.md` not yet
+present — the build pass mid-synthesis, has not reported. Reviewed anyway (reading does not disturb it) so
 the gate review turns around fast when the other two land.
 
 **Independent verification — 5 load-bearing claims re-fetched by me, all exact:**
@@ -69,7 +69,7 @@ CC BY-NC-SA 4.0 (github.com/naver/posescript); arXiv:2601.12809 is a real paper 
 
 **Findings written to `reviews/REVIEW_QUEUE.md`:** SUP-20260906-01..05.
 - **02 (P1)** R-Precision is saturated — StableMoFusion 0.841 and MoMask 0.807 both exceed the
-  Real row's 0.797. D-03's gate must key on FID, not R-Precision. C1 reported the numbers without
+  Real row's 0.797. D-03's gate must key on FID, not R-Precision. the build pass reported the numbers without
   noticing the implication.
 - **04 (P1)** The licence chain is POSITIONING.md's headline, not a caveat: SMPL/SMPL-X terms
   explicitly prohibit training networks for commercial use, and HumanML3D + PoseScript + smplx
@@ -113,8 +113,8 @@ seriously. **Gate still held.**
 `POSITIONING.md` still absent; monitor remains armed for it. **Gate still held** (condition 4
 cannot be assessed without it).
 
-**C1 corrected a false claim I wrote, and it was right.** `docs/LANDMINES.md` §8 asserted that
-rotation-space + differentiable FK "is what MDM and MotionDiffuse do." C1 checked both papers and
+**the build pass corrected a false claim I wrote, and it was right.** `docs/LANDMINES.md` §8 asserted that
+rotation-space + differentiable FK "is what MDM and MotionDiffuse do." the build pass checked both papers and
 found it is not. I re-verified independently (ar5iv 2209.14916): MDM states it "can accept motion
 represented by either locations, rotations, or both," uses Guo et al.'s **redundant vector** for
 its HumanML3D experiments, and explicitly notes "Since foot contact and joint locations are
@@ -134,7 +134,7 @@ Both sessions may write in `docs/`; `reviews/` and `guidance/` stay hard-walled,
 where the record that a defect existed lives.
 
 **Reciprocal obligation recorded:** `BRIEFING.md` F6-F8 and `LANDMINES.md` §11-12 are supervisor
-output that nobody has audited. C1 to be invited to audit them.
+output that nobody has audited. the build pass to be invited to audit them.
 
 **Assessment of REBUILD_SPEC.md so far (conditions 1-3 of 4):**
 - **Condition 1 (named published number to reproduce): MET, and well.** `EricGuo5513/text-to-motion`,
@@ -169,7 +169,7 @@ Both Stage 2 deliverables present and read in full.
 sequences. Decisive: eliminates F3 by construction rather than patching it; the mature
 MIT-licensed evaluator exists only on that side; and the original framing is *retained* as
 ablation rung E1, converting F3 from a 1.4x dispersion ratio into a measured performance delta
-nobody else can produce. C1 asked to record this as D-18 with a reversal condition.
+nobody else can produce. the build pass asked to record this as D-18 with a reversal condition.
 
 **Findings filed:** SUP-20260906-06 (P1, E2 blocked — pre-registration ordering must be visible
 in the ledger), 07 (P2, E1 needs E3's seed-spread threshold), 08 (P2, PoseScript SMPL status
@@ -180,7 +180,7 @@ commendations).
 2209.14916 myself. My `LANDMINES.md` §8 claim that rotation+FK "is what MDM and MotionDiffuse do"
 was asserted from memory in a document that exists to prevent that. C1's replacement is better
 reasoning than the claim it replaced. Also amended my own contradictory territory rule and
-invited C1 to audit `BRIEFING.md` F6-F8 and `LANDMINES.md` §11-12, which are supervisor output
+invited the build pass to audit `BRIEFING.md` F6-F8 and `LANDMINES.md` §11-12, which are supervisor output
 that nobody has checked.
 
 **Next:** Stage 3 (E0 harness reproduction) is C1's work; nothing to review until `RESULTS.md`
@@ -191,7 +191,7 @@ dive for further docs-vs-code contradictions (five found so far).
 
 ## FOR JOEL (running)
 
-5. **The primary task has changed, and you should know before you see the code.** C1 proposed,
+5. **The primary task has changed, and you should know before you see the code.** the build pass proposed,
    and I accepted, moving from *text -> single static pose* to *text -> motion sequence*. Your
    original project's framing survives as ablation rung E1 rather than being discarded, and the
    2D-pose demo track in `POSITIONING.md` is still pose-shaped, so "pose" has not left the
@@ -203,17 +203,17 @@ dive for further docs-vs-code contradictions (five found so far).
    explicitly bar training networks for commercial use. Not a lawyer question. The one
    licence-clear route is text -> **2D** keypoints -> ControlNet image, which never touches SMPL
    — which is, notably, exactly what the only released MIT-licensed system in this space did.
-   C1 rates that track "plausible, not established" and is honest that no potential user has
+   the build pass rates that track "plausible, not established" and is honest that no potential user has
    been spoken to. `POSITIONING.md` §4.
 
 ## [2026-09-06T05:25Z] Supervisor pass 5 — crossed messages reconciled, gate confirmed
 
-C1 reported Stage 2 complete (commit 4091e1b) while my gate review was in flight, and had applied
+the build pass reported Stage 2 complete (commit 4091e1b) while my gate review was in flight, and had applied
 Review 1's five findings in the same window. Re-checked all of Review 2 against the committed
 version and filed an addendum (append-only, prior findings not edited):
 
 - **SUP-08 WITHDRAWN** — already fixed before my review landed; PoseScript SMPL+H G status now
-  correct and attributed in all four sites. C1 disclosed that it had not independently
+  correct and attributed in all four sites. the build pass disclosed that it had not independently
   re-verified and was relying on my check — correct disclosure, not a silent adoption.
 - **SUP-07 NARROWED** — metric choice now right (E1 gates on FID, R-Precision demoted to sanity
   check, note extends this to every rung). Only the threshold wording remains.
@@ -222,7 +222,7 @@ version and filed an addendum (append-only, prior findings not edited):
 
 **Gate decision unchanged: RELEASED for E0/E1, E2 blocked.**
 
-**Note on the review loop working in both directions.** C1 asked me to check its D-11 correction
+**Note on the review loop working in both directions.** the build pass asked me to check its D-11 correction
 rather than accept it; I had already done so independently. That is the second time in two stages
 it has caught something I asserted from memory (the first being the D-14 phase-ladder premise,
 which F6 undermined). The value of this arrangement is not that the supervisor is right — it is
@@ -236,3 +236,100 @@ contradictions (five found so far). Nothing of C1's to review until E0 reports.
 
 **Outstanding with C1:** flip D-11/12/13 out of PENDING and add D-18 (task reframing); close
 SUP-06, 07, 09; audit the supervisor's own F6-F8 and LANDMINES §11-12.
+
+## [2026-09-06T05:45Z] Supervisor pass 6 — F6 audited by the build pass and upgraded; Review 2 fully closed
+
+**Reciprocal audit completed.** the build pass audited the supervisor's F6/F7/F8 against cell 47 directly
+rather than taking them on trust. All three confirmed verbatim, including an independent
+re-derivation of the `u = c = eps` zero-loss argument, and an exhaustive search establishing that
+every `dropout` hit in the notebook is `nn.Dropout` layer regularisation — **zero conditioning
+dropout anywhere**, which was the load-bearing half of F6.
+
+**the build pass found something I missed, and it upgrades F6.** Cell 46's own markdown documents the defect
+as intentional design. Verified independently by me before writing it in: *"implementation uses
+progressive guidance scaling **during training** (2.0->7.0 over 50, 100 epochs)"* and *"**loss
+uses** `run two parallel forward` concept."* The report lists "Dual-Path Classifier-Free
+Guidance" among Phase 3's seven headline improvements.
+
+**Why this matters more than the bug itself.** F6 was not an oversight — the code matched the
+author's intent exactly, and the intent was wrong. That means **no code review would have caught
+it**: no discrepancy existed for a reader to notice. The only mechanism that surfaces this class
+of defect is a measurement showing the conditioning doing nothing. D-02 (harness before models)
+therefore stops being a methodological preference and becomes an empirical claim about this
+specific project. Added to `LANDMINES.md` §11 and `BRIEFING.md` F6, attributed to the audit.
+
+**Review 2 fully closed.** D-11/12/13 decided with reversal conditions; D-18 records the task
+reframing; D-14 revised with the original text preserved and marked superseded (correct
+application of append-or-annotate); SUP-06/07/08/09 all actioned. C1's conditioning-dropout
+tripwire — a test that fails if any loss-computing function accepts `guidance_scale > 1.0` — is
+a stronger fix than the one requested, because it makes the defect structurally impossible to
+reintroduce rather than merely documented. **E2 unblocked**, conditional on the pre-registration
+ordering being visible in the ledger when it happens.
+
+**State:** Stage 3 released and under way at E0. Monitor b7nnio6j5 armed for the first measurable
+outcome. Nothing of C1's to review until then.
+**Next:** standing queue item 3 — mine the Obsidian deep dive for further docs-vs-code
+contradictions (five found; the F6 corroboration suggests the notes contain more design-level
+claims worth checking against the code).
+
+---
+
+## FOR JOEL (running)
+
+7. **The CFG defect was written up as a feature, not missed.** Cell 46's markdown documents
+   running the guidance formula inside the training loss as the intended design, and "Dual-Path
+   Classifier-Free Guidance" is one of the seven headline Phase 3 improvements in your report.
+   This is the strongest single item in the whole forensic record, because it is the one defect
+   that no amount of care would have caught by reading: the code did exactly what it was meant
+   to do. Only a measurement would have shown it. If you ever want one sentence for why the
+   redo is organised around evaluation, that is it.
+
+## [2026-09-06T06:05Z] Supervisor pass 7 — queue item 3: deep-dive vs code audit
+
+**Verified C1's d6ba070 claims rather than accepting them:** E1 now carries the seed-spread
+wording (3 occurrences), E2's ordering requirement is present, SUP-09's loose phrase is gone
+(0 hits), D-11/12/13/18 all decided, **0 PENDING remaining**. All four hold.
+
+**Standing queue item 3 executed.** Audited the Obsidian deep dive's stated configuration against
+the live code path in cell 47. Determining "live" required care: `setup_models` contains three
+model configs, the first two enclosed in a `"""` docstring block. The **third is the live one**.
+
+| deep-dive claim | live code | verdict |
+|---|---|---|
+| "UNet: 96 -> 192 -> 384 channels" | `base_channels=96, channel_mults=(1,2,4)` | **CORRECT** |
+| "**8-head** cross-attention" (twice: line 6 and the cheat sheet) | `attention_heads=4` at every call site; `CrossAttention` default `heads=4` | **WRONG** |
+| "Epochs: **50**" / "Training Metrics After 50 Epochs" | `num_epochs = 100` (live; `= 5` is commented) | **WRONG** |
+| "Learning rate: 1e-4 -> 1e-6 (**cosine**)", with a "Cosine decay with warmup" ASCII diagram | `torch.optim.lr_scheduler.OneCycleLR(max_lr=fixlr)` | **WRONG schedule** |
+| "**23.3K** strategically sampled poses" (line 6) vs "**18,500**" (used ~6 times) vs the actual loaded file `strategic_dataset_**18300**p_210425.pt` | three different numbers for one dataset | **INTERNALLY INCONSISTENT** |
+| Sampling config lists cluster key **8** while the same document states **8 clusters (0-7)** | `clusters.npy` has 10 clusters (0-9) | **SELF-CONTRADICTORY** |
+
+**Running total of docs-vs-code contradictions: ten.** Five found earlier (8-vs-10 clusters,
+49.6% vs measured 38.77%, KMeans on "reduced embeddings" vs raw, 99.995% absent from the PDF,
+"10% null conditioning" absent from the code), five here.
+
+**The pattern worth naming.** These are not scattered typos. Every one of them makes the work
+sound *more* systematic than it was: more attention heads, a named-and-diagrammed LR schedule
+that was not the one used, a rounder dataset number, a cluster count matching the tidy 8-cluster
+story. None of them errs in the unflattering direction. That is what documentation drift looks
+like when it is written after the fact from memory rather than read off the code — and it is the
+same failure mode as F1 (a layout hypothesis that summed correctly and was never checked against
+an invariant) applied to prose instead of data.
+
+**Next:** nothing further in the standing queue that does not depend on C1's E0 outcome. Monitor
+b7nnio6j5 remains armed.
+
+---
+
+## FOR JOEL (running)
+
+8. **Your interview cheat sheet has five wrong numbers in it, and they all flatter the work.**
+   The "Metrics to Remember" section of `DL - T2P Deep Dive.md` is what you would revise from,
+   and against the live code it says 8 attention heads (was 4), 50 epochs (config says 100),
+   a cosine LR schedule with a hand-drawn diagram (was OneCycleLR), and 23.3K poses in one place
+   and 18,500 in another when the file actually loaded was 18,300. The channel widths
+   (96/192/384) are the one thing it gets right. Its sampling config also references a cluster 8
+   that cannot exist under its own claim of 8 clusters — there were 10.
+   **None of these is damaging on its own. Being asked to reconcile two of them in the same
+   interview would be.** Worth one editing pass against the code before you use that document
+   again — and worth doing it from the code, not from memory, since writing from memory is how
+   the numbers drifted in the first place.

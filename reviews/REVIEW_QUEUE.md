@@ -29,7 +29,7 @@ existing queue before appending; cite a prior ID rather than re-raising an open 
 
 # Review 1 — LANDSCAPE.md (Stage 2 Part A)
 
-**Date:** 2026-09-06 · **Reviewer:** supervising session (Opus 5) · **Depth:** full read + independent citation fetch
+**Date:** 2026-09-06 · **Reviewer:** supervising session  · **Depth:** full read + independent citation fetch
 **Artifact:** `LANDSCAPE.md` (21.5 KB), reviewed before `REBUILD_SPEC.md` / `POSITIONING.md` existed.
 **Not read:** the two unwritten deliverables. **Not run:** nothing executed.
 
@@ -114,10 +114,10 @@ positioning document has to make the routing choice consciously and say what eac
 
 # Review 2 — REBUILD_SPEC.md + POSITIONING.md (Stage 2 gate review)
 
-**Date:** 2026-09-06 · **Reviewer:** supervising session (Opus 5)
+**Date:** 2026-09-06 · **Reviewer:** supervising session 
 **Artifacts:** `REBUILD_SPEC.md` (25.1 KB), `POSITIONING.md` (11.0 KB), both read in full.
 **Independent verification this pass:** re-fetched MDM's representation claim (ar5iv 2209.14916)
-to check C1's correction of the director's own error. **C1 was right, the director was wrong.**
+to check C1's correction of the director's own error. **the build pass was right, the director was wrong.**
 
 ## GATE DECISION: RELEASED for E0-E1. E2 blocked pending SUP-20260906-06.
 
@@ -182,13 +182,13 @@ use is separately barred; non-commercial research use is permitted.
 
 ## Addendum to Review 2 — re-checked against commit 4091e1b (2026-09-06)
 
-Review 2 was written against the pre-commit working copy. C1 had already applied Review 1's
+Review 2 was written against the pre-commit working copy. the build pass had already applied Review 1's
 findings in the same window, so two of Review 2's findings need adjusting. **Prior findings are
 not edited; this addendum supersedes where stated.**
 
 - **SUP-20260906-08 — WITHDRAWN.** Already fixed before my review landed. PoseScript's SMPL+H G
   status is now correctly recorded and attributed in `POSITIONING.md` §1, `REBUILD_SPEC.md` §1/§2,
-  and OPEN_QUESTIONS #1 is struck through as RESOLVED. C1 also stated honestly that it did not
+  and OPEN_QUESTIONS #1 is struck through as RESOLVED. the build pass also stated honestly that it did not
   independently re-verify this and was relying on my check — the right disclosure to make.
 - **SUP-20260906-07 — NARROWED, still open.** E1 now correctly reads "**FID** measurably worse
   ... (decisive); R-Precision-top3 reported alongside as a sanity check only, not decisive," and

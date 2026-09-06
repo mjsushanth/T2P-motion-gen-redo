@@ -117,7 +117,7 @@ scoped — see D-18. Within that reframing: **corrected HumanML3D, full sequence
 (`EricGuo5513/text-to-motion`, VERIFIED MIT) gives a concrete, fetchable D-03 gate target that
 PoseScript's thinner, paper-specific tooling doesn't, and because full-sequence generation
 eliminates F3's caption/frame mismatch by construction rather than needing a mitigation.
-**PoseScript's poses are confirmed SMPL+H G format** (peer review SUP-20260906-03) — both
+**PoseScript's poses are confirmed SMPL+H G format** (review SUP-20260906-03) — both
 HumanML3D-derived and PoseScript-derived data inherit the identical AMASS/SMPL non-commercial
 licence chain (`REBUILD_SPEC.md` §1, `POSITIONING.md` §1), so licence terms do not distinguish
 between them; the evaluator-maturity argument does.
@@ -226,3 +226,27 @@ Stage 2 deliverable.
 anyway — the original's design was largely compensation for a decode bug, so there is little to
 do correctly.
 **Would reverse if:** Joel asks for a narrow, faithful reproduction instead.
+
+### D-19 — Standing technical authorisation; supersedes D-10 · FORCED (Joel's instruction, 2026-09-06)
+Joel, returning to find the build pass paused at a dataset-download approval gate: *"i do not want this in the
+future, it has approval to download, experiment, edit - recreate conda mamba new environments,
+edit code, replace any gpu - cuda based code, rewrite new code, open jupyter notebooks etc.
+do as much it needs."*
+
+**Pre-authorised, no asking:** dataset and checkpoint downloads; creating, recreating and deleting
+conda/mamba environments; installing packages; editing and rewriting code; replacing CUDA-assuming
+code with MPS; opening and executing notebooks.
+
+**Supersedes D-10** ("no installs without asking") and the ask-first half of D-09. D-09's
+substantive point — do not build a project environment before knowing what the project is — stands
+as engineering judgement, not as a permission gate.
+
+**Unchanged, because Joel did not address them and they are not technical-work gates:**
+`<ARCHIVE>/` stays read-only (it is his graded coursework archive, and nothing in the
+rebuild needs to modify it — trivially reversible if he says otherwise); nothing deleted outside
+this project folder; no purchases; nothing sent externally; no posting.
+
+**Would reverse if:** Joel says so. Note the cost this gate actually imposed — a full supervisor
+cycle elapsed with the build pass idle at a download prompt, which is exactly the failure the autonomous-run
+design exists to prevent.
+
