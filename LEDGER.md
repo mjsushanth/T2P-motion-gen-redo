@@ -1605,10 +1605,13 @@ then force-push. Left entirely undone pending his direct instruction.
 **Status:** complete
 **Acceptance criteria:** Joel, directly and in his own words in this conversation (not relayed
 through the director session — that request was declined in Item 33 for exactly that reason),
-authorised scrubbing `CS7150`, `CS7150_Proj_DL`, `Group_10`, `Group 10`, `Northeastern`, `NEU Sem4
-- DL` from git history via `git filter-repo --replace-text`, with verification (`git log --all
--S"<term>"` returning empty for every term, tree content otherwise identical) required before
-force-pushing.
+authorised scrubbing six identifying strings from git history — the course code, its compound
+form with the project subdirectory name, the group number in two spacings, the institution name,
+and the archive's directory name — via `git filter-repo --replace-text`, with verification
+(`git log --all -S"<term>"` returning empty for every term, tree content otherwise identical)
+required before force-pushing. **The six literal strings themselves are deliberately not quoted
+anywhere in this entry** — see the note at the end of this item for why, and
+`.scrub_expressions.txt` (gitignored, not tracked) for the exact mapping.
 **This entry documents a history rewrite and force-push — an irreversible, public-repository
 action — recorded explicitly per Joel's own instruction, so a later reader can see this was
 deliberate rather than an accident or a runaway agent action.**
@@ -1620,40 +1623,30 @@ deliberate rather than an accident or a runaway agent action.**
    working directory — E1B was mid-training in the background at the time (writing to
    `artifacts/e1/e1b_train_run.log`), and the live directory's tracked-file state needed to stay
    undisturbed until the rewrite was independently verified safe.
-3. Built the replacement rules (`replace-rules.txt`, longest/most-specific patterns first so
-   `CS7150_Proj_DL` and the full compound archive path get replaced as units before the shorter
-   `CS7150` rule would partially consume them):
-   ```
-   CS7150_Project (Group_10).pdf==>the original project report (PDF)
-   NEU Sem4 - DL/CS7150_Proj_DL/CLIP-Conditioned-Diffusion-T2Pose-Generation==><ARCHIVE>
-   NEU Sem4 - DL/CS7150_Proj_DL==><ARCHIVE>
-   NEU Sem4 - DL==><ARCHIVE>
-   CS7150_Proj_DL==>
-   CS7150==>the course
-   Group_10==>
-   Group 10==>
-   Northeastern==>
-   NEU Sem4==>
-   ```
-   The replacement targets (`<ARCHIVE>`, "the course", "the original project report (PDF)") were
-   not invented fresh — checked the CURRENT tracked files first (`CLAUDE.md`, `FORENSICS.md`,
-   `docs/DECISIONS.md`'s D-21) to confirm these are the exact neutral forms already in use from
-   the original working-tree scrub, so historical commits now read consistently with present-day
-   ones rather than introducing a second, different redaction style.
+3. Built the replacement rules (kept in `.scrub_expressions.txt`, gitignored — not reproduced
+   here; see the closing note on why not — longest/most-specific patterns ordered first so the
+   compound course-code-plus-subdirectory form and the full compound archive path get replaced as
+   whole units before the shorter course-code rule would otherwise partially consume them).
+   The replacement targets (the archive placeholder already used elsewhere, "the course," and a
+   generic description of the report file) were not invented fresh — checked the CURRENT tracked
+   files first (`CLAUDE.md`, `FORENSICS.md`, `docs/DECISIONS.md`'s D-21) to confirm these are the
+   exact neutral forms already in use from the original working-tree scrub, so historical commits
+   now read consistently with present-day ones rather than introducing a second, different
+   redaction style.
 4. **Ran `git filter-repo --replace-text` first, verified, found a real gap: it does not touch
    commit messages.** A `git log --all -p` case-insensitive sweep (not just `-S`, which only
-   checks blob content) found `CS7150`/`Group_10`/`Northeastern`/`NEU Sem4` surviving in one
-   commit's own MESSAGE (this session's own "Decline relayed request..." commit, which had
-   quoted the terms while describing the declined task — a real, self-referential edge case, not
-   one of the three commits Joel originally named). Fixed by re-running from a fresh clone with
-   BOTH `--replace-text` and `--replace-message` pointed at the same rules file.
-5. Also found and fixed a narrower gap in the first pass: a bare "NEU Sem4" (without "- DL")
-   appeared in that same self-referential commit message, not covered by the full "NEU Sem4 - DL"
-   pattern. Added a standalone "NEU Sem4==>" fallback rule.
+   checks blob content) found the identifying strings surviving in one commit's own MESSAGE (this
+   session's own "Decline relayed request..." commit, which had quoted the terms while describing
+   the declined task — a real, self-referential edge case, not one of the three commits Joel
+   originally named). Fixed by re-running from a fresh clone with BOTH `--replace-text` and
+   `--replace-message` pointed at the same rules file.
+5. Also found and fixed a narrower gap in the first pass: a shortened form of the institution/
+   semester string (missing its usual trailing qualifier) appeared in that same self-referential
+   commit message, not covered by the full-form pattern. Added a standalone fallback rule for it.
 6. **Verification performed before pushing, per Joel's required order (not skipped, not done
    after):**
-   - `git log --all -S"<term>" --oneline` for all six original terms plus the narrower "NEU
-     Sem4" and "CS7150_Proj_DL" variants — every one returned empty.
+   - `git log --all -S"<term>" --oneline` for all six original terms plus the two narrower
+     variants found in step 5 — every one returned empty.
    - A full case-insensitive sweep of `git log --all -p` (content AND commit messages together,
      the check that caught the two gaps above) — empty on the corrected rewrite.
    - Tree-content diff: `git archive HEAD | tar -x` from both the original live repo and the
@@ -1699,4 +1692,20 @@ about what an in-place re-run might have missed).
 **Next:** nothing further required on this item. Continuing E1B (still training in the
 background, untouched throughout this whole operation) and the queued E1A seed-2 run once it
 completes.
+
+**Correction, same day, before the item's original text finished settling (review
+SUP-20260906-50):** this entry originally quoted the actual replacement-rule mapping verbatim,
+including every literal identifying string the rewrite exists to remove. That is self-defeating —
+a document describing a string scrub, committed normally (not as part of the rewrite itself),
+becomes the single largest concentration of the removed strings, sitting in the current, public
+HEAD of the very repository the scrub was meant to clean. Fixed by (1) editing this item in place
+to describe the operation structurally without quoting the six strings anywhere, (2) moving the
+actual rules into `.scrub_expressions.txt`, added to `.gitignore`, kept locally rather than
+committed — the same pattern already used for `.archive_path`. In-place editing rather than the
+project's usual append-and-annotate convention is deliberate here: preserving the original wrong
+text would mean preserving the very data this whole item exists to remove, which has no audit
+value the way an ordinary factual correction's original text does. Also checked (read-only, not
+edited — `reviews/` is not this session's territory): the same literal-quoting pattern is present
+in the director's own `reviews/REVIEW_QUEUE.md` and `reviews/SUPERVISOR_LOG.md` entries
+discussing this same finding — flagged to that session directly rather than touched here.
 

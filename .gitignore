@@ -14,3 +14,8 @@ __pycache__/
 
 # local pointer to the read-only original-project archive (not published)
 .archive_path
+
+# git history scrub expressions (Item 34) -- necessarily contains the literal identifier
+# strings the scrub removed, so kept local/gitignored rather than committed, or documenting
+# the scrub would reintroduce the very strings it removed (review SUP-20260906-50)
+.scrub_expressions.txt
