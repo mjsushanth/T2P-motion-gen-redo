@@ -44,12 +44,20 @@ TF-IDF retrieval, independently re-verified against the original measurement):**
 | finds its **own** true motion | **74.7%** of the time | **51.7%** of the time |
 
 **Truncating the caption to the original failed course project's own rule changed which real
-motion got retrieved in 34.7% of cases.** That is the same phenomenon as this project's
-headline retrieval-space finding (R-Precision-top3 drops 0.8013 → 0.6563, ~9x the measured noise
-floor, `docs/EXPERIMENT_LOG.md`'s E1-pilot) — shortening the description makes it stop finding
-the right motion. **No embeddings, no metric jargon: type a caption, watch it happen (or not —
-on any single caption, roughly half the time truncation makes no visible difference, and that
-null is itself part of the honest picture, not a broken demo).**
+motion got retrieved in 34.7% of cases.** That is **the same underlying effect, measured a
+different way**, as this project's headline retrieval-space finding (R-Precision-top3 drops
+0.8013 → 0.6563, ~9x the measured noise floor, `docs/EXPERIMENT_LOG.md`'s E1-pilot) — lexical
+retrieval and the validated embedding space are different mechanisms, but both show shortening
+the description makes it stop finding the right motion. **No embeddings, no metric jargon: type
+a caption, watch it happen (or not — on any single caption, roughly half the time truncation
+makes no visible difference, and that null is itself part of the honest picture, not a broken
+demo).**
+
+*(A second, independent measurement of this same statistic — different sampling, different
+corpus construction — found 78.3% → 55.0%, a 23.3-point drop, against this page's 23.0-point
+drop: two runs agreeing to a third of a point on the number that matters. The absolute levels
+differ by a few points because of denser vs. sparser corpus construction between the two runs —
+noted for anyone who finds both numbers and wonders whether they measure the same thing. They do.)*
 """
 
 RETRIEVAL_DISCLAIMER_MD = """
@@ -124,9 +132,23 @@ def run_retrieval(caption: str):
         "**A different real motion was retrieved** — truncating the caption changed what this "
         "system thinks the sentence describes."
     )
+    # Show kept vs. discarded text directly (optional polish, per Review 13) -- the truncated
+    # caption is a prefix of the full one by construction (truncate_first_action_clause only
+    # ever removes a trailing clause), so the discarded remainder is just the suffix.
+    if caption.lower().startswith(truncated_caption.lower().rstrip(".")):
+        discarded = caption[len(truncated_caption):].strip(" ,.")
+    else:
+        discarded = None
+    if discarded:
+        cut_display = (
+            f"**{truncated_caption}** ~~{discarded}~~\n\n"
+            f"KEPT: \"{truncated_caption}\"  —  DISCARDED: \"{discarded}\""
+        )
+    else:
+        cut_display = f"**Truncated caption (the original project's own rule):** {truncated_caption}"
     truncation_summary = (
         f"**Full caption:** {caption}\n\n"
-        f"**Truncated caption (the original project's own rule):** {truncated_caption}\n\n"
+        f"{cut_display}\n\n"
         f"{fallback_note}\n\n{outcome_note}"
     )
     match_summary = (

@@ -2224,3 +2224,58 @@ that slackens.
 - **Seed-2's decomposition** whenever it lands.
 - Optional polish: showing the truncation as **kept text beside discarded text** rather than two full
   sentences. The current two-line display is clear; the deletion is more visceral. Low priority.
+
+---
+
+# SUP-20260906-66 · P1 · `RESULTS.md` does not exist. It is now the highest-value remaining work.
+
+**The demo is verified, E1 is closed, the forensics are complete — and there is no document that
+states what this project found.** A reader currently has to assemble it from `FORENSICS.md`,
+`docs/EXPERIMENT_LOG.md` (70 KB), `docs/DECISIONS.md` (26 entries), `docs/LANDMINES.md` (18 entries),
+`reviews/REVIEW_QUEUE.md` (66 findings) and a 145 KB ledger. **Nobody will.**
+
+This is the deliverable the Stage 3 spec named and D-03's fallback requires ("state it loudly in
+`RESULTS.md`"). **It is now the single highest-value thing left in the window.**
+
+## What it has to contain, and the hard part is the second section
+
+**1. What was established.** With numbers, and each with its own scope limit:
+- **F1-F8** — eight verified defects in the original project, of which two are root causes: the
+  263-dim decode misread, and CFG folded into the training objective (documented as intentional
+  design, so no code review could have caught it).
+- **The caption-truncation finding** — R-Precision-top3 0.8013 → 0.6563, ~9x the noise floor;
+  decomposed as ~93% volume, ~7% position, the position component at 5.9 sigma. **The original's
+  "first-action segmentation" was neither clever nor uniquely harmful — one of many ways to discard
+  35% of the words.**
+- **A working pipeline** — evaluator reproducing ground truth to within 0.003 across five
+  independent runs; a model trained from scratch passing its pre-registered gate at 3.2x chance.
+- **The evaluator-resolution finding** — the field's shared instrument resolves 1-of-32 and not
+  1-of-8,198; R-Precision is meaningful only within its batch protocol.
+
+**2. What was NOT established.** This section is the one that makes the document worth trusting:
+- **D-03 is UNRESOLVED.** E0b did not reproduce MDM's published FID at affordable sample sizes.
+  **Every number in the project is internally-comparable-only.** Say it in those words.
+- **E1's generation question is unanswerable on this hardware** — 0.80 sigma, and resolving it needs
+  ~1,780 samples per arm per seed, ~9 hours of generation each. **A bound on what the setup can
+  detect, not a bound on the effect.**
+- **No claim about generation quality under truncated conditioning.** The demo's generation panes are
+  illustrative and labelled so.
+- One dataset, one architecture, one budget. No generality claimed.
+
+**3. How to see it.** Point at the demo, in one line, with what it shows and what it does not.
+
+**4. What it cost, honestly.** Roughly 5 CPU-hours of training and generation, a laptop, no GPU.
+**That framing is a feature** — it states what a self-funded single author with a laptop can and
+cannot establish, which is D-20's actual question.
+
+## Write it for someone who has read none of the above
+
+Not a summary of the ledger — **a standalone account.** If a reader has to open another file to
+understand a claim, the claim is not finished. And it should be readable by someone who does not
+know what FID is; `docs/METRICS_EXPLAINED.md` exists for the ones who want to.
+
+# SUP-20260906-67 · P3 · `EXPERIMENT_LOG.md`'s E1B header is stale
+
+Line 865 still reads **"RAW RESULT IN, INTERPRETATION PENDING"**. The interpretation *is* in — 0.80
+sigma, D-26, resolved. You updated the body; the header did not follow. **A reader scanning headers
+gets the wrong status**, and headers are what people scan.

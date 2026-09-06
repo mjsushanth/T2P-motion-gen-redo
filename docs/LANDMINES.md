@@ -422,6 +422,40 @@ the same data and the same checkpoint gave **0.710**. A 2.5x swing from a batchi
 beside every R-Precision figure. Chance is `k/N`, so quote that too: top-3 of 32 is ~9.4% chance,
 which is what makes 0.72 meaningful.
 
+**Extended, 2026-09-06 (Stage 5 demo work, review SUP-20260906-58/62/63): the pool size is not a
+configuration detail — it is the range the instrument is calibrated over at all, and outside
+that range the instrument does not degrade gracefully, it stops meaning anything.** Built a
+retriever using the same validated text-motion embedding space (`EvaluatorMDMWrapper`'s text
+encoder) this project's R-Precision numbers already come from, intending to use it for full-
+corpus nearest-neighbour retrieval (~8,198 real motions, not a 32-candidate batch). Measured
+before shipping it (not assumed to work because the underlying component was well-validated
+elsewhere): full-corpus self-retrieval — does a caption's own true motion rank first among all
+8,198 candidates — collapsed to **~1%**. Diagnosed directly, not just observed: a real caption's
+own true motion scores **0.978** cosine similarity against its own text embedding, yet ranks
+**264th out of 8,198**, because every corpus motion occupies a tight **0.97-0.99** cosine band at
+this scale. A TF-IDF retriever on the identical sample found the true motion first **74.7-78.3%**
+of the time (two independent measurements, `demo/measure_self_retrieval.py` and a separate
+director-run measurement) — proving the collapse is specific to this embedding space at this
+scale, not a property of the retrieval task itself.
+
+**The reason, stated plainly: the text encoder was trained to discriminate a caption from ~31
+distractors (R-Precision's own batch-of-32 protocol), never to rank it first against thousands of
+candidates.** This is a non-obvious property of an instrument the whole text-to-motion field
+shares, not a one-off implementation bug — it explains *why* the published protocol specifies
+N=32 rather than that being an arbitrary convention: at this embedding space's actual resolution,
+batch-of-32 is roughly the largest pool size the instrument still functions over at all.
+**R-Precision is not a general-purpose retrieval system that happens to be evaluated on batches
+of 32 for convenience — outside that pool size, in this same embedding space, the statistic is
+not just less precise, it is not measuring retrieval ability in any recoverable sense.**
+
+**Do instead, generalized beyond R-Precision specifically:** before repurposing a metric's
+underlying embedding space for a *different* task at a *different* scale than the one it was
+validated on (here: full-corpus retrieval, versus 32-candidate batch retrieval), measure the new
+task directly rather than assuming validation at one scale transfers to another. A component
+being well-validated for its original, narrower purpose is not evidence it generalizes to a
+broader one — check by looking at real outputs (a caption's own true-motion rank, not just
+whether the code runs) before trusting it.
+
 ---
 
 ## 14. FID is badly biased when n is not much larger than the feature dimension

@@ -2053,3 +2053,42 @@ through the browser live — deferred, as before, to avoid CPU contention with t
 E1A seed-2 job. `demo/retrieval_embedding.py` and its cache-building step remain in the codebase,
 unused by `app.py`, available for a future rung at a smaller corpus scale rather than deleted.
 
+## [2026-09-06T17:20:00 UTC] Item 41 — Embedding-collapse promoted to a real research finding; three small demo fixes (SUP-63/64/65 + polish)
+**Status:** complete
+**Acceptance criteria:** Review 12/13 asked for four things: (1) record the embedding-retriever
+full-corpus collapse as a proper finding in `docs/EXPERIMENT_LOG.md`/`docs/LANDMINES.md`, not
+left to survive only as a code comment (SUP-63); (2) state, in the interface itself, that the
+independent 78.3%/55.0% measurement replicates this page's 74.7%/51.7% closely (23.3 vs. 23.0
+point drop) with one line on why the absolute levels/change-rates differ (SUP-64); (3) tighten
+one sentence's wording — "the same phenomenon as" understates that TF-IDF and the embedding
+space are different mechanisms measuring a related effect (SUP-65); (4) optional, low-priority
+polish — show kept vs. discarded text directly rather than two full sentences.
+**Files changed:** `docs/LANDMINES.md` (§13 extended in place with the full-corpus-collapse
+finding — a second, more extreme instance of "candidate-pool size is not a configuration detail,
+it is the range the instrument is calibrated over," not a new numbered entry, since it is the
+same underlying lesson). `docs/EXPERIMENT_LOG.md` (new entry, outside the numbered E-series since
+this is a property of the shared evaluation instrument, not this project's own model/data:
+hypothesis, result, establishes/does-not-establish, same discipline as every other entry).
+`demo/app.py` (headline wording fixed per SUP-65; the independent-replication note per SUP-64
+added directly to the page, not just this ledger; kept/discarded text display added to
+`run_retrieval()`'s truncation summary, computed as a simple prefix/suffix split since
+`truncate_first_action_clause` only ever removes a trailing clause).
+**Environment changes:** none.
+**Result:** the embedding-collapse finding is now a citable, standalone research result (a
+non-obvious property of the Guo et al. evaluator shared across the whole text-to-motion field —
+MDM, MotionDiffuse, every number in `LANDSCAPE.md`'s table — that explains why the published
+R-Precision protocol specifies a 32-candidate pool rather than that being an arbitrary
+convention), not demo trivia. Verified the kept/discarded display works correctly on both a
+conjunction-branch example ("a person walks forward" / "and then sits down on a chair") and a
+fallback-branch example, via direct function calls; confirmed the updated page text is live via
+`get_page_text` against a running instance (the Browser pane was hidden this pass, so a full
+click-through re-test was not repeated — only display strings changed, not the interaction logic
+already live-verified in Item 40, so this was judged sufficient).
+**Self-critique:** none new — these were straightforward, low-risk fixes the director specified
+precisely.
+**Verification performed:** ran `run_retrieval()` directly for both display cases and read the
+returned markdown; started a real server instance and fetched its actual rendered page text
+(not just confirming the module imports) before considering the wording changes shipped.
+**Next:** report to the director. Still open: the generation path's live browser test (deferred
+for CPU reasons, unchanged), and E1A seed-2's decomposition whenever it completes.
+

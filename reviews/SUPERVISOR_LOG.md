@@ -2082,3 +2082,39 @@ The page is otherwise scrupulous; this is the one sentence that slackens.
 told it to hold); seed-2 decomposition pending.
 
 Now 16:55Z; SOFT 01:46Z, HARD 03:16Z. ~9h to soft stop.
+
+## [2026-09-06T16:58Z] Supervisor pass 48 — demo live-verified; RESULTS.md identified as the top remaining gap
+
+**Demo redesign committed (ce8695c) and live-browser-verified** — first time this session's UI work
+got that treatment rather than curl/direct-call. Uncurated first caption: full retrieved a sitting
+motion at 0.898, truncated retrieved "a person walks forward" at 1.000, the sitting information
+visibly gone. Videos rendered and played, durations confirmed.
+
+**Noted one thing not to be surprised by:** the truncated arm's **1.000 is an exact string match** —
+TF-IDF finding an identical caption — and the full arm retrieved only the *sitting* half, because
+bag-of-words has no notion of order. Working as diagnosed, worth a line rather than a change.
+
+**SUP-66 (P1) — `RESULTS.md` does not exist, and it is now the highest-value work left.**
+The demo is verified, E1 closed, forensics complete — **and no document states what the project
+found.** A reader would have to assemble it from `FORENSICS.md`, a 70 KB experiment log, 26
+decisions, 18 landmines, 66 findings and a 145 KB ledger. **Nobody will.** It is the deliverable the
+Stage 3 spec named and D-03's fallback explicitly requires.
+
+Specified four sections, with the emphasis that **section 2 is what makes it trustworthy**:
+established (F1-F8, the truncation finding and its ~93/7 decomposition, the working pipeline, the
+evaluator-resolution finding) · **NOT established** (D-03 unresolved so every number is
+internally-comparable-only; E1's generation question unanswerable at 0.80 sigma needing ~9h/arm/seed
+— *a bound on what the setup can detect, not on the effect*; no generation-quality claim; one
+dataset/architecture/budget) · how to see it (the demo) · **what it cost** (~5 CPU-hours, a laptop,
+no GPU — **that framing is a feature**, since it answers D-20's actual question about what a
+self-funded single author can establish).
+
+**Told it to write for someone who has read none of the above** — a standalone account, not a ledger
+summary. *If a reader must open another file to understand a claim, the claim is not finished.*
+
+**SUP-67 (P3):** `EXPERIMENT_LOG.md` line 865 still reads "RAW RESULT IN, INTERPRETATION PENDING"
+though the interpretation is in (0.80 sigma, D-26). Body updated, header did not follow — **and
+headers are what people scan.**
+
+**Order set:** RESULTS.md first, then seed-2's decomposition, then the generation path when CPU
+frees. Now 16:58Z; SOFT 01:46Z, HARD 03:16Z.

@@ -954,3 +954,47 @@ not (this project's own severely undertrained generator, low R-Precision) — a 
 claim about either arm alone, and testable later at higher generator quality. **Stated now,
 before the control's number is known, specifically so it cannot be read as after-the-fact
 rationalization if it turns out to match.**
+
+---
+
+## E-side finding — the standard text-motion evaluator does not generalize from 32-candidate to full-corpus retrieval (review SUP-20260906-58/62/63)
+
+**Ran by:** `../demo/measure_self_retrieval.py`   **Date:** 2026-09-06   **Seeds:** 10
+**Data:** 300 real HumanML3D captions sampled from the materialized corpus, real motions,
+`EvaluatorMDMWrapper`'s text encoder (the same instrument this project's own R-Precision numbers
+come from)
+**Record:** `../artifacts/demo/self_retrieval_record.json`
+**Status:** VERIFIED — a side finding from Stage 5 demo work, not part of the E-series ladder,
+recorded here because it is a property of the evaluation instrument itself, not of this project's
+model or dataset.
+
+**Hypothesis (pre-registered, informally — this was a "does this component generalize" check
+before shipping a demo feature, not a numbered rung):** the evaluator's text encoder, being the
+same validated instrument behind this project's R-Precision numbers, should support full-corpus
+nearest-neighbour retrieval (finding a caption's own true motion among all ~8,198 corpus motions,
+not just a 32-candidate batch) at least roughly as well as a simple TF-IDF baseline.
+
+**Result: the hypothesis is false, and the reason is diagnosable, not mysterious.** Full-corpus
+self-retrieval in the evaluator's embedding space collapsed to **~1%** (two independent samples:
+this project's own run and a separately-run comparison, both far below TF-IDF's **74.7-78.3%**
+on the identical task). Diagnosed directly: a real caption's own true motion scores **0.978**
+cosine similarity against its own text embedding, yet ranks **264th of 8,198** candidates,
+because every corpus motion occupies a tight **0.97-0.99** cosine band at full-corpus scale in
+this embedding space.
+
+**Establishes:** the text encoder was trained to discriminate a caption from ~31 distractors
+(R-Precision's own batch-of-32 protocol) and does not generalize to ranking against thousands of
+candidates — a non-obvious property of an evaluation instrument the entire text-to-motion field
+shares (this is Guo et al.'s own evaluator, used across MDM, MotionDiffuse, and every number in
+`LANDSCAPE.md`'s published-numbers table), not specific to this project's checkpoint or corpus.
+This explains *why* the field's own protocol specifies N=32 rather than that being an arbitrary
+convention: batch-of-32 is close to the largest pool size this embedding space's resolution
+actually supports. Retroactively strengthens `LANDMINES.md` §13 (candidate-pool size is not a
+configuration detail, it is the range the instrument is calibrated over at all) with a second,
+independent, more extreme instance — full-corpus retrieval isn't merely less precise than
+batch-of-32, it is not a coherent statistic in this embedding space at all.
+**Does NOT establish:** anything about this project's own model, dataset, or findings — R-Precision
+itself, always computed within the correct batch-of-32 protocol throughout this project
+(E0a/E0b/E1A/E1B/E1-pilot), is unaffected by this finding. Whether other text-motion evaluators
+(different training objectives, different embedding dimensions) share this same full-corpus
+collapse — untested, a plausible but unverified generalization.
