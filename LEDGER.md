@@ -1601,3 +1601,102 @@ substitutions), verify with the same `git log --all -S` checks used above (must 
 diff the rewritten tree against the current tree to confirm only the identifier strings changed,
 then force-push. Left entirely undone pending his direct instruction.
 
+## [2026-09-06T15:30:00 UTC] Item 34 — Git history rewritten and force-pushed to origin: institutional/course identifiers scrubbed. JOEL-AUTHORISED DESTRUCTIVE ACTION — deliberate, not a normal commit.
+**Status:** complete
+**Acceptance criteria:** Joel, directly and in his own words in this conversation (not relayed
+through the director session — that request was declined in Item 33 for exactly that reason),
+authorised scrubbing `CS7150`, `CS7150_Proj_DL`, `Group_10`, `Group 10`, `Northeastern`, `NEU Sem4
+- DL` from git history via `git filter-repo --replace-text`, with verification (`git log --all
+-S"<term>"` returning empty for every term, tree content otherwise identical) required before
+force-pushing.
+**This entry documents a history rewrite and force-push — an irreversible, public-repository
+action — recorded explicitly per Joel's own instruction, so a later reader can see this was
+deliberate rather than an accident or a runaway agent action.**
+**What was done, in order:**
+1. Created a full safety backup (`git bundle create ... --all`) of the pre-rewrite repository
+   state before touching anything, saved to the session scratchpad (not committed, not part of
+   the repo — a local safety net only).
+2. Did the entire rewrite in an **isolated fresh clone** made from that bundle, not in the live
+   working directory — E1B was mid-training in the background at the time (writing to
+   `artifacts/e1/e1b_train_run.log`), and the live directory's tracked-file state needed to stay
+   undisturbed until the rewrite was independently verified safe.
+3. Built the replacement rules (`replace-rules.txt`, longest/most-specific patterns first so
+   `CS7150_Proj_DL` and the full compound archive path get replaced as units before the shorter
+   `CS7150` rule would partially consume them):
+   ```
+   CS7150_Project (Group_10).pdf==>the original project report (PDF)
+   NEU Sem4 - DL/CS7150_Proj_DL/CLIP-Conditioned-Diffusion-T2Pose-Generation==><ARCHIVE>
+   NEU Sem4 - DL/CS7150_Proj_DL==><ARCHIVE>
+   NEU Sem4 - DL==><ARCHIVE>
+   CS7150_Proj_DL==>
+   CS7150==>the course
+   Group_10==>
+   Group 10==>
+   Northeastern==>
+   NEU Sem4==>
+   ```
+   The replacement targets (`<ARCHIVE>`, "the course", "the original project report (PDF)") were
+   not invented fresh — checked the CURRENT tracked files first (`CLAUDE.md`, `FORENSICS.md`,
+   `docs/DECISIONS.md`'s D-21) to confirm these are the exact neutral forms already in use from
+   the original working-tree scrub, so historical commits now read consistently with present-day
+   ones rather than introducing a second, different redaction style.
+4. **Ran `git filter-repo --replace-text` first, verified, found a real gap: it does not touch
+   commit messages.** A `git log --all -p` case-insensitive sweep (not just `-S`, which only
+   checks blob content) found `CS7150`/`Group_10`/`Northeastern`/`NEU Sem4` surviving in one
+   commit's own MESSAGE (this session's own "Decline relayed request..." commit, which had
+   quoted the terms while describing the declined task — a real, self-referential edge case, not
+   one of the three commits Joel originally named). Fixed by re-running from a fresh clone with
+   BOTH `--replace-text` and `--replace-message` pointed at the same rules file.
+5. Also found and fixed a narrower gap in the first pass: a bare "NEU Sem4" (without "- DL")
+   appeared in that same self-referential commit message, not covered by the full "NEU Sem4 - DL"
+   pattern. Added a standalone "NEU Sem4==>" fallback rule.
+6. **Verification performed before pushing, per Joel's required order (not skipped, not done
+   after):**
+   - `git log --all -S"<term>" --oneline` for all six original terms plus the narrower "NEU
+     Sem4" and "CS7150_Proj_DL" variants — every one returned empty.
+   - A full case-insensitive sweep of `git log --all -p` (content AND commit messages together,
+     the check that caught the two gaps above) — empty on the corrected rewrite.
+   - Tree-content diff: `git archive HEAD | tar -x` from both the original live repo and the
+     rewritten clone, then `diff -rq` — only one file differed (`LEDGER.md`, this session's own
+     Item 33 entry, which had literally quoted the search terms while describing the declined
+     task) and a line-by-line `diff -u` on that one file confirmed the only changes were the
+     scrubbed strings themselves, nothing else — matching Joel's explicit requirement to confirm
+     the rewritten tree is "otherwise identical."
+   - Commit count preserved (29 before, 29 after); single branch, no tags, matching the "solo
+     repo, no forks or PRs" scope Joel described.
+7. Force-pushed from the isolated clone (`git remote add origin ...` then `git push --force
+   origin main`) — not from the live working directory, so the live directory's own state could
+   not be corrupted mid-push regardless of outcome.
+8. **Verified the push landed** (`git ls-remote` against the real GitHub URL matches the
+   rewritten clone's HEAD exactly) before touching the live working directory at all.
+9. Reconciled the live working directory to the new history (`git fetch origin && git reset
+   --hard origin/main`) — safe because the live directory's tracked-file state was already clean
+   (confirmed via `git status --short` before running this), and `reset --hard` does not touch
+   untracked files, so E1B's in-progress log (`artifacts/e1/e1b_train_run.log`) was left
+   undisturbed and E1B itself was never paused or interrupted by any of this.
+**Files changed:** none in the working tree (the rewrite only touched git history/commit
+messages, not current file content — confirmed by the tree diff above). The safety bundle and
+working clone live in the session scratchpad, not in this repository.
+**Environment changes:** git history rewritten; all commit hashes after the rewrite differ from
+their pre-rewrite equivalents (this is intrinsic to how `git filter-repo` works — every commit's
+content or ancestry changed, so every hash changed, even for commits that contained none of the
+scrubbed strings themselves, since their parent's hash changed underneath them). The three
+originally-named commits (formerly `89d31d3`, `4091e1b`, `d7082cc`) and this session's own
+"Decline relayed request" commit (formerly `ca929e4`, now `ade1f9b`) are the ones whose actual
+content changed; every other commit's hash changed only because an ancestor's did.
+**Self-critique:** the first verification pass (`-S` checks only) would have been declared
+"clean" and pushed if I had stopped there — it was the case-insensitive full-sweep of `-p` output
+(checking commit messages, not just blob content) that caught two real, still-open leaks. `-S`
+answers "did this string's presence change at some commit," which is exactly right for file
+content but blind to commit messages entirely, a distinction I did not think through before the
+first pass and only caught by deliberately using a second, differently-shaped check rather than
+trusting the first one because it returned the expected "empty."
+**Verification performed:** all of the above ran as real commands against the real repository
+state (not simulated), with output inspected at each step before proceeding to the next
+(re-cloned fresh rather than iterating on an already-modified clone, specifically so each
+verification pass started from a known, reproducible state rather than compounding uncertainty
+about what an in-place re-run might have missed).
+**Next:** nothing further required on this item. Continuing E1B (still training in the
+background, untouched throughout this whole operation) and the queued E1A seed-2 run once it
+completes.
+
