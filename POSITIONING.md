@@ -8,52 +8,42 @@ as F1 got. No claim here is asserted without the licence/evidence chain that sup
 
 ---
 
-## 1. The headline, not a caveat: on these datasets, there is no commercial product at the end of this road
+## 1. The licence question is moot — corrected 2026-09-06, per D-20
 
-**Stated as plainly as the evidence supports, per review (`reviews/REVIEW_QUEUE.md`
-SUP-20260906-04): this is not "consult a lawyer." The prohibition is explicit, and it covers the
-trained model, not just the data.**
+**This section previously argued Track A (3D pose/motion) was licence-capped to non-commercial
+use and Track B (2D keypoints) was "the licence-clear exit." That framing was correct as an
+analysis and is now the wrong conclusion, because the premise it answered no longer applies.**
 
-**VERIFIED, this session:** HumanML3D's own upstream README states "Due to the distribution
-policy of AMASS dataset, we are not allowed to distribute the data directly" — its motion data
-inherits AMASS/SMPL's licence terms, which are (`LANDSCAPE.md` §4.1/4.2, both VERIFIED by direct
-fetch of the licence pages): non-commercial research/education/art only, no redistribution,
-**explicit prohibition on "training methods/algorithms/neural networks/etc. for commercial use."**
-**VERIFIED, review, SUP-20260906-03:** PoseScript's poses are SMPL+H G format — genuine SMPL
-parameters — so it inherits the identical chain, stacked on top of its own CC BY-NC-SA 4.0. The
-`smplx` Python package itself is bundled under the same non-commercial terms as the model data,
-not separately permissively licensed (`LANDSCAPE.md` §4.3).
+Author's own words (`docs/DECISIONS.md` D-20): *"I WON'T GET any business profit from this, I'm a
+student post-grad... I just need EDUCATIONAL value, self value, interview value, deep AI research
+value. ZERO business as I have NO money or funding."* There was never commercial intent for this
+work to route around.
 
-**Consequence, stated plainly:** any model trained on HumanML3D-derived or PoseScript-derived
-data, however well engineered, is a non-commercial research/portfolio artifact by licence, not by
-engineering choice — this project's work cannot design around it, because it is a property of
-the training data's provenance, not of the model.
+**VERIFIED, this session, and still true — but no longer load-bearing for the business
+question:** HumanML3D's own upstream README states "Due to the distribution policy of AMASS
+dataset, we are not allowed to distribute the data directly" — its motion data inherits
+AMASS/SMPL's licence terms (`LANDSCAPE.md` §4.1/4.2): non-commercial research/education/art only,
+no redistribution, explicit prohibition on "training methods/algorithms/neural networks/etc. for
+commercial use." PoseScript's poses are confirmed SMPL+H G format (SUP-20260906-03), so it
+inherits the identical chain.
 
-**This makes the business question a routing question, with exactly three exits:**
+**The correction:** SMPL/SMPL-X's terms **explicitly permit** exactly what this project is —
+non-commercial scientific research, education, and personal projects. HumanML3D, PoseScript,
+`smplx`, and the SMPL body models are all **fully available for this project's actual purpose.**
+There is no wall to route around, because this project was never trying to walk through the door
+the wall blocks. **Stop routing around SMPL for licence reasons** — if SMPL-based rendering,
+`smplx`'s differentiable body model, or full mesh output makes the demonstrator (§6) better, use
+it. The 2D-keypoint route (Bonnet et al., `LANDSCAPE.md` §3.1) is now one legitimate option among
+several on its own technical merits, not the only unencumbered path.
 
-- **(a) Commercial licensing.** Negotiate directly — Meshcapade.com or
-  `smpl@max-planck-innovation.de` (`LANDSCAPE.md` §4.1). A real, available option; not something
-  this project's engineering resolves, a business/legal decision for Joel to make separately if
-  Track A's output is ever wanted commercially.
-- **(b) A differently-licensed dataset.** Not found in this landscape survey — every static-pose
-  or motion dataset surveyed here that has real benchmarks and tooling (HumanML3D, PoseScript)
-  routes through AMASS/SMPL. Not ruled out in general, just not identified as of this pass.
-- **(c) Abandon SMPL, work in 2D keypoints.** The one released, working, MIT-licensed artifact in
-  this whole landscape survey — Bonnet et al.'s text-to-pose (`LANDSCAPE.md` §3.1) — uses
-  DWpose-style 2D keypoints, **explicitly not SMPL.** That may be exactly why it's the one thing
-  here unencumbered end to end. This is Track B, below — **not a recommendation to pick this
-  exit over (a) or (b)**, but the one this document can actually build toward and test cheaply,
-  since it requires no licence negotiation and no different dataset search to start with.
+**Unaffected by this correction:** D-11 (representation) and D-12 (dataset/task) were argued on
+reproducibility and evaluator-maturity grounds, not licence grounds — see `REBUILD_SPEC.md` §1,
+§3. They stand on their own merits regardless of commercial intent.
 
-**The one part of the landscape that is NOT under this restriction:** Bonnet et al.'s
-text-to-pose work (`LANDSCAPE.md` §3.1) generates **2D keypoints** (18 body + 42 hand + 68 face,
-DWpose-style), not SMPL parameters, and is MIT-licensed end to end
-([clement-bonnet/text-to-pose](https://github.com/clement-bonnet/text-to-pose)). Stable Diffusion
-XL, which their pose adapter conditions, is under Stability AI's CreativeML Open RAIL++-M licence
-— a behavior-restriction licence (bars certain output uses) rather than a non-commercial-only
-licence like SMPL's. **This is the one track in this whole landscape survey that is not
-licence-blocked from commercial framing**, because it never touches SMPL/AMASS at all. This
-matters enough to shape §4 below.
+**Still real, for the record:** if this project's output were ever wanted commercially in the
+future, the licence chain above still applies and commercial licensing would still route through
+Meshcapade.com or `smpl@max-planck-innovation.de` (`LANDSCAPE.md` §4.1). That is simply not this
+project's question right now.
 
 ---
 
@@ -97,91 +87,99 @@ the original one, not just a more honest one.**
 
 ---
 
-## 4. As a product / business artifact — two different tracks, evaluated separately
+## 4. As a product / business artifact — corrected per D-20: there is no business track, and that's fine
 
-### Track A: 3D pose/motion generation itself (the research track, `REBUILD_SPEC.md` §0-§6)
+**D-20 makes this section simpler than it was.** There is no commercial intent, so "which track
+has a business case" is not this project's question. What replaces it, per D-20's own framing —
+*"people want to see a usable PRODUCT out of AI projects... move past research AFTER FINISHING
+research architectures, and do an outcome, productive show"* — is: **which track makes the better
+Stage 5 demonstrator** (§6), not which one avoids a licence wall that was never actually blocking
+anything for this project's real purpose.
 
-**No commercial business case, stated in those words.** The training data (HumanML3D and/or
-PoseScript) is non-commercial-restricted by licence at the source, not by this project's choice.
-A model trained on it cannot be commercialized without separately negotiating SMPL/Max Planck's
-commercial licence terms (`LANDSCAPE.md` §4.1: "Commercial licensing is routed through
-Meshcapade.com or smpl@max-planck-innovation.de") — a real, separate business decision this
-project's engineering work does not and cannot resolve. **This track's honest ceiling is
-research/portfolio value (§2, §3), not a product.**
+Both tracks remain live on their technical merits:
 
-### Track B: text -> 2D pose -> image/animation (the demonstrability track)
+- **Track A (3D pose/motion, the research track, `REBUILD_SPEC.md` §0-§6):** fully available
+  under SMPL/AMASS's non-commercial terms (§1). Its output is joint positions/rotations over a
+  skeleton — harder to make legible to a non-specialist without rendering, but closer to the
+  actual research question D-11/D-12 argue for.
+- **Track B (text -> 2D pose -> image, `LANDSCAPE.md` §3.1-§3.2):** Bonnet et al.'s MIT-licensed
+  approach, or ControlNet+OpenPose more generally. Immediately legible (a picture of a person in a
+  pose), cheapest to stand up (no training required for the image half), but a layer removed from
+  the actual research question.
 
-**Established, not assumed, that this track is different:** Bonnet et al.'s approach (§1) does
-not touch SMPL/AMASS licensing at all. A from-scratch or fine-tuned version of *this specific
-pipeline shape* — text -> 2D keypoints -> ControlNet-conditioned image (or, further out, Champ/
-Animate-Anyone-style conditioned video) — is not licence-blocked from commercial framing the way
-Track A is. **Who would use this and for what:** concrete, verifiable use cases already exist in
-the wild for exactly this pipeline shape — pose-guided character art/illustration tools, virtual
-try-on and fashion visualization (Animate Anyone's own reported benchmark domain,
-`LANDSCAPE.md` §3.2), and rapid pose-reference generation for illustrators/animators who currently
-pose reference figures by hand or search stock photos for a matching pose.
-
-**What would have to be true for Track B to be worth more than a portfolio piece:**
-1. The text-to-2D-pose step needs to beat or match a KNN/retrieval baseline meaningfully (Bonnet
-   et al.'s own bar: 78% win rate on their CLaPP score) — otherwise "generate a pose from text" is
-   not adding value over "retrieve a similar existing pose."
-2. The downstream image quality needs to be competitive with just using ControlNet+OpenPose on a
-   manually-posed or hand-drawn reference — i.e., the value has to be in the *text-to-pose* step
-   specifically, not merely in re-plumbing an existing ControlNet demo.
-3. A real target user (illustrator, animator, game-pose-reference tool) would need to actually
-   prefer this over existing tools (manually posing a 3D mannequin app, or searching stock pose
-   references) — this project has not talked to any such user, so this is a real, unresolved
-   assumption, not a validated one.
-
-**Honest verdict on Track B: plausible, not established.** The licence path is clear; the
-user-value path is not yet tested. This is the right thing to build the "smallest demonstrable
-end-to-end thing" (§5) around, precisely because it's cheap to test whether points 1-2 above hold
-— and testing them would be the actual next step toward resolving whether this is a real business
-idea or a well-scoped demo, rather than assuming either answer.
+**Neither is "the exit" any more — the choice is a demonstrator-design question, not a licence
+one.** See §6 for what Stage 5 actually requires, which is a sharper and more useful question than
+"which track has a business case."
 
 ---
 
 ## 5. Who would use a text-to-pose system, and for what — separated by track
 
-- **Track A (3D pose/motion, research-only by licence):** other researchers benchmarking against
-  a documented, evaluation-first HumanML3D baseline; Joel himself, as a portfolio/interview
-  artifact; students or engineers learning from `docs/LANDMINES.md` as a generalizable checklist.
-- **Track B (2D pose -> image, commercially unblocked):** illustrators and character artists
-  wanting a quick pose reference from a text description; indie game developers prototyping
-  character poses without a full 3D rig; hobbyist/small-studio content creators doing
-  pose-guided image or short-animation generation, per the Animate Anyone / Champ precedent.
+- **Track A (3D pose/motion):** other researchers benchmarking against a documented,
+  evaluation-first HumanML3D baseline; the author, as a portfolio/interview artifact; students or
+  engineers learning from `docs/LANDMINES.md` as a generalizable checklist.
+- **Track B (2D pose -> image):** illustrators and character artists wanting a quick pose
+  reference from a text description; indie game developers prototyping character poses without a
+  full 3D rig; hobbyist/small-studio content creators doing pose-guided image or short-animation
+  generation, per the Animate Anyone / Champ precedent. (Both tracks are equally available under
+  D-20 — this split is about who benefits from each, not who's licence-permitted.)
 
 ---
 
-## 6. The smallest demonstrable end-to-end thing a non-expert can look at and immediately get
+## 6. Stage 5 — the Demonstrator (per D-20; not started, design-constrained now)
 
-**Recommendation: a text box, and an image of a person in the described pose, coming out the
-other side.** Concretely: type "a person kicking a soccer ball," see a rendered figure in
-approximately that pose. This is Track B, using the ControlNet+OpenPose route (`LANDSCAPE.md`
-§3.2) as the fastest path to a working end-to-end demo (no training required — pretrained SDXL +
-a public OpenPose ControlNet checkpoint), with the project's own text-to-pose model (once E2/E3
-in `REBUILD_SPEC.md`'s ablation ladder produce something reasonable) swapped in as the pose
-source once it exists.
+**Not optional, and the project does not end at `RESULTS.md`** — a metrics table is evidence, not
+an outcome; nobody outside the field can look at an FID and see anything. **Explicitly not a
+deployed service** — author's words: *"Something local is fine too."* Do not start building it
+until E0-E4 (`REBUILD_SPEC.md` §6) are done — but every design decision between here and there
+should keep it reachable: if a choice makes the demonstrator harder for no research gain, take
+the other one.
 
-**Why this, not a bone-length table or an FID number:** every other output this project produces
-(FID, R-Precision, bone-length CV) requires domain knowledge to interpret. An image of a person
-in a described pose requires none — anyone can look at it and judge, correctly, whether it
-worked. This is the artifact to actually show someone, separate from the research record they'd
-have to be a specialist to evaluate.
+**Five requirements, all must hold (per the director session's framing, recorded here since it
+directly shapes this document's earlier "smallest demonstrable thing" recommendation):**
+1. **Thirty-second legibility.** A non-specialist gets it with no explanation — type a sentence,
+   watch a human move (or a rendered pose appear). This is why Track B (an image/render) reads
+   more immediately than Track A's raw joint output alone — but Track A can satisfy this too if
+   rendered.
+2. **The value is legible, not asserted.** Show the generated result **beside a nearest-neighbour
+   retrieval from the training set** — that baseline is what "just look it up" already gives you
+   for free. If the model isn't beating that, the demo makes it visible rather than hides it. This
+   is the sharpest requirement in the list: it forecloses a demo that only shows good-looking
+   cherry-picked outputs.
+3. **Surfaces real metrics, seed spread, and failure cases in the interface itself** — not just a
+   polished happy-path. The FID/R-Precision numbers and their seed spread (`LANDMINES.md` §7)
+   belong in the UI, not just in `RESULTS.md`.
+4. **Runs from a checkpoint in one command, no GPU, no retraining.** CPU-inference-only, matching
+   how this project's own E0a evaluator already runs (`docs/EXPERIMENT_LOG.md`).
+5. **Reproducible by someone else.** Not a personal script — an artifact a stranger could clone
+   and run.
+
+**Likely shape:** a Gradio or Streamlit app rendering an animated/static skeleton (or, if Track B
+is chosen, the ControlNet-rendered image), with the nearest-neighbour comparison and metrics panel
+built in from the start rather than added after. **Build a demonstration, not a product** — per
+D-20, this is explicitly not a deployed web service.
+
+**Why this replaces the earlier "text box -> image" recommendation, not just extends it:** the
+earlier version of this section proposed a single generated image as sufficient. Requirement 2
+above (nearest-neighbour comparison) makes clear that a single output, however good-looking, is
+not actually legible evidence of value — a demo needs to show the model earning its result against
+the trivial baseline, not just produce something plausible.
 
 **Not yet done:** the specific ControlNet SDXL-OpenPose checkpoint's licence has not been
 independently re-verified in this pass (`REBUILD_SPEC.md` §5, last table row) — check before
-building on it, not after.
+building on it. Nothing in this section is built yet; recorded here so design choices in Stage 3/4
+stay compatible with it.
 
 ---
 
-## 7. Summary verdict
+## 7. Summary verdict — corrected 2026-09-06 for D-20
 
 - **Learning artifact:** real value, already partly delivered, generalizes past this project.
-- **Interview artifact:** strong, with one caution already surfaced to Joel directly by peer
-  review (not repeated as an action item here).
-- **Business artifact, Track A (3D research):** no business case — stated in those words, because
-  the training data's own licence forecloses it, not because the engineering is weak.
-- **Business artifact, Track B (2D pose -> image):** plausible but unestablished — the licence
-  path is genuinely clear, unlike Track A, but real user value has not been tested. Worth
-  building the demo specifically to find out, not worth claiming a business case exists yet.
+- **Interview artifact:** strong, with one caution already surfaced to Joel directly by review
+  (not repeated as an action item here).
+- **Business artifact:** not this project's question. Zero commercial intent (D-20) — the licence
+  analysis in §1 is preserved for the record (it's correct and would matter if that ever changed)
+  but no longer decides anything here.
+- **What actually replaces it:** Stage 5, a required local demonstrator (§6) satisfying five
+  concrete legibility/honesty requirements — not started, not optional, design decisions from
+  Stage 3/4 onward should keep it reachable.

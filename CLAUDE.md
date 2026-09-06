@@ -19,6 +19,10 @@ evaluation second, models third.** Read `docs/00_START_HERE.md` before doing any
    or mamba environments, install packages, edit and rewrite code, replace CUDA-assuming code
    with MPS, open and execute Jupyter notebooks. **Do as much as the work needs. Do not pause
    for approval on any of it.** See `docs/DECISIONS.md` D-19.
+
+   **The only bar** (author, relayed 2026-09-06): stop and ask before anything at
+   *system-breaking scale* — his examples, "some MASSIVE 300GB download or 200GB environment."
+   Below that bar, act. A multi-GB dataset or checkpoint is not that bar.
 5. **No git commits.** Ever, without Joel.
 
 ## Where things go

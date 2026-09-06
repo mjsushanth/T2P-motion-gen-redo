@@ -292,3 +292,16 @@ documents refer to it as `<ARCHIVE>/`.
 in tracked files. Agents describing their own work use role words (build pass, review pass), not
 product names.
 
+### D-19a — The one exception to D-19: system-breaking scale · JUDGEMENT (author, relayed via the build pass 2026-09-06)
+Refines D-19 rather than replacing it. The author, restating the authorisation directly to the
+build session: *"DONT ASK me those things... unless its some MASSIVE 300GB download or 200GB
+environment, something system breaking."*
+
+**Bar:** ask only when an operation risks the machine itself — hundreds of GB of disk, an
+environment that would consume the drive, anything that could destabilise the system. **Everything
+below that bar proceeds without asking**, including multi-GB datasets and model checkpoints.
+
+Recorded as relayed rather than heard first-hand. It is consistent with D-19 (granted directly)
+and strictly *adds* a guardrail above the bar rather than widening the authorisation below it, so
+it is safe to act on. If the author contradicts it, his direct statement governs.
+

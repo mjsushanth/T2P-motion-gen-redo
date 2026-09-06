@@ -384,3 +384,80 @@ ledger *before* seeing the result.
 
 **State:** no experimental result exists yet anywhere in this project. Monitor b7nnio6j5 armed.
 **Next:** hold until E0a/E0b report. Standing queue is otherwise exhausted pending results.
+
+## [2026-09-06T08:20Z] Supervisor pass 9 — E0 reviewed. FIRST MEASUREMENT IN THE PROJECT.
+
+**E0 landed.** Evaluator harness sanity check, real-vs-real, 2 seeds, full test split (2099/2099).
+R-Prec-top3 **0.720** (paper's Real row: 0.797), FID **0.029** (paper: 0.002), matching score
+3.606. Seed spread negligible; ran on CPU so §7 does not apply. **Correctly labelled PARTIAL and
+explicitly NOT the D-03 gate** — no generative model is in the loop yet.
+
+**Accepted.** The entry pre-registers its criterion, reports spread, carries a real "Does NOT
+establish" list, and documents its own v1 bug (200-candidate R-Precision pool -> 0.280, vs 0.710
+at the protocol's 32) rather than silently fixing it. That is the discipline landing on this
+project's own work, not just the original's.
+
+**Finding the build pass missed, from its own data (SUP-11, P1).** It attributed both gaps to one
+cause (missing multi-crop averaging). Its own progression table refutes that: v2->v3 (n 1024 ->
+2099, nothing else changed) moved **FID 0.173 -> 0.029** (6x, super-linear in n) while
+**R-Prec-top3 moved 0.710 -> 0.720** (flat). FID estimates a 512x512 covariance and is biased
+upward when n/d is small (2.0 -> 4.1 here); R-Precision is batch-wise retrieval over a fixed
+32-candidate pool and is structurally insensitive to n. **Different mechanisms, so one hypothesis
+cannot cover both.** The v1 row is the clincher: real-vs-real FID of 0.745 at n=200, where the
+true value is ~0 — that number was 100% estimator bias.
+
+**Consequence (SUP-12, P1):** the R-Precision residual is now confounded between crop averaging
+and checkpoint provenance (`Tevior/text_mot_match`, a third-party re-upload, architecture- but not
+cryptographically verified). Decisive test specified: implement `--repeat_time` averaging; converge
+to 0.797 means the checkpoint is fine, plateau at 0.72 means suspect it and obtaining the official
+artifact becomes blocking for D-03. Told the build pass to run this **before** E0b, since a wrong
+checkpoint would make E0b's number uninterpretable without it knowing.
+
+**Wrote `LANDMINES.md` §13 and §14** — R-Precision's candidate-pool dependence, and FID's
+covariance bias with the progression table as evidence. **First LANDMINES entries sourced to this
+project's own measurements rather than the original's mistakes.**
+
+**Monitor b7nnio6j5 has exited** (it fired and ended). Re-arm on next relevant wait.
+**Next:** await the two diagnostics, then E0b. Run window: SOFT 13:55Z / HARD 14:40Z.
+
+---
+
+## FOR JOEL (running)
+
+9. **The project has its first real number.** The evaluation harness works: matched text/motion
+   pairs retrieve each other at 72% top-3 out of 32 candidates against ~9% chance. It is not yet
+   the full gate — no generated model is in the loop — but the instrument is real and behaving.
+   Two gaps from the published reference remain, and they turn out to have different causes; one
+   is largely a statistical artifact of sample size, the other is still open and may come down to
+   whether the checkpoint we could obtain is the same one the paper used.
+
+## [2026-09-06T08:35Z] Supervisor pass 10 — crossed messages resolved; D-19a; ownership answered
+
+Both build-pass messages crossed with Review 3. Consolidated reply sent. Substance:
+
+- **`POSITIONING.md` ownership answered: it is the build pass's file, it updates it.** I confirmed
+  I am not editing it and there is no concurrent edit to collide with — my only edits this window
+  were `LANDMINES.md` §13/§14 and D-19a. Directed the D-20 rewrite: drop the licence-routing frame
+  from §1/§4 (zero commercial intent means SMPL's terms already permit this use), demote Track B
+  from "the licence-clear exit" to one demonstrator option, and make §6's "smallest demonstrable
+  thing" concrete enough for Stage 5 to build from.
+- **D-19a encoded** (`CLAUDE.md` rule 4, `docs/DECISIONS.md`): the author's relayed threshold —
+  ask only at system-breaking scale ("300GB download", "200GB environment"). Recorded explicitly
+  as *relayed, not heard first-hand*, and noted that it adds a guardrail above the bar rather than
+  widening the authorisation below it, which is why acting on it is safe. Practical effect: MDM's
+  checkpoint gets downloaded without a round-trip.
+- **Corrected my own finding's framing.** The build pass *did* identify the covariance problem
+  itself — it is why v1 was binned rather than reported. SUP-11 is narrower than "you missed it":
+  it had the mechanism and did not carry it forward to separate the two *residual* gaps. Said so
+  plainly rather than letting an overbroad finding stand.
+
+**Worth recording as the behaviour that matters most so far.** The build pass wrote, unprompted:
+*"I didn't quietly redefine E0 to make it pass; the sanity check and the gate are two different
+things."* It had every opportunity to report "E0 passed" — the numbers are good, the signal is
+real — and instead put the distinction in the entry's title where a skim cannot miss it. **That
+exact substitution, a partial result standing in for the gate it resembles, is what produced the
+original project.** It did not happen here, and it did not happen because a rule caught it.
+
+**Monitor bzlil63uc armed** for the next E-series entry.
+**Next:** await the `--repeat_time` and n-sweep diagnostics (SUP-11/12), then E0b.
+Run window: SOFT 13:55Z / HARD 14:40Z. Currently ~08:35Z, ~5h20m to soft stop.
