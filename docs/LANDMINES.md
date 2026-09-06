@@ -403,3 +403,58 @@ known quantity) the anatomy machinery was measuring a corrupted estimate of a co
 **Do instead.** Normalise with fixed dataset statistics. Pass the full per-sample `t` vector to
 any scheduler call. Assert it: `assert timestep.shape[0] == sample.shape[0]`.
 
+---
+
+## 13. R-Precision is meaningless without its candidate-pool size
+
+**Status: VERIFIED in this repository, 2026-09-06, by our own code making the mistake (E0 v1).**
+
+**The trap.** R-Precision is retrieval accuracy over a pool of one correct caption plus N-1
+distractors. **The number is only interpretable against a stated N**, and the field's HumanML3D
+protocol fixes N = 32. Build the pool from the whole batch instead and you get a valid-looking
+accuracy that is not comparable to anything published.
+
+**What it looks like.** E0 v1 pooled 200 candidates and reported R-Precision-top3 = **0.280**.
+Nothing errors. The number is a correct measurement of a different quantity. Re-batched to 32,
+the same data and the same checkpoint gave **0.710**. A 2.5x swing from a batching detail.
+
+**Do instead.** Record `r_precision_batch_size` in the record JSON — E0's does — and state N
+beside every R-Precision figure. Chance is `k/N`, so quote that too: top-3 of 32 is ~9.4% chance,
+which is what makes 0.72 meaningful.
+
+---
+
+## 14. FID is badly biased when n is not much larger than the feature dimension
+
+**Status: VERIFIED in this repository, 2026-09-06 (E0 progression, real-vs-real).**
+
+**The trap.** FID estimates a 512x512 covariance from n samples. When n is close to d the
+estimate is severely under-conditioned and FID is biased **upward**, so a perfectly good model
+looks bad — and the bias shrinks as n grows, which makes the metric look like it is "improving"
+when only the sample count changed.
+
+**The evidence, from this project's own runs** (identical data, checkpoint and code; only n and
+the R-Precision batching changed):
+
+| n per subset | n/d (d=512) | real-vs-real FID |
+|---|---|---|
+| 200 | 0.4 | 0.745 |
+| 1024 | 2.0 | 0.173 |
+| 2099 | 4.1 | **0.029** |
+
+Real data against real data should score ~0. It scores 0.745 at n=200. **The entire signal there
+is estimator bias.** Note the v2->v3 drop is *super-linear* — 2x the samples, 6x lower FID —
+which is the signature of leaving the badly-conditioned regime, not of ordinary 1/n convergence.
+
+**The diagnostic consequence, which is the reason this entry exists.** R-Precision does **not**
+estimate a covariance; it is batch-wise retrieval over a fixed 32-candidate pool, so it is
+insensitive to total n. In the same progression it moved 0.710 -> 0.720 while FID moved 6x.
+**So when FID and R-Precision both sit below a published reference, they usually do not have the
+same cause, and one explanation cannot cover both.** Sweep n: whatever moves is estimator bias,
+whatever does not move is a real difference in protocol, checkpoint, or model.
+
+**Do instead.** Record `fid_embedding_dim` and n in every record JSON (E0's does both). Never
+compare FID across runs with different n. Get n comfortably above d — the published protocol's
+`--repeat_time` averaging is partly what buys this. And before attributing an FID gap to your
+model, sweep n and confirm the gap survives.
+

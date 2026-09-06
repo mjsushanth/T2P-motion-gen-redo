@@ -209,3 +209,63 @@ experiments, and states "since foot contact and joint locations are explicitly r
 HumanML3D, we don't apply geometric losses in this section." **C1's correction is confirmed
 accurate. The director's original claim was wrong.** Asking to be checked rather than believed is
 the behaviour that makes this review loop worth running in both directions.
+
+---
+
+# Review 3 — E0 evaluator sanity check (first measurement in this project)
+
+**Date:** 2026-09-06 · **Artifacts:** `docs/EXPERIMENT_LOG.md` E0, `artifacts/e0/*.json` (both read).
+**Independent verification:** re-read both record JSONs; confirmed `fid_embedding_dim = 512`,
+`r_precision_batch_size = 32`, n = 2099/2099, and the two-seed spread.
+
+**Verdict: accepted as a PARTIAL result, correctly labelled. This is good work.** The entry
+pre-registers its hypothesis and criterion, reports two seeds with spread, states plainly that it
+is **not** the D-03 gate, carries a real "Does NOT establish" list, and documents its own v1 bug
+rather than quietly fixing it. That last one is the behaviour this whole project exists to instil.
+
+## Findings
+
+### SUP-20260906-11 · P1 · The two gaps do not share a cause, and your own table proves it
+E0 attributes both the R-Precision gap (0.720 vs 0.797) and the FID gap (0.029 vs 0.002) to one
+hypothesis: missing multi-crop averaging. **They cannot share a dominant cause, and the
+progression table already shows why.**
+
+From v2 (n=1024) to v3 (n=2099), holding everything else fixed:
+- **FID moved 0.173 -> 0.029** — a 6x drop for a 2x sample increase.
+- **R-Precision-top3 moved 0.710 -> 0.720** — essentially flat.
+
+FID estimates a 512-dimensional covariance, so it is strongly biased upward when n/d is small
+(here n/d goes 2.0 -> 4.1, and the super-linear drop is the signature of leaving the
+badly-conditioned regime). R-Precision estimates nothing of the kind — it is batch-wise retrieval
+over a fixed 32-candidate pool and is insensitive to total n. Written up as `LANDMINES.md` §14.
+
+**Therefore:** the FID gap is plausibly *mostly estimator bias* and should keep closing as
+effective n rises. The R-Precision gap is **not** explained by sample size and needs its own
+explanation. Split the hypothesis and test them separately.
+
+### SUP-20260906-12 · P1 · Checkpoint provenance is an unresolved confound for the R-Precision gap
+`checkpoint_provenance` records "third-party HF re-upload (Tevior/text_mot_match),
+architecture-verified not cryptographically verified." Flagging that was right. But it is now a
+live confound specifically for SUP-11's residual: an R-Precision gap that does not respond to n
+could be crop averaging **or** a checkpoint that is not the published one, and those are currently
+indistinguishable.
+
+**Disentangling test, cheap and decisive:** implement the protocol's `--repeat_time` averaging and
+re-run. If R-Precision-top3 converges toward 0.797, the checkpoint is fine and crop averaging was
+the answer. **If it plateaus near 0.72, suspect the checkpoint** and make obtaining the official
+artifact a blocking task for D-03 — because a harness validated against a non-published checkpoint
+cannot support a comparability claim, which is the entire point of the gate.
+
+### SUP-20260906-13 · P2 · Two new LANDMINES entries written from your run
+`LANDMINES.md` §13 (R-Precision is meaningless without its candidate-pool size — your v1 bug,
+0.280 vs 0.710 from batching alone) and §14 (FID's covariance bias, with your progression table as
+the evidence). Both are now general traps for anyone touching this benchmark, sourced to this
+project's own measurements rather than to the original's mistakes.
+
+### SUP-20260906-14 · P3 · Commended
+Pre-registering the criterion before running. Reporting two seeds. Noting that this ran on CPU so
+`LANDMINES.md` §7 does not apply — precision about which caveats are and are not in force is rare
+and valuable. Recording `fid_embedding_dim` and `r_precision_batch_size` in the record JSON, which
+is exactly what made SUP-11 diagnosable from the artifact alone. And labelling the entry "NOT the
+D-03 gate itself" in its own title, where it cannot be missed.
+

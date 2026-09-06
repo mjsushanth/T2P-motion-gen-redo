@@ -46,7 +46,16 @@ validation gate (`DECISIONS.md` D-03), **not** a model result.
 
 ---
 
-## E0 — evaluator harness sanity check (real vs. real), NOT the D-03 gate itself
+## E0a — evaluator harness sanity check (real vs. real), NOT the D-03 gate itself
+
+**Relabeled E0 -> E0a (2026-09-06, same day, no data changed):** per review, this is better
+understood as one of two independently-diagnostic rungs. **E0a isolates the evaluator + this
+project's `opt`-reconstruction + data adaptation** from checkpoint-loading/generation entirely —
+if it fails, the bug is on this project's side (wrong `opt` field, wrong windowing, wrong
+normalisation — exactly the shape of F1: a plausible reconstruction of an undocumented config
+that runs cleanly and gives wrong numbers, with no error raised). **E0b** (below) only makes sense
+to run once E0a passes, and tests something different: whether the published ladder itself is
+reproducible from released artifacts at all.
 
 **Ran by:** `../scripts/e0_evaluator_sanity_check.py`   **Date:** 2026-09-06
 **Seeds:** 0, 1 (both full test split; seed only affects which random unit-length crop and
@@ -133,4 +142,31 @@ shape-corroborated.
 
 **Next:** obtain an actual generated model's output (MDM's own released checkpoint/samples, or
 this project's own future E2 baseline) to complete the actual D-03 gate — reproduce a published
-generated-model FID to a stated tolerance, per `REBUILD_SPEC.md` §6's E0 definition.
+generated-model FID to a stated tolerance, per `REBUILD_SPEC.md` §6's E0 definition. Pre-registered
+as E0b below, before either its method or its result is known in detail.
+
+---
+
+## E0b — published-number reproduction (MDM's FID), PRE-REGISTERED before running
+
+**Pre-registered:** 2026-09-06, before fetching MDM's checkpoint or running any generation.
+
+**Hypothesis:** running MDM's released model on the HumanML3D test set and evaluating its
+generated motions through the same vendored evaluator (E0a having passed as a precondition)
+reproduces MDM's own published FID (0.544±.044, `LANDSCAPE.md` §1.3) to within a stated tolerance.
+
+**Success criterion (fixed now, before the result exists):** FID within ±5% of 0.544 (i.e.
+0.5168-0.5712), using MDM's own released checkpoint and its own standard sampling procedure
+(no changes to guidance scale, step count, or sampler beyond what MDM's own eval script uses).
+
+**Explicitly pre-committed:** if the reproduced FID falls outside ±5%, that is **the result**,
+not a reason to widen the tolerance. Either outcome is reported as run — "FID reproduced within
+tolerance: PASS/FAIL, actual value X" — per review's standing instruction not to average
+E0a/E0b together or soften a miss.
+
+**What a FAIL would mean, stated before it's known which way this goes:** E0a passing plus E0b
+failing would mean this project's own evaluator adaptation is sound but the published number is
+not reproducible from MDM's released artifacts alone (a finding about the field's shared
+instrument, not about this project). E0b failing would say nothing about E0a's independent pass.
+
+**Status:** PENDING — not yet run. Fetching MDM's repo/checkpoint next.
