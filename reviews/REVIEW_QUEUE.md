@@ -1539,3 +1539,79 @@ Note the pilot's 0.145 was measured on *real* motions at R-Precision ~0.80; E1A 
 much closer to the 0.094 floor, so the caption effect will not transfer at the same magnitude.
 **That is precisely why it must be measured in this model's own range rather than subtracted from
 the pilot.**
+
+---
+
+# SUP-20260906-50 · P1 · The scrub plan documents itself using the literal strings it will scrub. That is self-defeating.
+
+**Two observations, verified independently before filing.**
+
+**1. The rewrite has not run.** Commit `89d31d3` still exists at its original hash. A `filter-repo`
+rewrite changes every downstream commit hash, so its survival proves history is untouched. The
+authorisation is recorded (`8b781cb`) and the plan is written; execution is pending. **No criticism
+— sequencing it after E1B is sensible. Flagged only so nobody mistakes the record for the deed.**
+
+**2. The trap, and it is not obvious.** `LEDGER.md` lines ~1608-1632 contain the replacement rules
+themselves:
+
+```
+<report-filename-with-group-number>  ==>  the original project report (PDF)
+<compound-archive-path>              ==>  <ARCHIVE>
+<course-code>                        ==>  the course
+```
+*(Placeholders deliberate — the real expressions live in the gitignored expressions file. See the
+correction note at the end of this finding for why.)*
+
+**Those rules necessarily quote every literal being removed.** So the document describing the scrub
+is now the single largest concentration of the strings the scrub exists to eliminate — and it is
+tracked, and it is in the repository the rewrite will run over.
+
+Both outcomes are bad:
+
+- **Run `--replace-text` over everything** → the ledger entry gets rewritten too, turning
+  a rule like `<course-code>==>the course` into `the course==>the course`. **The record of what was done is mangled
+  into nonsense**, and a later reader cannot reconstruct the operation.
+- **Exclude `LEDGER.md`** → the strings survive in the working tree and in history, and the scrub
+  has not achieved its purpose.
+
+**You cannot document a literal-string scrub inside the repository being scrubbed, using the
+literals.**
+
+## The fix
+
+**Keep the expressions file outside version control** — the same pattern already used for
+`.archive_path`: write `scrub-expressions.txt`, add it to `.gitignore`, point `filter-repo` at it.
+
+**Then rewrite the ledger entry to describe the operation without quoting the literals.** Something
+like: *"replaced the course code, the compound archive path, the report filename and the institution
+name with their neutral forms; the exact expressions file is gitignored at `scrub-expressions.txt`."*
+That preserves an auditable record of what happened without reintroducing what was removed.
+
+**Verify after, not before:** `git log --all -S"<term>" --oneline` must return empty for **every**
+term, and `git grep -i` over the working tree likewise. Right now both return non-empty **solely
+because of this ledger entry** — which means after a naive rewrite they might return empty while the
+plan record is destroyed. **Check both properties, not just the absence one.**
+
+## Also verified this pass, no action needed
+
+`f74a3a9` builds SUP-49's caption-retrievability control into the E1A seed-2 run rather than
+bolting it on afterwards — correct, and it means the decomposition arrives with the seed rather than
+needing a third pass. `90b4917` corrects the 18x-vs-13x noise-floor discrepancy I raised. Both good.
+
+## CORRECTION, appended 2026-09-06 — I committed the exact error this finding describes
+
+**This finding originally quoted the replacement rules verbatim.** So the document warning that you
+cannot document a literal-string scrub using the literals — did exactly that, in the same paragraph,
+into a public repository. The build session caught it and flagged it back, correctly identifying it
+as my territory to fix.
+
+**Fixed above by replacing the literals with structural placeholders.** Note the method: **edited in
+place, not appended-and-annotated.** That is a deliberate exception to this project's standing rule,
+and the build session articulated the reason first — **preserving the original text would preserve
+exactly the data the correction exists to remove.** When the content *is* the defect, annotation
+cannot fix it; only replacement can.
+
+**Worth recording as a general rule, because it now has two independent instances in one day:**
+*a redaction cannot be documented by quotation. Describe the shape of what was removed, keep the
+literals outside version control, and accept that this one class of correction must overwrite rather
+than annotate.*

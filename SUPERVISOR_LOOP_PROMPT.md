@@ -31,26 +31,29 @@ under `FOR JOEL`, and you move to the next item.
 
 ## 1. State — re-derive it, do not trust this block
 
-**Read `reviews/SUPERVISOR_LOG.md` from the bottom for actual current state.** As of the last
-edit: Stage 1 (forensics) and Stage 2 (landscape / spec / positioning) are complete and reviewed;
-the Stage 3 gate is RELEASED; C1 is executing E0 (vendoring the Guo et al. evaluator and
-reproducing MDM's FID 0.544 +/-5%). Eight defects in the original are VERIFIED (F1-F8).
+**Read `reviews/SUPERVISOR_LOG.md` from the TOP (the HANDOVER block) for real state.** As of this
+edit: Stages 1-2 complete and reviewed. E0a passed (evaluator validated, reproduces ground truth to
+within 0.003 across five independent runs). **E0b FAILED — D-03 is UNRESOLVED, so every number is
+internally-comparable-only (D-22).** E1-pilot complete and is the project's headline finding.
+**E1A power check PASSED** (R-Prec 0.2969 vs chance 0.0938). **E1B training, launched ~13:05Z.**
+
+**Open, in order:** SUP-49's decomposition control when E1B lands (free, minutes) -> E1A seed 2
+(~2.65h, required before any A-vs-B statement) -> **then D-26's stopping rule below.**
 
 **The RUN WINDOW block at the bottom of `reviews/SUPERVISOR_LOG.md` is binding.** Read it every
-firing and compare against `date -u`. Past SOFT STOP, take no new work item. Past HARD STOP,
-write the handover and call `ScheduleWakeup(stop: true)`. If a usage limit interrupts the run,
-resume on the next firing toward the same deadlines — an interruption is not a reason to stop
-early.
+firing, compare against `date -u`. Past SOFT STOP take no new work item; past HARD STOP write the
+handover and `ScheduleWakeup(stop: true)`. A usage-limit interruption is not a reason to end early.
 
-**Standing authorisations (D-19, D-20, D-21) — do not re-litigate these:**
-- Downloads, environments, installs, code edits, CUDA-to-MPS rewrites, notebook execution are all
-  **pre-authorised**. Never hold C1 at a technical gate; never create one in a review finding.
-- **Zero commercial intent.** Non-commercial licences do not constrain this project. Do not let a
-  review finding push C1 to route around SMPL/AMASS to preserve an option nobody wants.
-- **Sole authorship.** No institutional identifiers, no third-party names, no assistant
-  attributions in tracked files. Role words only.
-- **Stage 5 (Demonstrator) is not optional.** The project does not end at `RESULTS.md`. Judge
-  design choices partly on whether they keep a local, runnable demonstrator reachable.
+**Standing authorisations — do not re-litigate:**
+- **D-19/D-19a:** downloads, environments, installs, code, notebooks pre-authorised. Ask only at
+  system-breaking scale. **Never hold the build session at a technical gate.**
+- **D-20:** zero commercial intent; non-commercial licences do not constrain this project.
+  **Numbers are not the deliverable — Stage 5 is not optional.**
+- **D-21:** sole authorship, no institutional identifiers. **The git-history scrub is BLOCKED** —
+  the build session correctly refused relayed authorisation for a public force-push. **Do not
+  re-ask it, and do not do it yourself.** Only the author, directly in that session, unblocks it.
+- **D-22/D-03:** internally-comparable-only on every number until the harness gate resolves.
+- **Two measured noise floors exist** (0.016, 0.0117). State which you use.
 
 ---
 

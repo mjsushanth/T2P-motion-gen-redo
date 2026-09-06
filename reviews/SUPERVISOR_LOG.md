@@ -1567,3 +1567,105 @@ supervising session was right. **Six of its findings died by measurement in one 
 headline experiment's original specification. The value was that two sessions with different context
 audited each other against fetched sources and cached artifacts, and wrote down every reversal.
 **Expect to be wrong at a similar rate. Write it down at the same rate.**
+
+---
+
+# RUN WINDOW 2 — set 2026-09-06T15:46:45Z
+
+**RUN_START:** 2026-09-06T15:46:45Z
+**SOFT STOP (take no new work item):** 2026-09-07T01:46:45Z
+**HARD STOP (stop mid-item, write handover):** 2026-09-07T03:16:45Z
+
+Author authorised 10-12 hours. If a usage limit interrupts, resume on the next firing toward these
+same deadlines. **Re-read this block every firing and compare against `date -u`.**
+
+## D-26 — the E1 ladder stops after E1B + seed 2. Then Stage 5. · JUDGEMENT (review pass)
+
+The author pushed back on continuing caption-truncation archaeology after the task reframe, and the
+push is substantially right. The reframe eliminated F3's *frame-selection* half by construction;
+only the *caption* half survived, and **the pilot already answered it model-free, in minutes.**
+
+**So the ladder stops when the A-vs-B comparison is interpretable, not when it is exhausted:**
+1. E1B completes (running).
+2. **SUP-49 decomposition control** — score E1A's cached generations against truncated captions.
+   Free, and without it the A-vs-B gap confounds model degradation with caption retrievability.
+3. **E1A seed 2** — required; one seed of each gives a gap with no spread to judge it against.
+4. **Write E1 up. Then STOP the ladder and start Stage 5.**
+
+**Deferred, deliberately: E1C, third seeds, the n~1000 FID rerun, and E0b closure.** All are
+legitimate and none is worth the wall-clock against a demonstrator the author has asked for twice.
+**Would reverse if:** E1B's result is anomalous in a way that a further arm would explain, or the
+author says otherwise.
+
+**Stage 5 is the priority once E1 is written up.** Design is SUP-43: demonstrate the *finding*, not
+the model. Judge it against the pre-registered Stage 5 criteria already in `reviews/REVIEW_QUEUE.md`
+— especially the retrieval-baseline-visible-in-the-interface one, which I said I would hold hardest.
+
+
+## [2026-09-06T16:05Z] Supervisor pass 36 — RUN WINDOW 2 opens. SUP-50: the scrub plan defeats itself.
+
+**Window checked:** now 16:05Z, RUN_START 15:46Z, SOFT 01:46Z, HARD 03:16Z. ~9h40m to soft stop.
+
+**E1B is mid-generation** — 2 of ~5 batches at ~9.5 min each, so ~20-30 min out. Nothing to review
+from it yet. Reviewed the five commits that landed since my last pass instead.
+
+**SUP-50 (P1) — verified two things independently:**
+
+1. **The history rewrite has NOT run.** `89d31d3` survives at its original hash; a `filter-repo`
+   rewrite changes every downstream hash. Authorisation is recorded (`8b781cb`), execution pending.
+   Sequencing it after E1B is fine — flagged only so the record is not mistaken for the deed.
+2. **The trap.** `LEDGER.md` ~1608-1632 now holds the replacement rules verbatim — the course-code
+   mapping and the rest. **The document describing the scrub is now the largest concentration of the
+   strings the scrub exists to remove**, tracked, inside the repo the rewrite will run over.
+   - Rewrite everything -> the entry becomes `the course==>the course`; **the record of the
+     operation is destroyed.**
+   - Exclude `LEDGER.md` -> the strings survive and the scrub fails its purpose.
+
+   **You cannot document a literal-string scrub inside the repository being scrubbed, using the
+   literals.** Fix given: keep the expressions file gitignored (same pattern as `.archive_path`),
+   and describe the operation in prose without quoting the literals. **Verify two properties after,
+   not one** — every `git log -S` empty *and* the ledger entry still legible. Right now both checks
+   fail solely because of this entry, so a naive rewrite could pass the absence check while silently
+   mangling the record.
+
+**Also verified, no action:** `f74a3a9` builds SUP-49's caption-retrievability control *into* the
+E1A seed-2 run rather than bolting it on afterwards — better than what I asked for, the
+decomposition now arrives with the seed instead of needing a third pass. `90b4917` corrects the
+18x-vs-13x noise-floor discrepancy.
+
+**Monitor blh8kjpfk armed** on E1B completion.
+**Next:** E1B review, then the decomposition + seed 2, then per D-26 stop the ladder and start
+Stage 5.
+
+## [2026-09-06T16:12Z] Supervisor pass 37 — I committed the exact error SUP-50 describes. Fixed.
+
+**The build session caught me, and it was right.** SUP-50 warned that a literal-string scrub cannot
+be documented using the literals — **and quoted the literals verbatim while doing so**, four times in
+`reviews/REVIEW_QUEUE.md` and once in this log, into a public repository, in the same paragraph as
+the warning. The rewrite it warned about had *already run*, so my finding re-leaked into current
+HEAD everything the rewrite had just removed.
+
+**Fixed:** literals replaced with structural placeholders; the real expressions stay in the
+gitignored file. Verified after — `git grep` returns **0 tracked files**, working-tree markdown sweep
+clean. **Uncommitted; the build session pushes it, since I do not commit.**
+
+**Method note, and the build session reasoned it out first.** I edited **in place** rather than
+appending a correction, breaking this project's standing append-or-annotate rule. Its justification
+is the right one: **preserving the original text would preserve exactly the data the correction
+exists to remove.** When the content *is* the defect, annotation cannot fix it.
+
+**New general rule, arrived at independently by both sessions within an hour — the strongest kind of
+evidence a rule is real:** *a redaction cannot be documented by quotation. Describe the shape of what
+was removed, keep the literals outside version control, and accept that this one class of correction
+must overwrite rather than annotate.* Appended to SUP-50; suggested to the build session for
+`LANDMINES.md` next to §16's review-discipline entry, its file and its call.
+
+**Residual flagged, not actionable:** anyone who cloned before the force-push holds the old objects,
+and GitHub may retain unreferenced objects server-side for a period. Close to theoretical for a repo
+this new and quiet, but it should be a *known* limitation rather than an assumed-complete cleanup.
+
+**Seventh supervisor error of the project**, and the first that was actively harmful rather than
+merely wrong — the others cost compute or precision; this one re-published the data it was written to
+protect.
+
+**Monitor re-arming on E1B.** Now 16:12Z; SOFT 01:46Z, HARD 03:16Z.

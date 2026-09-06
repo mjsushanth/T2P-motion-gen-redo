@@ -14,6 +14,7 @@
 | 3 | [../BRIEFING.md](../BRIEFING.md) | the forensic read of the original project. findings F1-F5 with test recipes | 10 min |
 | 4 | [../FORENSICS.md](../FORENSICS.md) | which of those findings survived contact with the data *(Stage 1 output)* | — |
 | 5 | [DECISIONS.md](DECISIONS.md) | why the project is shaped this way, and what would reverse each choice | 10 min |
+| 6 | [METRICS_EXPLAINED.md](METRICS_EXPLAINED.md) | **what FID / R-Precision / spread actually are**, why these and not others, and where each breaks. Every number in it was measured here. | 25 min |
 
 ---
 
@@ -25,6 +26,7 @@
 | about to write code | [LANDMINES.md](LANDMINES.md) -> [CODE_MAP.md](CODE_MAP.md) -> [DECISIONS.md](DECISIONS.md) |
 | about to change a design | [DECISIONS.md](DECISIONS.md) — it was probably already considered |
 | looking up a term | [GLOSSARY.md](GLOSSARY.md) |
+| not sure what a metric *means* | [METRICS_EXPLAINED.md](METRICS_EXPLAINED.md) — the explanative version of the glossary |
 | checking what has been measured | [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md) |
 | resuming an interrupted run | [../LEDGER.md](../LEDGER.md), last incomplete item |
 | running an unattended session | [../AUTONOMOUS_RUN_PROMPT.md](../AUTONOMOUS_RUN_PROMPT.md) |
