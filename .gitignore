@@ -19,3 +19,7 @@ __pycache__/
 # strings the scrub removed, so kept local/gitignored rather than committed, or documenting
 # the scrub would reintroduce the very strings it removed (review SUP-20260906-50)
 .scrub_expressions.txt
+
+# regenerable demo retrieval cache (17MB, rebuilt automatically from the materialized corpus +
+# evaluator on first run if missing -- same convention as dataset/t2m_test.npy)
+artifacts/demo/embedding_retrieval_cache.pkl

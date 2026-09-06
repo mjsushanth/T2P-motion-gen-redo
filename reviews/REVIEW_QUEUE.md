@@ -1899,3 +1899,135 @@ it never does.
   criterion fails at the first hurdle.
 - **No `demo/README.md` yet.** Not a criticism this early — flagging that the reproducibility
   criterion lands there, and it is easier written alongside the code than reconstructed after.
+
+---
+
+# Review 11 — the demo's visual payload does not match its finding. One change fixes that and the 30-second problem together.
+
+**Date:** 2026-09-06 · Read `demo/app.py` in full.
+
+**Against the pre-registered Stage 5 criteria:**
+
+| criterion | verdict |
+|---|---|
+| one command, from a checkpoint, no GPU | **met** |
+| non-specialist gets it in 30 seconds | **NOT met** — see SUP-56, and SUP-60 below supersedes the fix |
+| **retrieval baseline visible in the interface** | **met, and done well** — its own always-on pane, labelled `"Just look it up" baseline` |
+| failure cases reachable, not curated | **met** — free text box |
+| metrics + comparability label surfaced | **met** — `METRICS_MD` is on the page, not in a report |
+| reproducible by someone else | README exists; SUP-59's pinned deps still outstanding |
+
+**The caveat writing is genuinely careful** — *"the R-Precision difference between them, if any,
+cannot be claimed to be caused by truncation at this scale"* puts D-26 in the interface rather than
+burying it. That is the honest thing and most people would not have written it.
+
+## SUP-20260906-60 · P1 · The most prominent element on the page invites the inference the caveat forbids
+
+Look at what the page *shows* versus what it *establishes*:
+
+- **Shown, large, side by side:** two generated videos — full-caption vs truncated-caption.
+- **Established:** that comparison is **not resolvable at any affordable sample size** (D-26, 0.80σ).
+- **Actually measured:** a **0.145 R-Precision drop in retrieval space** — which appears on the page
+  as *a table*.
+
+**The visual payload is the thing we could not measure. The measured thing is text.** And viewers
+look at videos and skim text. Someone will watch two clips, see a difference, and conclude exactly
+what `METRICS_MD` spends a paragraph forbidding. **A caveat that contradicts the page's own most
+salient element is a caveat that loses.**
+
+This is not a writing problem and it cannot be fixed by stronger wording.
+
+## The fix: visualise the effect you actually measured
+
+**Truncation changes what a caption retrieves.** That is the 0.145, and it is directly showable:
+
+```
+   caption:  "a person walks forward and then sits down on a chair"
+                          |
+        ┌─────────────────┴─────────────────┐
+   FULL caption                      TRUNCATED ("a person walks forward")
+        |                                   |
+   nearest real motion               nearest real motion
+   ──────────────────                ──────────────────
+   [walks, then sits]                [just walks — the sitting is GONE]
+```
+
+**Both panes show real motion.** Generator quality is not a confound. The difference between them
+*is* the information the truncation destroyed, and a non-specialist sees it instantly: *"the second
+one lost half the sentence, so it found the wrong movement."*
+
+**This fixes three things at once:**
+
+1. **The 30-second criterion** — retrieval is instant, so the page works the moment it loads. This
+   **supersedes SUP-56's pre-generated-examples workaround**: you no longer need pre-rendering to
+   make the demo comprehensible, because the fast path *is* the finding.
+2. **The payload/finding mismatch** — what is shown is now what was measured.
+3. **The over-claim risk** — nothing on the page implies a generation-quality difference we cannot
+   support.
+
+**Keep the generation panes**, below, clearly secondary, behind the "several minutes" button, framed
+as *"and here is what a real generator does with each caption"* — genuinely interesting, honestly
+labelled as illustrative rather than evidential.
+
+**Strongest version, if cheap:** seed the demo with a HumanML3D caption whose true motion is known,
+so the full-caption pane retrieves the *correct* motion and the truncated pane retrieves a plainly
+different one. That is the 0.145 made visible in a single screen, with no generation at all.
+
+## Note on SUP-58, which now matters more
+
+If retrieval becomes the headline rather than a baseline, **the TF-IDF-vs-encoder choice stops being
+a fairness question and becomes a fidelity one.** The 0.145 was measured in the *evaluator's
+embedding space*. A TF-IDF demo would show a different quantity than the one on the page's own
+table. **Use the evaluator's encoder** so the demo visualises the measurement it cites.
+
+---
+
+# SUP-20260906-61 · P1 · I validated SUP-60's premise before you build it. It holds, and it gives you the demo's headline number.
+
+**I proposed the retrieval-based demo assuming truncation visibly changes what gets retrieved. That
+was an assumption and I had not checked it — so I checked it before you spend time building on it.**
+
+Method: 6,000 HumanML3D captions as the corpus, 300 sampled, the original's truncation rule applied
+to each using **HumanML3D's own tags** (not spaCy — avoiding SUP-57's open question entirely),
+TF-IDF nearest-neighbour retrieval over the corpus.
+
+| measurement | value |
+|---|---|
+| captions the rule actually shortens | **62.3%** |
+| shortened captions that then retrieve a **different** motion | **46.0%** |
+| **caption retrieves its OWN motion — full** | **78.3%** |
+| **caption retrieves its OWN motion — truncated** | **55.0%** |
+| **drop** | **−23.3 points** |
+
+**The premise holds. Build it.**
+
+## The last row is your headline, and it is better than the table currently on the page
+
+> **A full caption finds its own motion 78% of the time. Truncated, it finds it 55% of the time.**
+
+That is the same phenomenon as the 0.145 R-Precision drop, expressed so a non-specialist needs no
+explanation: **shortening the description makes it stop finding the right video.** No embeddings, no
+metric names, no chance-level footnote. Put it on the page in those words.
+
+## The practical design consequence — and it solves your first-impression problem
+
+**46% is not 100%.** Roughly half of what a user types will show no visible difference. Handled
+badly that reads as a broken demo; handled well it is the *honest* presentation:
+
+**Show the aggregate alongside the live example.** Something like *"Across 300 captions, truncation
+changed the retrieved motion 46% of the time, and self-retrieval fell from 78% to 55%. Here is your
+caption:"* — then a null on their particular input is **informative** rather than confusing. They
+are looking at one draw from a stated distribution.
+
+**This is strictly better than curating examples**, which SUP-56 proposed and I now withdraw in
+favour of this. You do not need a shipped set at all: retrieval is instant, the distribution is
+stated, and every sample is honest including the negative ones.
+
+## Two caveats on my own numbers
+
+1. **These are TF-IDF, not the evaluator's encoder.** The demo should use the encoder (SUP-58), and
+   the encoder's numbers will differ — likely higher self-retrieval on both arms, since it captures
+   semantics TF-IDF misses. **Re-measure with the encoder before printing anything on the page**,
+   and print *those* numbers, not mine. Mine establish the premise, not the display values.
+2. **I used HumanML3D's own tags, not spaCy.** So this does not touch SUP-57's open question of
+   whether the demo's spaCy path reproduces the measured rule. That check is still needed.

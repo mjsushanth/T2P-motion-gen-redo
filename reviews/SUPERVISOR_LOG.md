@@ -1839,3 +1839,85 @@ the reproducibility criterion fails at the first hurdle; `demo/README.md` is eas
 the code than reconstructed later.
 
 **Seed 2 still running.** Now 16:32Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:40Z] Supervisor pass 42 — Review 11: the demo's visual payload does not match its finding
+
+**Stage 5 app built** (`demo/app.py`, Gradio). Against the pre-registered criteria: one command ✓;
+**retrieval baseline visible in the interface ✓ and done well** (own always-on pane, labelled
+`"Just look it up" baseline` — the criterion I said I would hold hardest, built without softening);
+failure cases reachable ✓; metrics + comparability label on the page ✓; 30-second comprehension ✗.
+
+**Caveat writing is better than most people manage** — *"the R-Precision difference between them, if
+any, cannot be claimed to be caused by truncation at this scale"* puts D-26 **in the interface**.
+
+**SUP-60 (P1) — the mismatch I did not see until reading `app.py`:**
+- **Shown, large:** two generated videos, full vs truncated caption.
+- **Established:** that comparison is **not resolvable** (0.80 sigma, D-26).
+- **Measured:** a **0.145 retrieval-space drop** — present on the page as *a table*.
+
+**The visual payload is the thing we could not measure; the measured thing is text.** Viewers watch
+videos and skim prose, so the page's most salient element invites exactly the inference its caveat
+forbids. **A caveat contradicting the page's own dominant element loses**, and no amount of rewording
+fixes it.
+
+**Fix proposed: visualise the measured effect instead.** Truncation changes *what a caption
+retrieves* — that **is** the 0.145. Full caption -> nearest real motion; truncated caption -> nearest
+real motion; both panes real, so generator quality is not a confound, and the difference between
+them is the destroyed information. A non-specialist reads it instantly.
+
+**This resolves three things at once and supersedes SUP-56:** retrieval is instant, so the
+30-second criterion is met **without** pre-generated examples — the fast path *is* the finding.
+Payload matches finding. Over-claim risk removed. Generation panes stay, demoted below the fold and
+framed as illustrative rather than evidential.
+
+**SUP-58 upgraded in consequence:** if retrieval becomes the headline rather than a baseline,
+TF-IDF-vs-encoder stops being a fairness question and becomes a **fidelity** one — the 0.145 lives in
+the evaluator's embedding space, so TF-IDF would visualise a different quantity than the table above
+it. Use the encoder.
+
+**Noted approvingly:** the build session deferred the generate-path test rather than contend with the
+seed-2 job, and refuses to call Stage 5 core-path-verified until it has driven it through a browser.
+Correct standard.
+
+Now 16:40Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:48Z] Supervisor pass 43 — SUP-61: validated my own design proposal before the build session spent time on it
+
+**SUP-58 landed** (embedding retriever added alongside TF-IDF, pane relabelled). **SUP-60's layout
+change has not** — Review 11 crossed with that edit.
+
+**Rather than repeat myself, I tested the premise of my own proposal.** SUP-60 assumed truncation
+visibly changes what a caption retrieves. **That was an assumption I had not checked**, and if it
+were weak the demo would be unimpressive after the build session had spent hours on it.
+
+Method: 6,000 HumanML3D captions, 300 sampled, the original's truncation rule applied via
+**HumanML3D's own tags** (sidestepping SUP-57's spaCy question), TF-IDF nearest-neighbour retrieval.
+
+| measurement | value |
+|---|---|
+| rule actually shortens the caption | 62.3% |
+| shortened captions retrieving a **different** motion | **46.0%** |
+| caption retrieves its **own** motion — full | **78.3%** |
+| caption retrieves its **own** motion — truncated | **55.0%** |
+| **drop** | **−23.3 points** |
+
+**Premise holds.** And the last row is a better headline than the table currently on the page:
+**"a full caption finds its own motion 78% of the time; truncated, 55%."** Same phenomenon as the
+0.145 R-Precision drop, stated so a non-specialist needs no explanation at all.
+
+**The 46% figure also solves the first-impression problem instead of creating one.** Half of user
+inputs will show no visible difference. **Print the aggregate beside the live example** — "truncation
+changed the retrieved motion 46% of the time; here is your caption" — and a null becomes
+*informative*, one draw from a stated distribution. **This is strictly better than curating shipped
+examples, so I withdrew SUP-56 in its favour.** Retrieval is instant, the distribution is stated, and
+every sample is honest including the negatives.
+
+**Two caveats I attached to my own numbers:** they are TF-IDF, not the evaluator's encoder, so the
+demo must **re-measure with the encoder and print those** — mine establish the premise, not the
+display values. And I used HumanML3D's tags, so SUP-57's spaCy-fidelity question is untouched.
+
+**Ninth supervisor correction, but a different kind:** the first four were errors caught after the
+fact; this one was a proposal checked *before* it cost anyone anything. **That is the cheaper
+version of the same discipline.**
+
+Now 16:48Z; SOFT 01:46Z, HARD 03:16Z.

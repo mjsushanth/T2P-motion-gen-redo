@@ -615,3 +615,43 @@ condition's seed controls incidental variance; the randomized condition's seed c
 treatment. Averaging the wrong one, or averaging neither, produces a comparison that looks
 symmetric and isn't.
 
+---
+
+## 18. A hypothesis and a success criterion are not a pre-registration without a power calculation
+
+**Status: VERIFIED in this repository, 2026-09-06 (review SUP-20260906-55, E1B) — a
+review-discipline trap, alongside §16 and §17, not a domain one.**
+
+**The trap.** E1B was pre-registered in the sense this project had been using the word all day:
+a stated hypothesis ("E1B worse than E1A") and a stated success criterion ("by more than the
+seed-to-seed spread"), both written down in `REBUILD_SPEC.md` §6 before the run. That looked
+complete. It was not: nobody asked, before spending ~5 hours of CPU time across training and
+generation for both arms, **what sample size would be needed to detect the effect actually
+expected, and whether this run's planned n reached it.**
+
+**The check that would have caught it, computable in about a minute from numbers already on
+hand:** at R-Precision ~0.30 with n=128 generated samples per arm, the standard error of an
+A-vs-B gap is ~0.057, so the minimum effect detectable at 3σ is ~0.17. The best available prior
+estimate of the true effect — this project's own same-day E1-pilot measurement — was 0.145
+(corpus-wide, unattenuated) to 0.27 (conditional), and every stated reason available at the time
+said the generation-side effect should be **attenuated relative to the retrieval-space number**,
+not equal to it. So the honest pre-run statement, achievable before training started, was: *"n=128
+resolves this only if the effect survives into generation completely undiminished, which is not
+expected."* The run went ahead anyway, and the resulting gap (0.047, at 0.80σ) confirmed the
+underpowered case exactly.
+
+**Do instead.** Treat pre-registration as three parts, not two: hypothesis, success criterion,
+and a minimum-detectable-effect calculation against the planned sample size, using whatever prior
+estimate of the effect is available (even a labelled guess is better than none). State the
+verdict — powered or underpowered — before running, and if underpowered, state explicitly why the
+run is worth doing anyway (pipeline validation, a null that usefully bounds something, trivial
+marginal cost). What is not acceptable is running an underpowered comparison without knowing it
+is underpowered, because then a noise result gets read as a finding — which is the specific
+failure this whole project exists to guard against, arrived at by a different route.
+
+**Generalisation:** any A/B comparison, ablation, or benchmark with a fixed, costly sample size
+should have this calculation done before the run starts, not reconstructed afterward to explain
+a surprising result. A hypothesis plus a criterion answers "what would convince us." A power
+calculation answers "can this run possibly convince us at all" — and only the second question
+determines whether spending the compute is worthwhile in the first place.
+

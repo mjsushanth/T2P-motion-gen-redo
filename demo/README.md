@@ -25,8 +25,13 @@ try something that breaks it.
 
 ## Requirements
 
-- The `mjs_mlcvdl_unified_m5` conda environment (or an equivalent env with `torch`, `gradio`,
-  `spacy` + `en_core_web_sm`, `scikit-learn`, `moviepy<2`, `matplotlib`).
+- The `mjs_mlcvdl_unified_m5` conda environment (torch, numpy, scikit-learn already present),
+  plus this directory's own pinned extras (`demo/requirements.txt`, per SUP-20260906-59):
+  ```bash
+  conda activate mjs_mlcvdl_unified_m5
+  pip install -r demo/requirements.txt
+  python -m spacy download en_core_web_sm   # separate download, not a pip dependency
+  ```
 - MDM's released checkpoint at `checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/
   model000475000.pt` (already fetched and verified in this repo's own E0b work — see
   `third_party/motion-diffusion-model/PATCHES.md` for provenance).
@@ -57,11 +62,16 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
 - The retrieval baseline is deliberately simple (TF-IDF cosine similarity over the materialized
   corpus's captions) — a legitimate, unglamorous baseline, not the strongest possible retrieval
   system, so a viewer can trust it was not tuned to make the demo look good.
-- The POS-tagging step (`spacy`/`en_core_web_sm`) approximates HumanML3D's own tagging
-  convention closely but not exactly (e.g. it does not lemmatize verbs) — this does not affect
-  the truncation rule's logic (which only reads POS tags, not lemmas), but the truncated text
-  shown may differ in minor surface form from how the original project's own pipeline would have
-  tagged the identical sentence.
+- **The demo's truncation was validated against the one actually measured, not assumed to match**
+  (`validate_truncation_agreement.py`, review SUP-20260906-57): run over 8,962 real HumanML3D
+  captions, the spaCy-based rule used here agrees with the tag-based rule the E1-pilot actually
+  measured on **93.8%** of captions (punctuation-normalized comparison — the raw agreement rate,
+  52.5%, is inflated apart mostly by whitespace/punctuation tokenization differences, not by
+  where the rule decides to cut) and **98.1%** on which branch fired (conjunction-tag vs.
+  first-sentence fallback). Full record: `artifacts/demo/truncation_agreement_record.json`. The
+  remaining ~6% disagreement comes from genuine POS-tagging differences between spaCy and
+  HumanML3D's own tagger (e.g. hyphenated words, borderline ADP/SCONJ calls) — a real, small,
+  disclosed gap, not zero.
 
 ## Files
 
@@ -72,7 +82,12 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
   directly, not reimplemented) for single-caption generation + rendering.
 - `render_real_motion.py` — renders an already-stored real HumanML3D motion (for the retrieval
   pane), reusing MDM's own decode path (`recover_from_ric`) and renderer (`plot_3d_motion`).
-- `retrieval.py` — the nearest-neighbour baseline.
+- `retrieval.py` — the TF-IDF nearest-neighbour baseline (cheaper floor).
+- `retrieval_embedding.py` — the stronger text-to-motion embedding retrieval baseline (same
+  validated space R-Precision itself uses), per SUP-20260906-58.
+- `validate_truncation_agreement.py` — measures how often `truncate.py`'s spaCy-based rule
+  agrees with the tag-based rule the E1-pilot actually measured (SUP-20260906-57); result:
+  93.8% punctuation-normalized agreement over 8,962 real captions.
 - `_mpl_moviepy_compat.py` — a small compatibility shim (documented in its own docstring) for a
   real version mismatch between this environment's matplotlib and the old `moviepy` API MDM's
   vendored renderer expects; does not touch vendored code or downgrade shared dependencies.

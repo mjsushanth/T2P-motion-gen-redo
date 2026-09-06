@@ -21,6 +21,7 @@ import gradio as gr
 
 from truncate import truncate_first_action_clause
 from retrieval import NearestNeighborRetriever
+from retrieval_embedding import EmbeddingRetriever
 from generate_wrapper import generate_video
 from render_real_motion import render_real_motion
 
@@ -51,18 +52,22 @@ comparing generation quality between the two panes.
 """
 
 
-def _load_retriever():
-    return NearestNeighborRetriever()
+_TFIDF_RETRIEVER = None
+_EMBEDDING_RETRIEVER = None
 
 
-_RETRIEVER = None
+def get_tfidf_retriever():
+    global _TFIDF_RETRIEVER
+    if _TFIDF_RETRIEVER is None:
+        _TFIDF_RETRIEVER = NearestNeighborRetriever()
+    return _TFIDF_RETRIEVER
 
 
-def get_retriever():
-    global _RETRIEVER
-    if _RETRIEVER is None:
-        _RETRIEVER = _load_retriever()
-    return _RETRIEVER
+def get_embedding_retriever():
+    global _EMBEDDING_RETRIEVER
+    if _EMBEDDING_RETRIEVER is None:
+        _EMBEDDING_RETRIEVER = EmbeddingRetriever()
+    return _EMBEDDING_RETRIEVER
 
 
 def run_demo(caption: str, seed: int):
@@ -78,22 +83,33 @@ def run_demo(caption: str, seed: int):
         "(truncated at the first conjunction, matching the original project's own rule)"
     )
 
-    retriever = get_retriever()
-    nn_caption, nn_id, nn_sim = retriever.nearest(caption, k=1)[0]
+    # Two retrieval baselines, per SUP-20260906-58: the embedding retriever (text-to-motion, in
+    # the same validated space R-Precision itself uses) is the strong baseline shown as the
+    # video; TF-IDF is kept as a labelled, cheaper floor, shown alongside for comparison -- when
+    # they disagree, that disagreement is itself shown, not hidden.
+    emb_caption, emb_id, emb_sim = get_embedding_retriever().nearest(caption, k=1)[0]
+    tfidf_caption, tfidf_id, tfidf_sim = get_tfidf_retriever().nearest(caption, k=1)[0]
 
     work_dir = tempfile.mkdtemp(prefix="t2p_demo_")
     full_video = generate_video(caption, os.path.join(work_dir, "full"), seed=seed)
     trunc_video = generate_video(truncated_caption, os.path.join(work_dir, "truncated"), seed=seed)
-    nn_video = render_real_motion(nn_id, os.path.join(work_dir, "nn.mp4"))
+    nn_video = render_real_motion(emb_id, os.path.join(work_dir, "nn.mp4"))
 
     truncation_summary = (
         f"**Full caption:** {caption}\n\n"
         f"**Truncated caption (the original project's own rule):** {truncated_caption}\n\n"
         f"{fallback_note}"
     )
+    agree_note = (
+        "(the TF-IDF floor found the same motion)" if tfidf_id == emb_id else
+        "(TF-IDF found a *different* real motion -- shown for comparison, not hidden)"
+    )
     retrieval_summary = (
-        f"**Nearest real caption in the training corpus** (TF-IDF cosine similarity = "
-        f"{nn_sim:.3f}):\n\n\"{nn_caption}\"\n\n(motion id: `{nn_id}`)"
+        f"**Strong baseline — text-to-motion embedding retrieval** (same validated space "
+        f"R-Precision itself uses; cosine similarity = {emb_sim:.3f}):\n\n"
+        f"\"{emb_caption}\" (motion id: `{emb_id}`)\n\n"
+        f"**Cheaper floor — TF-IDF caption similarity** ({tfidf_sim:.3f}) {agree_note}:\n\n"
+        f"\"{tfidf_caption}\" (motion id: `{tfidf_id}`)"
     )
     return full_video, trunc_video, nn_video, truncation_summary, retrieval_summary
 
@@ -121,7 +137,7 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
             trunc_out = gr.Video(label="Truncated caption")
         with gr.Column():
             gr.Markdown("### Nearest-neighbour retrieval (real motion, not generated)")
-            nn_out = gr.Video(label="\"Just look it up\" baseline")
+            nn_out = gr.Video(label="\"Just look it up\" baseline (embedding retrieval)")
     truncation_md = gr.Markdown()
     retrieval_md = gr.Markdown()
 

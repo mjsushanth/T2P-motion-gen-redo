@@ -1,0 +1,10 @@
+# Pinned demo-specific requirements, per review SUP-20260906-59 -- "someone else can run it"
+# fails at the first hurdle without these. Assumes the base mjs_mlcvdl_unified_m5 environment
+# (torch, numpy, scikit-learn already present) is already active; these are the packages this
+# demo needed on top of it, with the exact versions verified to work together in this project.
+gradio==6.20.0
+moviepy==1.0.3
+spacy==3.8.16
+
+# After installing spacy, the English model is a separate download, not a pip dependency:
+#   python -m spacy download en_core_web_sm

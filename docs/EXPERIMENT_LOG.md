@@ -28,6 +28,14 @@ if a result is superseded, add a new entry that says so and cross-reference both
 
 **Hypothesis (pre-registered):** <stated before the run>
 **Success criterion (pre-registered):** <the number that would decide it>
+**Power check (pre-registered, added per review SUP-20260906-55 — E1B ran without this and the
+gap turned out to be 0.80σ, unresolvable, discovered only after ~5 hours of compute):**
+```
+Expected effect size:           <from a prior measurement, or labelled a guess>
+Measurement SE at planned n:    <computed>
+Minimum detectable effect (3σ): <computed>
+Verdict: powered / underpowered — and if underpowered, why run it anyway
+```
 
 | metric | value | seed spread |
 |---|---|---|
@@ -865,12 +873,14 @@ applied to BOTH training and generation-conditioning captions (design decision r
 **Record:** `../artifacts/e1/e1b_train_record.json`
 **Status:** RESOLVED — as a power/affordability finding, not a directional one. See the analysis
 below (review SUP-20260906-51/52/53); this supersedes the "PARTIAL, pending E1A seed 2" framing
-this entry originally carried. Process note, stated plainly: this rung was launched on the
-director's direct go-ahead without a fresh, dedicated pre-registration entry in this file first —
-the success criterion it is measured against (`REBUILD_SPEC.md` §6: "R-Precision-top3 measurably
-worse than E1A by more than the seed-to-seed spread") predates the run, but a filled-in table
-committed before training started, matching this project's own discipline for every other rung,
-was skipped under time pressure. Noted as a real process gap, not smoothed over.
+this entry originally carried. Process note, corrected per SUP-20260906-54 to separate two
+things that got conflated: E1B's **hypothesis and success criterion were pre-registered** — both
+are in `REBUILD_SPEC.md` §6's ladder row, written before the run, not reconstructed after. What
+was actually missing is the **per-run record table** (the filled-in metric/seed-spread table)
+that E0b and E1A-power each got committed before their own runs started — a documentation-
+consistency gap, not a pre-registration failure. The more consequential gap, per §18's new
+landmine entry, is that no minimum-detectable-effect calculation was done before the run — that
+is the thing that would actually have flagged the affordability ceiling in advance.
 
 **Raw result:** R-Precision-top3(E1B) = **0.3438**, against E1A's **0.2969**. Ground-truth
 R-Precision-top3 = 0.7950 (consistent with every prior measurement). FID(E1B) = 8.3402 (worse
@@ -926,3 +936,21 @@ supported or refuted. Whether a larger, unaffordable-here sample size would reso
 the other. Per D-26 (director's decision, `docs/DECISIONS.md`), the ladder stops at this rung:
 E1C, a second seed of A or B, and any further seeds are not run, and are documented here as
 "legitimate, unaffordable, and not pursued further" rather than silently dropped.
+
+**Pre-registered prediction (review SUP-20260906-54), written before the E1A seed-2/SUP-49
+decomposition control lands, so it is a hypothesis being tested rather than a story fitted to a
+number afterward.** The raw gap's direction (E1B scoring higher than E1A) is surprising given the
+E1-pilot's own finding that truncation costs real retrieval signal (0.145 on real motions,
+R-Precision ~0.80). A candidate explanation for why these need not conflict: **caption
+specificity is only an asset when the motion carries enough signal to use it.** Real motion
+scores ~0.80 R-Precision; this project's own generator scores ~0.30 — vague, largely generic
+output. A short, generic caption may match vague, generic motion about as well as a long,
+specific caption does, because the specific caption's extra content has nothing in a
+low-signal motion to attach to, and may act as noise in the embedding rather than a useful
+signal. **If this holds:** truncation destroys information that helps when the motion carries
+enough signal to use it (real motion, high R-Precision) and is neutral-to-helpful when it does
+not (this project's own severely undertrained generator, low R-Precision) — a claim about the
+*interaction between conditioning specificity and generator quality*, more interesting than a
+claim about either arm alone, and testable later at higher generator quality. **Stated now,
+before the control's number is known, specifically so it cannot be read as after-the-fact
+rationalization if it turns out to match.**

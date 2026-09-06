@@ -1,0 +1,116 @@
+{
+  "n_total": 8962,
+  "n_agree_raw": 4704,
+  "pct_agree_raw": 0.5248828386520866,
+  "n_agree_punct_normalized": 8409,
+  "pct_agree_punct_normalized": 0.9382950234322696,
+  "n_fallback_flag_agree": 8788,
+  "pct_fallback_flag_agree": 0.980584690917206,
+  "sample_disagreements": [
+    [
+      "subject is standing facing forward the subject kicks left leg 2 times forward then kicks   left leg 2 times to the side next the subject's right arm punches forward",
+      "subject is standing facing forward the subject kicks left leg 2",
+      "subject is standing facing forward the subject kicks left leg 2 times",
+      false,
+      false
+    ],
+    [
+      "a person carefully walking over a bridge/ rope, while supporting themselves with their hands.",
+      "a person carefully walking over a bridge/",
+      "a person carefully walking over a bridge/ rope",
+      false,
+      false
+    ],
+    [
+      "a person sits on the floor cross-legged then stands",
+      "a person sits on the floor cross-legged then stands",
+      "a person sits on the floor cross legged then stands",
+      true,
+      true
+    ],
+    [
+      "the figure walks forward a couple steps, turns right 180 degrees and then walks back to the originally starting point.",
+      "the figure walks forward a couple steps, turns right 180",
+      "the figure walks forward a couple steps turns right 180 degrees",
+      false,
+      false
+    ],
+    [
+      "walks in a wide counterclockwise bend then cuts a sharp right before completing a circle.",
+      "walks in a wide counterclockwise bend then cuts a sharp right before completing a circle.",
+      "walks in a wide counterclockwise bend then cuts a sharp",
+      true,
+      false
+    ],
+    [
+      "a man steps back with his arms raised, then lowers them and steps forward.",
+      "a man steps back with his arms raised, then lowers them",
+      "a man steps back",
+      false,
+      false
+    ],
+    [
+      "a person acting like a tiger",
+      "a person acting",
+      "a person acting like a tiger",
+      false,
+      true
+    ],
+    [
+      "he sidesteps 8 times turns and sidesteps back four.",
+      "he sidesteps 8 times",
+      "he sidesteps 8 times turns",
+      false,
+      false
+    ],
+    [
+      "a person makes an s-motion with their hands & arms.",
+      "a person makes an s-motion with their hands & arms.",
+      "a person makes an s motion with their hands arms",
+      true,
+      true
+    ],
+    [
+      "a person stands still with their arms stretched out.",
+      "a person stands still with their arms stretched out.",
+      "a person stands still",
+      true,
+      false
+    ],
+    [
+      "a person holds both hands near their face while tilting their head backward slightly.",
+      "a person holds both hands",
+      "a person holds both hands near their face",
+      false,
+      false
+    ],
+    [
+      "a person holds a large container up to their face as if taking a drink",
+      "a person holds a large container up to their face",
+      "a person holds a large container up to their face as",
+      false,
+      false
+    ],
+    [
+      "person takes a big jump forwards by using their arms as momentum",
+      "person takes a big jump forwards by using their arms",
+      "person takes a big jump forwards by using their arms as momentum",
+      false,
+      true
+    ],
+    [
+      "a person dancing from right to left. looks like the foxtrot dance.",
+      "a person dancing from right to left. looks",
+      "a person dancing from right to left",
+      false,
+      true
+    ],
+    [
+      "a person steps forward with their right foot, then steps with their left foot, does a 180 degree turn to the left on their left foot, steps forward with their right foot and left again.",
+      "a person steps forward with their right foot, then steps with their left foot, does a 180 degree turn to the left on their left foot, steps forward with their right",
+      "a person steps forward with their right foot then steps with their left foot does a 180 degree turn to the left on their left foot steps forward with their right foot",
+      false,
+      false
+    ]
+  ]
+}

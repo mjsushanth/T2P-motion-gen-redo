@@ -1892,3 +1892,63 @@ project's browser preview tooling, not just curl) with a short test caption, con
 panes and the retrieval pane render correctly in the actual interface, and only then consider
 Stage 5's core interactive path verified.
 
+## [2026-09-06T16:50:00 UTC] Item 38 — Five director findings actioned: pre-registered the interaction prediction, added a minimum-detectable-effect landmine, validated the demo's truncation, added a stronger retrieval baseline, pinned demo requirements
+**Status:** complete
+**Acceptance criteria:** action review 10's five findings (SUP-54/55/57/58/59) — a pre-registered
+interaction hypothesis before the seed-2 control lands, a new pre-registration/landmines rule
+about minimum detectable effect, a real validation of the demo's truncation fidelity, a stronger
+retrieval baseline, and pinned demo dependencies.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (E1B entry: added the pre-registered interaction
+prediction — caption specificity may only help when generator quality is high enough to use it
+— stated before the control's number is known; corrected the earlier "process gap" framing to
+separate pre-registration, which was real, from the missing per-run record table, which is a
+documentation-consistency issue; added a minimum-detectable-effect section to the entry
+template). `docs/LANDMINES.md` (new §18: hypothesis + criterion is not a complete
+pre-registration without a power calculation — the E1B-specific instance of a rule computable in
+about a minute that would have flagged the affordability ceiling before ~5 hours of compute was
+spent). `demo/validate_truncation_agreement.py` (new — measures agreement between the demo's
+spaCy-based truncation and the E1-pilot's tag-based truncation over 8,962 real captions: 93.8%
+punctuation-normalized agreement, 98.1% agreement on which branch fired). `demo/
+retrieval_embedding.py` (new — text-to-motion embedding retrieval via `EvaluatorMDMWrapper`,
+the same validated space R-Precision uses, kept alongside TF-IDF rather than replacing it).
+`demo/app.py` (wires both retrievers in, showing the strong baseline's video and both captions'
+similarity scores, explicitly noting when they disagree rather than hiding it). `demo/
+requirements.txt` (new, pinned). `demo/README.md` (documents the validation result, the two
+retrieval baselines, and the exact install steps including the separate spaCy model download).
+`artifacts/demo/truncation_agreement_record.json` (new).
+**Environment changes:** none beyond what Item 37 already installed.
+**Result — truncation validation:** 93.8% agreement (punctuation-normalized), 98.1% on which
+branch fired, over 8,962 real HumanML3D captions. High enough to trust the demo shows
+approximately the rule that was actually measured; the ~6% residual disagreement (genuine
+POS-tagging differences between spaCy and HumanML3D's own tagger) is disclosed, not hidden.
+**Result — embedding retrieval baseline, a real bug caught before shipping it:** a first version
+embedded captions on BOTH sides (query and corpus) through the evaluator's text encoder —
+semantically poor top-1 matches on manual inspection (e.g. "a man sits down slowly" retrieved a
+walking/balancing caption) and spuriously uniform ~0.98+ similarity regardless of query,
+indicating the cross-modal-trained text encoder does not discriminate well for pure text-to-text
+comparison. Diagnosed by looking at real query results, not assumed correct because the
+component was well-validated elsewhere. Fixed by switching to TEXT-TO-MOTION retrieval (embed
+the query caption, compare against real corpus MOTION embeddings) — matching exactly what
+R-Precision itself measures. Re-tested: 3 of 4 hand-picked queries now retrieve semantically
+sensible real motions (walking, jumping/spinning, cartwheel); one (sitting) still misses,
+disclosed in the UI as a real, shown-not-hidden limitation, consistent with the director's own
+"if the model loses to it on some captions, show that" instruction (applied here to the
+retriever itself, which can also be wrong).
+**Self-critique:** the first embedding-retrieval implementation would have shipped a plausible-
+looking but semantically weaker baseline than TF-IDF if the actual query outputs hadn't been
+inspected by eye before moving on — the code ran without error and returned syntactically valid
+results, which is not the same as returning good ones. The generically useful check, stated once:
+before trusting a new retrieval or similarity method, look at what it actually retrieves for a
+handful of real queries, not just whether the code executes.
+**Verification performed:** ran `validate_truncation_agreement.py` against the real materialized
+corpus (not a synthetic test set) and inspected the sample disagreements directly before trusting
+the aggregate percentage. Ran the embedding retriever against four hand-picked queries both
+before and after the text-to-motion fix, comparing outputs by eye rather than trusting the
+absence of an exception.
+**Next:** once E1A seed 2 completes, report its decomposition as context (per the director's own
+correction, SUP-54 partially reversing SUP-52 — the run was worth finishing). Then: pre-generate
+a small set of example caption pairs (SUP-56, still open, P1 — the demo currently fails its own
+30-second comprehension criterion without pre-rendered examples on load) once CPU contention
+clears, and do the full live-browser end-to-end test of the Generate button that Item 37 already
+flagged as outstanding.
+
