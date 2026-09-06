@@ -1286,3 +1286,57 @@ dress.
 Priority set below the power check, above idle; explicitly told not to delay the gate result.
 
 **Next:** power check (~13:30-14:00Z), then handover. Now 11:28Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T11:33Z] Supervisor pass 31 — FRONT-LOADING CONFIRMED. My two prior readings were both wrong, in opposite directions.
+
+**The averaging reversed the conclusion rather than tightening it, and the build pass flagged it
+loudly as instructed.**
+
+| quantity | value |
+|---|---|
+| random-window, 8 placement draws | mean **0.5279**, std 0.0082, SEM 0.0029 |
+| length-matched prefix (stable, 0.0008) | **0.5456** |
+| gap | **0.0177** |
+| gap / combined SE (incl. prefix's own) | **5.9 sigma** |
+
+Verified independently — arithmetic holds; including the prefix arm's uncertainty moves 6.1 to 5.9
+and nothing else. **Resolved effect.**
+
+**SUP-48 filed. Two things for the writeup:**
+- **Not a forking-paths artifact**, and the reasons must be stated rather than left to reconstruct:
+  every refinement was proposed on **a priori methodological grounds before its result was seen**,
+  and **the hypothesis direction was on the record in advance** (SUP-38, again SUP-44) before any of
+  the three controls ran. Remaining caveat, to be stated: the final comparison form was not itself
+  pre-registered.
+- **The decomposition is the useful form:** volume ~93% of the conditional truncation cost (0.27),
+  **position ~7% (0.0177)** — real, resolved, secondary. Better than either the bare null or the
+  rule-specific story the pilot opened with.
+
+**My own sequence, recorded deliberately:** pass 28 **"refuted"** (overclaiming from an underpowered
+null) -> pass 29 **"not resolvable"** (correct on the evidence then) -> pass 30 proposed the
+averaging -> pass 31 **confirmed**. **Both of my first two readings were wrong, in opposite
+directions.** The process produced the answer, not either party's judgement, and that is what makes
+the final number trustworthy. It belongs in the writeup as-is.
+
+`LANDMINES.md` §17 (stochastic arm's seed controls the treatment; deterministic arm's controls
+incidental noise) now ties E0a's flagged `repeat_time` suspicion to a confirmed instance — two
+separate observations collapsed into one transferable rule.
+
+**E1-pilot closed. It is this session's substantive output:** two genuine findings, three controls,
+every correction on the record, and the original's "first-action segmentation" shown to be neither
+clever nor uniquely harmful.
+
+**Next:** power check, the last open item. Now 11:33Z; SOFT 13:55Z, HARD 14:40Z.
+
+---
+
+## FOR JOEL (running)
+
+17. **Second real finding, and it needed four rounds to get right.** Beyond the volume effect: the
+    *position* of the text you keep also matters, slightly — HumanML3D captions carry a little more
+    motion-relevant signal at the front. Roughly 93% of the truncation cost is how much you remove,
+    ~7% is which part. Worth knowing how it was reached: I first called this refuted, then
+    downgraded to "can't tell," then proposed the measurement that resolved it — **two wrong calls
+    in opposite directions before the right one.** Every step is in the record. That sequence is a
+    better advertisement for the method than a clean result would have been, and it is the sort of
+    thing worth being able to walk an interviewer through.

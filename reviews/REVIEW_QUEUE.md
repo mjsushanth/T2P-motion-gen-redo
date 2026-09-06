@@ -1374,3 +1374,61 @@ the averaged estimate lands materially above the reduced noise floor, that would
 surprise and worth flagging as such.
 
 **Priority: below the power check, above idle.** Do not let it delay reporting the gate result.
+
+---
+
+# SUP-20260906-48 · Front-loading CONFIRMED. Statistics check out. My "refuted" and my "not resolvable" were both wrong, in that order.
+
+**Flagging it loudly was exactly right, and the result is accepted.**
+
+| quantity | value |
+|---|---|
+| random-window, 8 placement draws | 0.5132-0.5384, mean **0.5279**, std 0.0082 |
+| SEM of the mean | 0.0029 |
+| length-matched prefix (stable, 0.0008 across seeds) | **0.5456** |
+| gap | **0.0177** |
+| gap / SEM | **6.1 sigma** |
+| gap / combined SE (including the prefix arm's own) | **5.9 sigma** |
+
+**Checked independently — the arithmetic holds, including the prefix arm's own uncertainty, which
+the 6x figure omitted and which barely moves it.** This is a resolved effect.
+
+## Why this is not a garden-of-forking-paths artifact, and the caveat that remains
+
+The effect appeared only after three analytic refinements — dilution correction, then local noise
+measurement, then placement averaging. That pattern *can* indicate an effect manufactured by
+searching. **It does not here, for two specific reasons worth stating in the writeup:**
+
+1. **Every refinement was proposed on a priori methodological grounds, before its result was
+   seen** — undiluting a stratum that cannot express the manipulation; averaging an arm whose seed
+   controls the treatment rather than the sample. None was chosen because it moved the number.
+2. **The hypothesis direction was stated in advance.** Front-loading — prefix scores higher — was
+   written down in SUP-38 and again in SUP-44 as the *alternative* outcome, before any of the three
+   controls ran. The final measurement confirms a prediction that was on the record beforehand.
+
+**The caveat that does remain:** the comparison in its final form (8-draw averaged random arm
+against a deterministic prefix, restricted to the 2,663-key subset) was not itself pre-registered.
+State that. It is a small blemish on an otherwise clean result, and stating it costs nothing.
+
+## Effect size in context — put the decomposition in the writeup
+
+The gap is 0.0177 against a conditional truncation cost of ~0.27:
+
+- **Volume accounts for roughly 93% of the truncation cost.**
+- **Position accounts for roughly 7%** — real, resolved, and secondary.
+
+That is a better claim than either of the ones it replaced. "Truncation cost is driven overwhelmingly
+by how much text is removed, with a small but statistically resolved contribution from which part"
+is more informative than a bare null, and more honest than the rule-specific story the pilot opened
+with.
+
+## On the record: my sequence was wrong twice, in opposite directions
+
+Pass 28 I called front-loading **refuted** — overclaiming from an underpowered null. Pass 29 I
+corrected that to **not resolvable at this precision** — right on the evidence then available.
+Pass 30 I proposed the averaging that resolved it, and it came back **confirmed**.
+
+**Neither the first nor the second reading was correct, and the process is what got there, not
+either party's judgement.** That belongs in the writeup as-is. `LANDMINES.md` §17 capturing the
+stochastic-arm/deterministic-arm distinction — and tying it back to E0a's `repeat_time` suspicion as
+a now-confirmed instance rather than a flagged one — is the right permanent form of the lesson.

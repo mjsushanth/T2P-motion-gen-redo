@@ -1363,3 +1363,26 @@ reporting loudly, and it is what happened.
 Report to the director. Still waiting on the E1A power check (background, ~13:30-14:00Z
 expected) before any E1B-scope decision — nothing else queued.
 
+## [2026-09-06T12:48:00 UTC] Item 28 — E1-pilot closing synthesis: decomposition, why this isn't p-hacking, review sequence preserved
+**Status:** complete (documentation only, no new computation)
+**Acceptance criteria:** the director (SUP-20260906-48) independently re-checked the significance
+figure (5.9σ using the combined standard error of both arms, vs. this session's 6x figure which
+omitted the prefix arm's own small uncertainty — immaterial to the conclusion, noted for the
+record), and asked for three things in the writeup: the volume/position percentage decomposition,
+an explicit statement of why three successive refinements finding a real effect isn't equivalent
+to searching until something moved, and the review sequence (their own three passes: refuted ->
+not-resolvable -> confirmed) preserved rather than summarized away.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (new "E1-pilot closing synthesis" section — the
+corrected 5.9σ figure, the ~93%/~7% volume/position decomposition of the conditional 0.27 cost,
+the a-priori-methodological-grounds and pre-stated-hypothesis-direction argument for why this
+isn't a hunted-for result, the one honest caveat that the final comparison form wasn't itself
+pre-registered, and the director's own pass-by-pass sequence named explicitly).
+**Environment changes:** none.
+**Result:** no new measurement — this item is the documentation closing the loop on Items 24-27.
+**Self-critique:** none new.
+**Verification performed:** re-derived the 93%/7% split directly (0.0177/0.27 ≈ 6.6%, 1 -
+0.066 ≈ 93.4%) rather than copying the director's stated percentages without checking the
+arithmetic myself.
+**Next:** E1-pilot is fully closed. Still waiting on the E1A power check (background,
+~13:30-14:00Z expected) before any E1B-scope decision — nothing else queued.
+

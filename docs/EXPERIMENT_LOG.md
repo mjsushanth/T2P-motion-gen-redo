@@ -776,3 +776,53 @@ across-seed spread is treatment variance, not measurement noise, and must be ave
 that arm is comparable to a deterministic one.
 **Does NOT establish:** Whether this generalizes to a different embedding space or a different corpus's
 caption style. Anything about generation — still entirely E1B's open question.
+
+---
+
+### E1-pilot closing synthesis (review SUP-20260906-48)
+
+**Statistical confirmation, independently checked:** gap 0.0177 against the combined standard
+error of the prefix arm (stable to 0.0008 across seeds) and the averaged random-window arm
+(SEM 0.0029) is **5.9σ**, not the 6× figure reported in follow-up 3 (which omitted the prefix
+arm's own, much smaller, uncertainty). The difference is immaterial to the conclusion — front-
+loading is confirmed either way — but the more careful number is the one on record.
+
+**Decomposition of the conditional truncation cost (~0.27, the number where the rule actually
+fires, from the original follow-up above):** volume (how much text is removed) accounts for
+roughly **93%** of it; position (which part is removed) accounts for roughly **7%**
+(0.0177/0.27) — real and statistically resolved, but a small secondary contributor next to the
+dominant mechanism. **"Truncation cost is driven overwhelmingly by how much text is removed, with
+a small but statistically resolved contribution from which part"** is the single sentence that
+best summarizes the whole arc, and is stronger than either the bare null this pilot could have
+stopped at, or the "the original's rule is uniquely bad" story it opened with.
+
+**Why this is a real effect and not one manufactured by iterating until something moved:** worth
+stating explicitly rather than leaving for a reader to infer from the sequence of entries above.
+(1) Every refinement across all three follow-ups was proposed on a priori methodological
+grounds — undiluting a stratum that mechanically cannot express the manipulation (follow-up 1),
+averaging an arm whose seed controls the treatment rather than the sample (follow-up 3) — never
+because a prior result looked wrong and needed to be pushed further. (2) The hypothesis direction
+was on the record in advance, twice, before this measurement existed: front-loading (prefix scores
+higher) was named as the alternative outcome in the original SUP-38 request and again in SUP-44's
+sign correction. The final result confirms a prediction that pre-dated it, rather than explaining
+a surprise after the fact. **The one real caveat:** the specific comparison that resolved this —
+an 8-draw-averaged random arm against a deterministic prefix, restricted to the 2,663-key
+could-vary subset — was itself assembled across follow-ups in response to review, not
+pre-registered as a single design before any of this pilot ran. Stated plainly; it costs nothing
+to say and would cost more to leave implicit.
+
+**The review sequence, kept in the record because it is the honest part:** the director's own
+three passes on this specific question moved from "refuted" (an overclaim from an underpowered
+single draw) to "not resolvable at this precision" (correct given the evidence at that point) to,
+after proposing the averaging fix, "confirmed." Neither of the first two reads was right, and they
+were wrong in opposite directions — the process of successive, methodologically-motivated
+correction is what produced a trustworthy final number, not either party's standalone judgment at
+any single point. That sequence is preserved across follow-ups 2 and 3 above rather than
+summarized away here.
+
+**E1-pilot is closed.** Two findings survive: a large, robust volume effect (corpus-wide
+0.145-0.157, conditional ~0.27) and a small, statistically resolved position effect (~0.018, ~7%
+of the conditional cost). The original project's first-action-clause segmentation — presented as
+a deliberate design choice with a POS-tagging algorithm behind it — is shown to be neither clever
+nor uniquely harmful: one of many ways to discard roughly a third of a caption's words, and nearly
+all of the cost came from the discarding itself, not from where the cut was made.
