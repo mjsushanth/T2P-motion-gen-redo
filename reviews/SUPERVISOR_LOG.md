@@ -461,3 +461,100 @@ original project.** It did not happen here, and it did not happen because a rule
 **Monitor bzlil63uc armed** for the next E-series entry.
 **Next:** await the `--repeat_time` and n-sweep diagnostics (SUP-11/12), then E0b.
 Run window: SOFT 13:55Z / HARD 14:40Z. Currently ~08:35Z, ~5h20m to soft stop.
+
+## [2026-09-06T09:05Z] Supervisor pass 11 — E0b reviewed. P0 raised: D-03 gate status misstated.
+
+**E0b ran and FAILED as pre-registered.** MDM's own released checkpoint through this project's
+vendored evaluator, n=128, 1 seed: generated FID **1.0731** vs the pre-registered band
+0.5168-0.5712. Reported as FAIL with the actual value, tolerance not widened. Driver crash
+(`diversity_times` off-by-one) and hand-assembled provenance both disclosed. **The run's process
+discipline was correct throughout.**
+
+**SUP-15 (P0).** E0b's "Next" claimed *"D-03's gate is satisfied by E0a per the director's Stage 2
+review."* Checked against what Review 2 actually said: condition 1 read *"MET. E0 vendors... gate
+at FID within +/-5% of 0.544"* — that judged the **plan** adequate and named the reproduction as
+the gate. E0a's own title says "NOT the D-03 gate itself." D-03's text carries the fallback:
+reproduce a published figure *or* **explicitly downgrade every number to internally-comparable-
+only**. **D-03 recorded as UNRESOLVED**; downstream E1-E4 must carry the internally-comparable-only
+label until it resolves. Raised P0 because the claim would otherwise have been inherited silently
+by every later result — the exact class of unearned headline this project exists to remove.
+
+Worth noting the likely cause is an honest misreading of my "condition 1 MET" wording rather than
+an escape attempt; the build pass had itself labelled E0a correctly one entry earlier. Said so in
+the finding.
+
+**SUP-16/17 (P1) — the diagnosis was sitting in its own results table.**
+- Bias subtraction: floor at n=128 is `0.1339 - 0.029 = 0.105`; corrected generated FID
+  `~0.968`, still ~1.7x outside the band. **Sample size does not rescue the FAIL.**
+- **GT R-Prec-top3 reproduced at 0.7969 against the paper's 0.797 — three decimals.** So n=128 is
+  *fine* for R-Precision, which independently validates the evaluator and data pipeline, and makes
+  the generated R-Prec of **0.7578 a real measurement** — 0.147 *better* than MDM's published
+  0.611, while FID is 2x *worse*.
+- **Better text alignment plus worse distributional realism is the signature of stronger
+  classifier-free guidance than the reference protocol.** Directed a minutes-long check of the
+  effective sampling guidance and diffusion step count before anything else.
+
+**SUP-18 (P2):** blocked the proposed ~5 CPU-hour n~1000 rerun until that check runs. A long run
+under a wrong configuration would reproduce the same error at higher precision — the expensive
+version of this project's founding mistake.
+
+**Next:** await the guidance/step-count check. Re-arm monitor.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~09:05Z, ~4h50m to soft stop.
+
+---
+
+## FOR JOEL (running)
+
+10. **The harness validation did not pass, and that is a real (documented) branch, not a
+    setback.** Running MDM's own published model through our evaluator did not reproduce its
+    published score. Two things make this interesting rather than alarming: the *ground truth*
+    numbers reproduced almost exactly, so our instrument is demonstrably correct; and the generated
+    results are simultaneously *better* than published on text alignment and *worse* on realism,
+    which is the fingerprint of one specific sampling setting being off rather than anything deep.
+    Likely a configuration bug on our side, being checked now. Until it resolves, every number this
+    project produces is labelled as comparable only to itself — which is what D-03 said to do when
+    written, months before it mattered.
+
+## [2026-09-06T09:35Z] Supervisor pass 12 — checkpoint provenance CLOSED; sharper test identified
+
+Build pass's E0b report crossed with Review 4. It repeated the D-03 claim; SUP-15 (P0) is already
+in its queue.
+
+**SUP-12 (checkpoint provenance) is now CLOSED, in both directions.**
+- **Generator:** MDM's checkpoint zip shipped with the author's own 2022 evaluation log — 20
+  replications, FID **0.5443±.0442** against the paper's 0.544±.044. Independent confirmation
+  obtained *before* running anything.
+- **Evaluator:** E0a's ground-truth R-Precision reproduced at **0.7969** against the published
+  0.797 — three decimals. Behavioural validation of the third-party re-upload.
+
+Both instruments are validated. Which makes the generated-side discrepancy more interesting, not
+less — it can no longer be attributed to either checkpoint.
+
+**A cheaper and sharper test than the one I gave in SUP-17, identified from the build pass's own
+find.** That bundled log is the author's run of this exact checkpoint under the correct protocol.
+If it reports R-Precision:
+- author's log ~**0.611** -> the published number is reproducible under the right protocol, so the
+  0.7578 is *our run's configuration* (guidance / step count). A driver bug, findable in minutes.
+- author's log ~**0.75** -> the *paper's* 0.611 is the outlier, and we have a genuine discrepancy
+  between MDM's published table and its own released artifacts. **That would be a real finding
+  about the field's record.**
+
+Costs a file read, not 40 minutes of CPU. **Also flagged: MDM's published R-Prec of 0.611 is a
+conspicuous outlier** in the build pass's own `LANDSCAPE.md` §1.3 table — MotionDiffuse 0.782,
+MLD 0.772, T2M-GPT 0.775. Our 0.7578 is the *typical* value for this benchmark. Told it to be
+curious about that rather than assume our run is the wrong one.
+
+**Answered its two questions:** do not rerun for the Diversity off-by-one alone (not decisive, 40
+min real) but bundle the fix into any rerun the config check forces; do not hold, work
+cheapest-first. SUP-18 stands — no ~5-hour n~1000 run until the configuration is confirmed.
+
+**Delegated two write-ups to the build pass** (its material, append-or-annotate covers it):
+`LANDMINES.md` §15 on the caption `.split("#")` bug — MDM's loader swallowing per-sample parse
+errors in a bare `except` and silently producing an **empty** generated dataset, found by
+inspecting `repr()` of the raw field rather than reasoning about it. And a ledger note on its
+operational finding that deferred waiting does not advance wall-clock for an already-running
+background process; only active tool calls do. That constrains how long jobs get supervised here
+and is not written down anywhere yet.
+
+**Next:** await the bundled-log check. Monitor bedyegf9l armed.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~09:35Z, ~4h20m to soft stop.

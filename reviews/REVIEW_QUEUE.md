@@ -269,3 +269,91 @@ and valuable. Recording `fid_embedding_dim` and `r_precision_batch_size` in the 
 is exactly what made SUP-11 diagnosable from the artifact alone. And labelling the entry "NOT the
 D-03 gate itself" in its own title, where it cannot be missed.
 
+
+---
+
+# Review 4 — E0b (published-number reproduction): FAIL correctly reported, gate status misstated
+
+**Date:** 2026-09-06 · **Artifact:** `docs/EXPERIMENT_LOG.md` E0a (renamed) + E0b.
+**Verdict: the FAIL is honest and well-documented. One framing claim in it is wrong and must be
+corrected before it propagates.**
+
+Commended first, because it is the harder thing: E0b was **pre-registered before the checkpoint
+was fetched**, its criterion was fixed before the number existed, it pre-committed in writing to
+not widening the tolerance, and when the result missed it was reported as **FAIL** with the actual
+value. It also disclosed a driver-script crash and that the numbers were hand-assembled from
+stdout — a lower-confidence provenance path it had every opportunity to omit. That is the
+discipline working.
+
+## Findings
+
+### SUP-20260906-15 · P0 · D-03 is NOT satisfied. E0a does not stand in for the gate.
+E0b's "Next" section states: *"D-03's gate is satisfied by E0a per the director's Stage 2 review,
+and E0b was requested as an additional, harder check."* **That is not what the Stage 2 review
+said, and it inverts D-03.**
+
+Review 2, condition 1, verbatim: *"**MET.** E0 vendors `EricGuo5513/text-to-motion`... **gate at
+FID within +/-5% of 0.544**."* That judged the **plan** adequate. The gate it names is the
+reproduction — E0b. E0a's own title says *"NOT the D-03 gate itself"*, which was correct then and
+is still correct now.
+
+D-03 verbatim: *"reproduce one published HumanML3D figure to a stated tolerance, **or explicitly
+downgrade every number to internally-comparable-only**."* The reproduction missed. **So the
+fallback clause is live**, and D-03 anticipated exactly this — taking the documented branch is not
+a failure of the project, it is the project working as designed.
+
+**Required:** correct that sentence; record D-03 status as **UNRESOLVED** (not passed, not
+definitively failed — n=128 cannot settle it); and until it resolves, every downstream number
+including E1-E4 carries an explicit **internally-comparable-only** label. State it in `RESULTS.md`
+loudly, per D-03's own wording. This is P0 because a comparability claim that has not been earned
+is precisely the class of unfounded headline this project exists to eliminate.
+
+### SUP-20260906-16 · P1 · Sample-size bias does not rescue the FAIL — first-order arithmetic
+E0b attributes the miss substantially to n=128 inflation, citing its own ground-truth FID of
+0.1339 against the full-split 0.029. Correct mechanism (`LANDMINES.md` §14), but do the
+subtraction: the measured bias floor at n=128 is `0.1339 - 0.029 = 0.105`. Applying it to the
+generated number gives `1.0731 - 0.105 ~= 0.968` — still roughly **1.7x outside** the
+pre-registered band of 0.5168-0.5712.
+
+FID bias is not strictly additive across distributions, so treat this as indicative rather than
+decisive. But it does mean **"n=128 is too few" is not a sufficient explanation** and should stop
+being offered as the leading one. Something else is contributing.
+
+### SUP-20260906-17 · P1 · Your own R-Precision numbers locate the discrepancy — and it is not sample size
+The table contains the diagnosis and the entry does not use it:
+
+| metric | this run | published |
+|---|---|---|
+| GT R-Prec-top3 | **0.7969** | 0.797±.002 — **matches to three decimals** |
+| GT FID | 0.1339 | 0.002 — inflated, as expected at n=128 |
+| generated R-Prec-top3 | **0.7578** | **0.611**±.007 — *0.147 BETTER than published* |
+| generated FID | 1.0731 | 0.544±.044 — ~2x worse |
+
+Two things follow. **First, n=128 is fine for R-Precision** — the ground-truth value reproduced
+essentially exactly, which independently confirms the evaluator, the data pipeline and the caption
+handling are correct. So the generated R-Precision of 0.7578 is a *real* measurement, not noise.
+**Second, the generated motions score far better on text alignment and far worse on distribution
+realism than the paper reports for the same checkpoint.**
+
+Those cannot both be sample-size artifacts, and they are not independent: **better R-Precision
+plus worse FID is the exact signature of sampling with stronger classifier-free guidance than the
+reference used.** Higher guidance buys text adherence and costs distributional fidelity — the same
+trade this project already documented in `GLOSSARY.md` and hit in F6.
+
+**Test, cheap, before spending hours on more samples:** confirm the *effective* `guidance_param`
+at sampling time (not just the value in `args.json` — check what the sampler actually applies) and
+the number of diffusion steps actually taken versus MDM's evaluation default. If guidance is
+higher or the step count lower than the reference protocol, that is the discrepancy, and it is a
+bug in the driver rather than a finding about the field.
+
+### SUP-20260906-18 · P2 · Do not spend ~5 CPU-hours on n~1000 yet
+E0b's own "Next" proposes a larger run. **Run SUP-17's check first** — it costs minutes. If the
+guidance or step count is wrong, a 5-hour run at n=1000 would faithfully reproduce the same wrong
+configuration and produce a confidently wrong FAIL. That is the expensive version of this
+project's founding mistake.
+
+### SUP-20260906-19 · P3 · Commended
+Pre-registering before fetching the checkpoint. Fixing the tolerance before the number existed.
+Reporting FAIL plainly with the actual value. Disclosing the `diversity_times` off-by-one and the
+hand-assembled provenance. Documenting three real macOS/dependency patches. And renaming E0 to
+E0a to match the split rather than leaving the naming ambiguous.

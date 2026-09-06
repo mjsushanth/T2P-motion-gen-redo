@@ -599,3 +599,48 @@ verdict is exactly that ambiguity, not a claim that MDM's number doesn't reprodu
 was an additional, harder check the director asked for, and its result (FAIL-as-measured, with a
 stated confound) is now on the record either way. Reporting to Joel and the director.
 
+## [2026-09-06T11:10:00] Item 12 — P0 correction: D-03 is UNRESOLVED, not satisfied; guidance/step diagnostic run
+**Status:** complete
+**Acceptance criteria:** review (SUP-20260906-15, P0) correctly identified that Item 11's closing
+line — "D-03's gate is satisfied by E0a" — was wrong. The Stage 2 review's gate condition named
+the reproduction (E0b) as the actual gate; E0a's own title already said it was not the gate.
+Since E0b missed its tolerance, D-03's own documented fallback applies: downgrade every
+downstream number to internally-comparable-only until resolved, stated loudly, not silently.
+Correct the record (append a correction, do not silently rewrite Item 11) and act on the
+fallback. Separately, review (SUP-20260906-16/17) sharpened the diagnosis: sample-size bias does
+not fully rescue the FAIL (subtracting the run's own measured bias floor still leaves ~1.7x
+outside tolerance), and the specific pattern — generated R-Precision *better* than published
+while generated FID is *worse* — is the textbook signature of a stronger effective
+classifier-free guidance than the reference used. Check this before spending more compute.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (E0b entry: added a correction block replacing the
+wrong "satisfied by E0a" closing line with D-03's actual UNRESOLVED status and the fallback
+clause, plus the bias-subtraction and R-Precision/FID diagnostic detail). `docs/DECISIONS.md`
+(D-03: added a "Status update" noting UNRESOLVED, the earlier wrong statement, and the
+fallback in effect).
+**Environment changes:** none.
+**Self-critique defects found:** the wrong "D-03 satisfied by E0a" claim was my own error,
+caught by review, not by me. Recording plainly rather than softening it: I had E0a's own title
+correctly labelled "NOT the D-03 gate itself" and then contradicted that same distinction one
+entry later when writing E0b's closing line — the discipline I was praised for keeping (SUP-14)
+lapsed exactly where it mattered most, in the sentence that determines whether every downstream
+number can claim comparability.
+**Verification performed:** ran an empirical (not just code-reading) check of the three most
+likely driver-bug explanations for the R-Precision/FID pattern, instantiating the model/diffusion
+without running any generation (cheap, per review's explicit instruction to check this "before
+anything else, it costs minutes"): `args.guidance_param` = 2.5, matching the checkpoint's own
+bundled log filename (`eval_humanml_..._gscale2.5_...`) exactly; `diffusion.num_timesteps` = 1000
+and `len(diffusion.use_timesteps)` = 1000, confirming no DDIM/respacing shortcut was taken
+(`create_gaussian_diffusion` hardcodes `timestep_respacing = ''`, always uses the full step
+count); sampler confirmed as `p_sample_loop` not `ddim_sample_loop` (`use_ddim = False` is
+hardcoded in `comp_v6_model_dataset.py`). **All three match the reference protocol exactly** —
+this specific, cheapest explanation does not hold. Did not find a driver bug to fix.
+**Next:** the remaining candidates for the R-Precision/FID pattern are (a) single-replication
+stochastic generation variance (this run used `replication_times=1`; the paper's own 20
+replications exist partly to average out exactly this kind of run-to-run noise, which one run
+cannot distinguish from a real effect) and (b) the still-open checkpoint-provenance confound
+(architecture-verified, not cryptographically verified against the original Google-Drive-hosted
+file). Proposed, not yet run: a second independent single-replication run at the same n=128 to
+check whether the pattern repeats — cheaper (~40 min) than a full n~1000 sweep (~5 CPU-hours),
+and decides whether to spend the larger amount at all. Holding here to report before committing
+more compute, given how much has already been spent on this one gate.
+

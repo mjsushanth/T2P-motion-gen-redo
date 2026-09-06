@@ -244,9 +244,56 @@ number.
   show the same gap — E0b tests only whether *MDM's own released checkpoint* reproduces its own
   published number under this project's harness, not anything about a model this project builds.
 
-**Next:** if this gate is revisited (not required to proceed — D-03's gate is satisfied by E0a
-per the director's Stage 2 review, and E0b was requested as an additional, harder check): fix the
-`diversity_times` off-by-one; consider computing a properly-sized (full test split) ground-truth
-reference FID once and comparing smaller `vald` batches against that fixed reference, rather than
-computing both from the same small n; or accept the ~12-hour full-scale cost if a definitive
-answer is ever actually needed.
+**CORRECTION (2026-09-06, per review SUP-20260906-15, P0):** this entry originally said here
+"D-03's gate is satisfied by E0a per the director's Stage 2 review." **That was wrong** — the
+Stage 2 review's gate condition named the *reproduction* (this entry, E0b) as the actual gate;
+E0a's own title already said "NOT the D-03 gate itself," and that was correct then and still is.
+D-03 itself has a documented fallback for exactly this situation: *"reproduce one published
+HumanML3D figure to a stated tolerance, or explicitly downgrade every number to
+internally-comparable-only."* The reproduction (above) missed its tolerance. **D-03 is therefore
+UNRESOLVED** — not passed (the reproduction failed its stated tolerance), and not definitively
+failed either (n=128 cannot cleanly settle whether the miss is a real discrepancy, per SUP-16/17
+below). Per D-03's own fallback clause: **every number from E1 onward is internally-comparable-
+only until this resolves**, and that must be stated loudly wherever such numbers are reported
+(`RESULTS.md` when it exists, and any experiment-log entry in the meantime).
+
+**Diagnostic update (2026-09-06, per review SUP-20260906-16/17):** the "n=128 is too few" framing
+above is not sufficient on its own. Subtracting this run's own measured ground-truth FID bias
+(0.1339 - 0.029 [E0a's full-scale ground-truth FID] = 0.105) from the generated FID
+(1.0731 - 0.105 ~= 0.968) still leaves the result ~1.7x outside the tolerance band — sample-size
+bias alone does not rescue the FAIL (bias is not strictly additive across distributions, so this
+is indicative, not decisive). More pointed: this run's ground-truth R-Precision-top3 (0.7969)
+matched the published value (0.797) to three decimals, showing n=128 is *not* too few to measure
+R-Precision reliably and independently confirming this project's evaluator/data pipeline are
+correct. But this run's *generated* R-Precision-top3 (0.7578) is 0.147 points *better* than the
+paper's own reported generated value (0.611), while this run's generated FID (1.0731) is roughly
+2x *worse* than the paper's (0.544) — better text-alignment paired with worse distributional
+realism is the textbook signature of sampling under a different effective classifier-free
+guidance strength than the reference used, and was flagged as the most likely lead to check
+before spending more compute.
+
+**That check was run, cheaply, before any further generation (per SUP-18):** empirically
+instantiated the model/diffusion (no sampling) and printed the actual runtime values rather than
+trusting code-reading alone. Confirmed exactly matching the reference protocol: `guidance_param
+= 2.5` (matches the checkpoint's own bundled log filename, `..._gscale2.5_...`, byte-for-byte);
+`diffusion.num_timesteps = 1000` and `len(use_timesteps) = 1000` (no DDIM/respacing shortcut —
+`create_gaussian_diffusion` hardcodes `timestep_respacing = ''`, so the full step count is always
+used); sampler is `p_sample_loop`, not `ddim_sample_loop` (`use_ddim = False` is hardcoded in
+`comp_v6_model_dataset.py`, matching the reference); and the model is correctly wrapped in
+`ClassifierFreeSampleModel`. **SUP-17's specific hypothesis (wrong effective guidance/step count)
+does not hold — all three checked values match the reference exactly.** This rules out the
+cheapest, most likely driver-bug explanation; the remaining candidates are single-replication
+stochastic variance (only 1 replication was run — the paper's own 20 replications exist partly
+to average out exactly this kind of run-to-run generation noise, which this entry's single run
+cannot distinguish from a real effect) and the still-open checkpoint-provenance confound
+(SUP-12 — architecture-verified, not cryptographically verified against the original).
+
+**Next:** D-03 remains UNRESOLVED; downstream numbers are internally-comparable-only until it
+resolves. Before spending the ~5 CPU-hours a full n~1000 sweep would cost, the cheaper next
+diagnostic is a second independent single-replication run at the same n=128 to check whether the
+better-R-Precision/worse-FID pattern repeats (a real, checkpoint/protocol-level effect) or was
+specific to this one stochastic draw (ordinary generation variance) — proposed, not yet run, per
+the standing instruction not to spend heavily before cheaper checks are exhausted. Also still
+open: fix the `diversity_times` off-by-one; consider a properly-sized (full test split)
+ground-truth reference FID computed once and held fixed as the comparison target, rather than
+recomputing it from the same small `vald`-sized subset each time.

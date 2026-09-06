@@ -41,6 +41,21 @@ tolerance, or explicitly downgrade every number to internally-comparable-only.
 **Would reverse if:** no published number turns out to be reproducible from available code and
 weights, in which case the downgrade path is taken and stated loudly, not silently.
 
+**Status update (2026-09-06): UNRESOLVED, not passed.** E0a (evaluator sanity, real-vs-real data)
+passed and was correctly labelled "NOT the D-03 gate itself." E0b (the actual reproduction
+attempt, MDM's released checkpoint against its own published FID 0.544±.044) is the gate this
+decision names, and it missed its pre-registered ±5% tolerance (measured FID 1.0731) at a
+reduced sample size (n=128, 1 replication — the full protocol costs ~12 CPU-hours on this
+hardware). Per this decision's own fallback clause: **every number from E1 onward is
+internally-comparable-only until D-03 resolves**, stated loudly wherever such numbers appear
+(`RESULTS.md`, `docs/EXPERIMENT_LOG.md`). Full diagnostic detail in `docs/EXPERIMENT_LOG.md`'s
+E0b entry — the miss is not cleanly attributable to sample size alone (a cheap runtime check
+ruled out the most likely driver-bug explanation, mismatched guidance/step count), so this is
+recorded as open, not resolved in either direction.
+**An earlier statement that this gate was "satisfied by E0a" was wrong** (peer review
+SUP-20260906-15, P0) — corrected here and in `docs/EXPERIMENT_LOG.md`/`LEDGER.md` rather than
+silently edited out.
+
 ### D-04 — The original project directory is read-only · FORCED by instruction
 `<ARCHIVE>/` is the archive under study and also Joel's coursework record.
 **Rejected:** refactoring in place.
