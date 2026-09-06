@@ -1,0 +1,121 @@
+{
+  "experiment": "E1B",
+  "arm": "b",
+  "description": "Truncated (first-action-clause) caption -> full sequence, truncation applied to both training and generation-conditioning, per docs/DECISIONS.md D-23.",
+  "num_training_steps": 3000,
+  "seed": 10,
+  "train_split": "train",
+  "eval_split": "test",
+  "batch_size": 32,
+  "num_samples_limit": 128,
+  "n_params_millions": 17.880327,
+  "n_train_captions_truncated": 11920,
+  "n_gen_captions_truncated": 12542,
+  "training_wall_clock_seconds": 6819.47019225001,
+  "generation_wall_clock_seconds": 2262.30985804199,
+  "loss_log": [
+    {
+      "step": 0,
+      "loss": 1.365020751953125,
+      "elapsed_s": 2.3592070410086308
+    },
+    {
+      "step": 200,
+      "loss": 0.4706993103027344,
+      "elapsed_s": 453.7966014160047
+    },
+    {
+      "step": 400,
+      "loss": 0.3816215395927429,
+      "elapsed_s": 901.4384632080037
+    },
+    {
+      "step": 600,
+      "loss": 0.45998716354370117,
+      "elapsed_s": 1344.6965853750007
+    },
+    {
+      "step": 800,
+      "loss": 0.3288193941116333,
+      "elapsed_s": 1785.1597900000052
+    },
+    {
+      "step": 1000,
+      "loss": 0.2639240622520447,
+      "elapsed_s": 2230.0710580000014
+    },
+    {
+      "step": 1200,
+      "loss": 0.2535178065299988,
+      "elapsed_s": 2674.133360874999
+    },
+    {
+      "step": 1400,
+      "loss": 0.24400445818901062,
+      "elapsed_s": 3129.660422208006
+    },
+    {
+      "step": 1600,
+      "loss": 0.18392854928970337,
+      "elapsed_s": 3597.4677995000093
+    },
+    {
+      "step": 1800,
+      "loss": 0.1565656065940857,
+      "elapsed_s": 4065.435858124998
+    },
+    {
+      "step": 2000,
+      "loss": 0.22447019815444946,
+      "elapsed_s": 4532.776694375003
+    },
+    {
+      "step": 2200,
+      "loss": 0.17696675658226013,
+      "elapsed_s": 5001.044011457998
+    },
+    {
+      "step": 2400,
+      "loss": 0.11478643864393234,
+      "elapsed_s": 5471.689466791009
+    },
+    {
+      "step": 2600,
+      "loss": 0.19755519926548004,
+      "elapsed_s": 5924.306433165999
+    },
+    {
+      "step": 2800,
+      "loss": 0.1589839607477188,
+      "elapsed_s": 6372.377630832998
+    },
+    {
+      "step": 2999,
+      "loss": 0.19238221645355225,
+      "elapsed_s": 6819.470154666007
+    }
+  ],
+  "mean_dict": {
+    "Matching Score_ground truth": 2.978946355293537,
+    "Matching Score_e1b": 5.88554835319519,
+    "R_precision_ground truth": [
+      0.5178879310344827,
+      0.7036637931034483,
+      0.7950431034482759
+    ],
+    "R_precision_e1b": [
+      0.125,
+      0.2421875,
+      0.34375
+    ],
+    "FID_ground truth": 0.0015403090248753415,
+    "FID_e1b": 8.340228902393221,
+    "Diversity_ground truth": 9.539899826049805,
+    "Diversity_e1b": 7.214399814605713
+  },
+  "chance_level_r_precision_top3": 0.09375,
+  "r_precision_top3_e1b": 0.34375,
+  "r_precision_top3_ground_truth": 0.7950431034482759,
+  "fid_e1b_vs_ground_truth": 8.340228902393221,
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37)."
+}

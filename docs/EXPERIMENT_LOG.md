@@ -851,3 +851,52 @@ of the conditional cost). The original project's first-action-clause segmentatio
 a deliberate design choice with a POS-tagging algorithm behind it — is shown to be neither clever
 nor uniquely harmful: one of many ways to discard roughly a third of a caption's words, and nearly
 all of the cost came from the discarding itself, not from where the cut was made.
+
+---
+
+## E1B — truncated caption, trained and evaluated end-to-end, RAW RESULT IN, INTERPRETATION PENDING (director go-ahead after E1A's gate passed)
+
+**Ran by:** `../scripts/e1_train_arm.py --arm b`   **Date:** 2026-09-06   **Seeds:** 10 (single seed — seed spread not yet established, see below)
+**Data:** HumanML3D train-split materialized subset (4,435 sequences) for training, test-split
+materialized subset for generation-conditioning and evaluation — disjoint, per D-25/SUP-37.
+Captions truncated via the same faithful first-action-clause rule used throughout the E1-pilot,
+applied to BOTH training and generation-conditioning captions (design decision recorded in
+`LEDGER.md` Item 30).
+**Record:** `../artifacts/e1/e1b_train_record.json`
+**Status:** PARTIAL — raw numbers are real and verified, but **no A-vs-B conclusion is licensed
+yet**, for two stated reasons below. Process note, stated plainly: this rung was launched on the
+director's direct go-ahead without a fresh, dedicated pre-registration entry in this file first —
+the success criterion it is measured against (`REBUILD_SPEC.md` §6: "R-Precision-top3 measurably
+worse than E1A by more than the seed-to-seed spread") predates the run, but a filled-in table
+committed before training started, matching this project's own discipline for every other rung,
+was skipped under time pressure. Noted as a real process gap, not smoothed over.
+
+**Raw result:** R-Precision-top3(E1B) = **0.3438**, against E1A's **0.2969**. Ground-truth
+R-Precision-top3 = 0.7950 (consistent with every prior measurement). FID(E1B) = 8.3402 (worse
+than E1A's 7.2093, secondary metric per D-25). Training took 6,819.5s (1.894h), generation
+2,262.3s (0.628h) — both close to E1A's timing.
+
+**The raw number goes the OPPOSITE direction from the pre-registered prediction.** §6's criterion
+expected E1B *worse* than E1A. E1B's raw R-Precision-top3 is *higher*. Reported exactly as
+measured — no adjustment, no re-running with a different seed to see if it "corrects itself."
+
+**Two reasons this raw comparison cannot be read as "truncation improves generation" yet:**
+1. **The SUP-20260906-49 confound.** E1A is scored against full captions; E1B is scored against
+   truncated captions. The E1-pilot already showed truncated captions are intrinsically harder to
+   retrieve against on real motions at high R-Precision (~0.80 baseline) — but this generative
+   model operates at ~0.30-0.34, much closer to the 0.09375 chance floor, where the same effect
+   may not transfer at the same size or even the same sign. The retrievability-alone control
+   (E1A's own generations rescored against truncated captions, `scripts/e1_train_arm.py`'s
+   `rescore_against_truncated_captions`) is built into the queued E1A seed-2 run and has not
+   landed yet.
+2. **No seed spread exists.** One seed of A, one seed of B. Per the director's explicit
+   instruction (and this project's own seed-to-seed-spread decision rule), a gap of any size or
+   direction is uninterpretable without knowing how much two identical configurations differ from
+   each other by chance alone.
+**Establishes:** nothing yet about whether truncation helps, hurts, or is neutral for generation
+quality — that is exactly what the pending decomposition (E1A seed 2, with the retrievability
+control) exists to settle. What IS established: E1B trained and generated without crashing (the
+`diversity_times` fix held), at timing consistent with E1A's, confirming the arm ran correctly on
+its own terms.
+**Does NOT establish:** any A-vs-B claim. This entry will be revised — not silently, with the
+decomposition and seed-spread numbers added — once E1A seed 2 completes.

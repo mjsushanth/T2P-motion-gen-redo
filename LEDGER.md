@@ -1720,3 +1720,47 @@ close to a theoretical concern — but it is a real limit on what a force-push a
 distinct from "the current public HEAD and history graph are clean," which is what was actually
 verified above.
 
+## [2026-09-06T16:15:00 UTC] Item 35 — E1B result in, raw and surprising: R-Precision-top3 higher than E1A's, not lower. No conclusion drawn. E1A seed 2 launched.
+**Status:** in progress (E1B complete; E1A seed 2 launched, not yet complete)
+**Acceptance criteria:** run E1B to completion (train-on-truncated, eval-on-truncated, per Item
+30's design), report the raw result honestly regardless of direction, and — per the director's
+explicit sequencing requirement — draw no A-vs-B conclusion until E1A seed 2's seed spread and
+SUP-49's retrievability-alone control both exist.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (new E1B entry, status PARTIAL — raw result reported,
+interpretation explicitly deferred, and a real process gap named: this rung ran without a fresh
+dedicated pre-registration table filled in before training started, unlike every other rung).
+`artifacts/e1/e1b_train_record.json`, `artifacts/e1/e1b_train_run.log` (the run's own outputs —
+completed cleanly this time, exit code 0, the `diversity_times` fix held).
+**Environment changes:** none beyond the completed ~2.5h E1B run (1.894h training + 0.628h
+generation, both close to E1A's timing).
+**Result:** **R-Precision-top3(E1B) = 0.3438, vs. E1A's 0.2969 — higher, not lower.** The
+pre-registered criterion (`REBUILD_SPEC.md` §6) expected E1B to score worse. It did not, on this
+one seed. Ground truth = 0.7950 (consistent with every prior measurement — the evaluator keeps
+reproducing itself across five independent configurations now). FID(E1B) = 8.3402, worse than
+E1A's 7.2093 (secondary metric, not decisive, but points the opposite direction from R-Precision —
+itself worth noting rather than cherry-picking whichever metric agrees with an expectation).
+**Explicitly not interpreted as "truncation improves generation."** Two real confounds stand
+between this raw number and any such claim: (1) E1A is scored against full captions, E1B against
+truncated ones — a text-side retrievability difference the E1-pilot already showed exists at high
+R-Precision, of unknown size or even sign at this model's much lower operating range (~0.30-0.34
+vs ~0.80), which SUP-49's queued control exists to measure directly; (2) one seed each — no
+seed-to-seed spread exists yet to judge whether this gap is larger than ordinary run-to-run
+variance.
+**Self-critique:** launched E1B without writing a fresh, dedicated `docs/EXPERIMENT_LOG.md`
+pre-registration entry first, breaking this project's own established discipline (every other
+rung — E0b, E2's tolerance, E1A-power, the E1-pilot and all three of its follow-ups — had a
+filled-in hypothesis/criterion table committed before the run). The criterion itself predates the
+run (in `REBUILD_SPEC.md` §6), so this is not an undisclosed-after-the-fact rationalization, but
+it is a real process lapse under time pressure, named plainly rather than quietly skipped over.
+**Verification performed:** read the actual run log line by line before trusting the JSON record
+(this run completed and wrote its own JSON cleanly, unlike E1A-power's crash — cross-checked the
+log's printed R-Precision/FID/Matching-Score/Diversity lines against the JSON's `mean_dict`
+values and confirmed they match exactly, rather than assuming the script's own file write is
+correct without spot-checking it once).
+**Next:** launched E1A seed 2 (`--seed 20`, otherwise identical config) immediately — CPU was
+free the moment E1B's process exited, and this run has SUP-49's retrievability-alone control
+built in (Item 32), so it will produce, in one ~2.5h pass: (1) a second A data point establishing
+real seed-to-seed spread, and (2) the caption-retrievability-alone number needed to decompose
+E1B's raw gap into "model effect" vs. "text-side effect." Only after this lands does an actual
+A-vs-B statement go into `docs/EXPERIMENT_LOG.md`.
+

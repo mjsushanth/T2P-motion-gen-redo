@@ -1,0 +1,123 @@
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/diffusion/nn.py:150: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  @th.cuda.amp.custom_fwd
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/diffusion/nn.py:160: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  @th.cuda.amp.custom_bwd
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/model/mdm.py:83: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.self_attn.batch_first was not True(use batch_first for better inference performance)
+  self.seqTransEncoder = nn.TransformerEncoder(seqTransEncoderLayer,
+device: cpu, arm: b
+loading training data (split=train)...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_train.npy]...
+Pointer Pointing at 0
+train dataset size: 4435 sequences
+arm B: truncated 11920 training caption entries (first-action-clause rule)
+creating model and diffusion...
+TRANS_ENC init
+EMBED TEXT
+Loading CLIP...
+total trainable params (excluding CLIP): 17.88M
+training 3000 steps...
+  step 0/3000: loss=1.36502, elapsed=2.4s
+  step 200/3000: loss=0.47070, elapsed=453.8s
+  step 400/3000: loss=0.38162, elapsed=901.4s
+  step 600/3000: loss=0.45999, elapsed=1344.7s
+  step 800/3000: loss=0.32882, elapsed=1785.2s
+  step 1000/3000: loss=0.26392, elapsed=2230.1s
+  step 1200/3000: loss=0.25352, elapsed=2674.1s
+  step 1400/3000: loss=0.24400, elapsed=3129.7s
+  step 1600/3000: loss=0.18393, elapsed=3597.5s
+  step 1800/3000: loss=0.15657, elapsed=4065.4s
+  step 2000/3000: loss=0.22447, elapsed=4532.8s
+  step 2200/3000: loss=0.17697, elapsed=5001.0s
+  step 2400/3000: loss=0.11479, elapsed=5471.7s
+  step 2600/3000: loss=0.19756, elapsed=5924.3s
+  step 2800/3000: loss=0.15898, elapsed=6372.4s
+  step 2999/3000: loss=0.19238, elapsed=6819.5s
+training done: 6819.5s (1.894h)
+generating + evaluating...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+arm B: truncated 12542 generation-conditioning caption entries
+Generating test ...
+real_num_batches 5
+mm_idxs []
+0it [00:00, ?it/s]1it [09:26, 566.53s/it]2it [18:54, 567.65s/it]3it [28:18, 565.76s/it]4it [37:42, 564.99s/it]4it [37:42, 565.57s/it]
+Generated Dataset Loading Completed!!!
+generation done: 2262.3s (0.628h)
+Loading Evaluation Model Wrapper (Epoch 28) Completed!!
+==================== Replication 0 ====================
+Time: 2026-09-06 09:15:03.147720
+========== Evaluating Matching Score ==========
+---> [ground truth] Matching Score: 2.9789
+---> [ground truth] R_precision: (top 1): 0.5179 (top 2): 0.7037 (top 3): 0.7950 
+---> [e1b] Matching Score: 5.8855
+---> [e1b] R_precision: (top 1): 0.1250 (top 2): 0.2422 (top 3): 0.3438 
+Time: 2026-09-06 09:15:22.104644
+========== Evaluating FID ==========
+---> [ground truth] FID: 0.0015
+---> [e1b] FID: 8.3402
+Time: 2026-09-06 09:15:39.205025
+========== Evaluating Diversity ==========
+---> [ground truth] Diversity: 9.5399
+---> [e1b] Diversity: 7.2144
+!!! DONE !!!
+========== Matching Score Summary ==========
+---> [ground truth] Mean: 2.9789 CInterval: 0.0000
+---> [e1b] Mean: 5.8855 CInterval: 0.0000
+========== R_precision Summary ==========
+---> [ground truth](top 1) Mean: 0.5179 CInt: 0.0000;(top 2) Mean: 0.7037 CInt: 0.0000;(top 3) Mean: 0.7950 CInt: 0.0000;
+---> [e1b](top 1) Mean: 0.1250 CInt: 0.0000;(top 2) Mean: 0.2422 CInt: 0.0000;(top 3) Mean: 0.3438 CInt: 0.0000;
+========== FID Summary ==========
+---> [ground truth] Mean: 0.0015 CInterval: 0.0000
+---> [e1b] Mean: 8.3402 CInterval: 0.0000
+========== Diversity Summary ==========
+---> [ground truth] Mean: 9.5399 CInterval: 0.0000
+---> [e1b] Mean: 7.2144 CInterval: 0.0000
+========== MultiModality Summary ==========
+{
+  "experiment": "E1B",
+  "arm": "b",
+  "description": "Truncated (first-action-clause) caption -> full sequence, truncation applied to both training and generation-conditioning, per docs/DECISIONS.md D-23.",
+  "num_training_steps": 3000,
+  "seed": 10,
+  "train_split": "train",
+  "eval_split": "test",
+  "batch_size": 32,
+  "num_samples_limit": 128,
+  "n_params_millions": 17.880327,
+  "n_train_captions_truncated": 11920,
+  "n_gen_captions_truncated": 12542,
+  "training_wall_clock_seconds": 6819.47019225001,
+  "generation_wall_clock_seconds": 2262.30985804199,
+  "mean_dict": {
+    "Matching Score_ground truth": 2.978946355293537,
+    "Matching Score_e1b": 5.88554835319519,
+    "R_precision_ground truth": [
+      0.5178879310344827,
+      0.7036637931034483,
+      0.7950431034482759
+    ],
+    "R_precision_e1b": [
+      0.125,
+      0.2421875,
+      0.34375
+    ],
+    "FID_ground truth": 0.0015403090248753415,
+    "FID_e1b": 8.340228902393221,
+    "Diversity_ground truth": 9.539899826049805,
+    "Diversity_e1b": 7.214399814605713
+  },
+  "chance_level_r_precision_top3": 0.09375,
+  "r_precision_top3_e1b": 0.34375,
+  "r_precision_top3_ground_truth": 0.7950431034482759,
+  "fid_e1b_vs_ground_truth": 8.340228902393221,
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37)."
+}
+Saved: /Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/artifacts/e1/e1b_train_record.json
