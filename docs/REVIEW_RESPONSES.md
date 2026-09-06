@@ -89,3 +89,26 @@ counter-evidence rather than the general Imagen finding — all left as-is.
 *Reviews above are Review 1 (`LANDSCAPE.md`, Stage 2 Part A), run before `REBUILD_SPEC.md` and
 `POSITIONING.md` existed. No review has yet been run against the two documents in their current,
 post-response state.*
+
+### SUP-20260906-73 — SUP-70's correction was applied to RESULTS.md only; the same error was live in DECISIONS.md
+**Disposition:** ACCEPTED
+**What changed:** `../docs/DECISIONS.md` (D-03 status paragraph): the stale "~12 CPU-hours on
+this hardware" figure — the MDM authors' own bundled-log number, for their hardware, not this
+project's — replaced with the real, properly-attributed figures: ~5 CPU-hours for one full-scale
+replication (n~1000), ~100 CPU-hours for the full 20-replication protocol, both derived from this
+project's own measured generation rate (~39 min/128 samples). Extending the sweep past the five
+locations already checked in the finding (`reviews/`, `README.md`, `docs/00_START_HERE.md`,
+`docs/METRICS_EXPLAINED.md`, `SUPERVISOR_LOOP_PROMPT.md`) turned up one further live instance of
+the *other* open numeric error (the 0.003/five-runs evaluator-reproduction figure) outside that
+scope, in `demo/retrieval_embedding.py`'s module docstring — corrected to "0.0036 ... four
+independent full-split runs," matching the wording everywhere else. Also directly re-verified
+(not assumed) that `scripts/e0b_mdm_reproduction.py` and
+`artifacts/e0/e0b_mdm_reproduction_record.json`'s own "~12 Hrs" mentions already correctly
+attribute the figure to the authors' hardware — no fix needed there.
+**Verification:** `git grep -n` for both figures across all tracked `.py`/`.json`/`.md` files
+outside `third_party/`/`primary_source/`; every hit read individually rather than trusted by
+count (the broad "0.003" pattern produced false positives against three already-correct files
+that say "0.0036" — recorded as a self-critique, not treated as three further findings).
+Committed and pushed (`49b5844`). Full account in `../LEDGER.md`, Item 48 — this reply channel
+had gone unused for today's SUP-series findings (which were instead answered inline in
+`LEDGER.md`); flagging that gap here rather than silently continuing to bypass it.
