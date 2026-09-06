@@ -218,6 +218,36 @@ HumanML3D / text-to-static-pose + pose-as-control-signal / body models + text en
 synthesize into `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md` once they return, then update
 `docs/DECISIONS.md` D-11/12/13 status with reversal conditions per Stage 2 instructions.
 
+## [2026-09-06T07:15:00] Item 4 — Licence check on vendored primary_source/ files (urgent, per peer review)
+**Status:** complete
+**Acceptance criteria:** the peer review session flagged that `primary_source/` (files from
+`github.com/EricGuo5513/HumanML3D`, vendored for F1 verification) is now in a **public** repo,
+which makes its licence status load-bearing rather than a footnote. Confirm the upstream licence
+permits redistribution-with-modification, and add whatever attribution/LICENSE file it requires,
+before doing anything else in Stage 2.
+**Files changed:** `primary_source/LICENSE` (added — verbatim upstream MIT license text, fetched
+directly, not retyped from memory). `primary_source/PATCHES.md` (added a Licence section).
+**Environment changes:** none.
+**Self-critique defects found:** the vendored files had been sitting in a now-public repo without
+their required copyright/permission notice since the push in Item 2 — a real (if low-severity,
+MIT is a permissive licence) compliance gap that I did not catch myself; the peer review caught
+it.
+**Verification performed:** `GET https://api.github.com/repos/EricGuo5513/HumanML3D/license`
+returns `license.key: "mit"`; fetched the actual `LICENSE` file content (not just trusting the
+GitHub-detected key) via `raw.githubusercontent.com/EricGuo5513/HumanML3D/main/LICENSE` — MIT
+License, Copyright (c) 2022 Chuan Guo, standard text, saved verbatim to `primary_source/LICENSE`.
+MIT requires the copyright+permission notice be included in copies/substantial portions; adding
+the LICENSE file alongside the vendored files satisfies that.
+**Next:** apply the same discipline to anything Stage 2 proposes vendoring later (PoseScript,
+SMPL/SMPL-X, evaluator code) — SMPL-X specifically is registration-gated per the peer review;
+this is now item 1 of the Part A licence survey, not a footnote, per their message.
+
+**Note, no action taken:** the peer review session separately flagged to Joel directly (not to
+me, and explicitly said not to act on it without Joel's instruction) that `BRIEFING.md` and
+`docs/00_START_HERE.md` identify the course code, institution, and group number of a jointly
+authored graded submission, without naming the co-author. Recording here for the audit trail
+only. I have not touched either file on this matter and will not unless Joel says to.
+
 ## OPEN_QUESTIONS
 
 (none currently open — the "should this session proceed to Stage 2" question is resolved: Joel
