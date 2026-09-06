@@ -2244,3 +2244,29 @@ one-off slip.
 generation path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it
 completes.
 
+## [2026-09-06T18:15:00 UTC] Item 46 — Fifth review-discipline lesson recorded; all five consolidated with a pointer from RESULTS.md
+**Status:** complete
+**Acceptance criteria:** the director named the root cause of Item 44's F5 miss as its own,
+distinct, transferable lesson — not "reusing a wrong number" (§16/18/19's family) but "an absence
+claim is only as strong as its search scope, and that scope is usually invisible in the sentence
+stating the conclusion" — and suggested (as a suggestion, not a finding, explicitly left to this
+session's judgment) consolidating all five review-discipline lessons scattered across
+`LANDMINES.md` into one findable place, with a pointer from `RESULTS.md`. Also confirmed
+SUP-70/71 both landed correctly (SUP-71 had already been fixed in Item 45, before this message
+arrived — a crossed-message false alarm, confirmed by grep rather than assumed).
+**Files changed:** `docs/LANDMINES.md` (new §20 — "'I did not find X' is only 'X does not exist'
+if the search was exhaustive," with the F5 miss as its own worked example, distinguished
+explicitly from the number-reuse family of entries; a new "Review-discipline lessons (§16-20),
+gathered" section immediately after, listing all five in one place with one-line summaries).
+`RESULTS.md` (new §5, a short pointer to the consolidated list — deliberately brief, since
+`RESULTS.md`'s own job is to stand alone about the project's actual findings, not duplicate
+`LANDMINES.md`'s content).
+**Environment changes:** none.
+**Verification performed:** grepped `RESULTS.md` for "frame-by-frame" before responding to the
+director's SUP-71 status question — confirmed zero hits, meaning the fix from Item 45 (committed
+and pushed before this message arrived) already resolved it, rather than assuming either that it
+was already fixed or that it still needed fixing.
+**Next:** the review-discipline lessons are now both individually documented and collected in one
+place. Still open: the generation path's live browser test (CPU-deferred), E1A seed-2's
+decomposition whenever it completes.
+

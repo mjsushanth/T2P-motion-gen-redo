@@ -2232,3 +2232,86 @@ documented by quotation." **All four transfer further than any domain finding he
 
 SUP-69's three items verified landed, including the eight-findings provenance framing.
 Now 17:10Z; SOFT 01:46Z, HARD 03:16Z. Open: SUP-70/71, generation live test, seed-2.
+
+## [2026-09-06T17:12Z] Supervisor pass 52 — SUP-69/70 closed; proposed consolidating the five transferable lessons
+
+**SUP-70 closed, and better than my suggested wording.** The build session kept the measured rate
+(~39 min/128 samples), both derived figures (~5 and ~100 CPU-hours), **and** added an explicit
+sentence on why quoting the authors' "12 Hrs" without the distinction would understate this
+project's own constraint. My greps missed it because it rephrased; checked the section directly.
+
+**SUP-69 verified closed:** eight findings with provenance, 0.0036 cited correctly, 0.8036 named
+with its exclusion reason. **Only SUP-71 remains** — two words, F8 described as "frame-by-frame"
+when the mechanism is per-batch.
+
+**Its root-cause note contains a lesson worth separating out.** It wrote that both errors traced to
+*"checking too narrow a set of sources for an absence, and reusing a nearby number without
+confirming what it actually measures."* **The first half generalises further than the second and
+deserves its own entry:**
+
+> **Proving an absence requires enumerating where the thing could be.** It searched `FORENSICS.md`
+> and the ledger, found no F5, concluded it was never assigned — but F5 lived in `BRIEFING.md`,
+> outside the search set. **"I did not find X" is only "X does not exist" if the search was
+> exhaustive**, and absence claims almost never carry a stated search scope the way presence claims
+> carry a citation.
+
+**Proposed consolidating the five review-discipline lessons into one section of `LANDMINES.md`**,
+pointed to from `RESULTS.md`. They are currently scattered across LANDMINES §16-18, the ledger and
+this queue:
+1. naming a limitation is not handling it
+2. a stochastic arm's seed controls the treatment, not the sample
+3. pre-registration needs a minimum detectable effect
+4. a redaction cannot be documented by quotation
+5. a correct computation can still produce a misleading display — only varied, uncurated input
+   catches that
+(and now, sixth) **an absence claim needs a stated search scope**
+
+**These transfer further than any domain finding this project produced**, and they are the part most
+likely to be reused. Framed as a suggestion, not a finding — `LANDMINES.md` is the build session's
+file and the shape is its call.
+
+**State: the project is substantively complete for this run.** Forensics (F1-F8), a validated
+harness, the truncation finding with its decomposition, a trained model passing its gate, the
+evaluator-resolution finding, a verified demo, and `RESULTS.md`. Open: SUP-71, seed-2 (~1.5h),
+generation live test.
+
+Now 17:12Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T17:14Z] Supervisor pass 53 — all findings closed; corrected a taxonomy before it hardened
+
+**Everything verified closed.** SUP-71 gone; §2's cost figures correct with the authors'-hardware
+distinction explicitly named; **`LANDMINES.md` §19 written** ("a correct computation can still
+produce a display that supports the opposite conclusion"), bringing the file to 19 entries. Its hand
+recomputation — 5.08h / 101.6h — matches mine within rounding.
+
+**One correction made before the pattern was codified.** The build session grouped three errors as a
+single shape: *"reusing a nearby plausible number without checking what it measures or whose
+resource it belongs to."* **Two of the three are that shape; the F5 miss is not** — and it had
+identified the distinction correctly itself one message earlier before collapsing it.
+
+| error | shape | guarded by |
+|---|---|---|
+| 0.0044 vs 0.0036 | number reuse, wrong **referent** | check what it measures |
+| "12 CPU-hours" | number reuse, wrong **owner** | check whose resource it is |
+| **F5 "never assigned"** | **absence claim, incomplete search** | **state the search scope** |
+
+**The F5 miss involved no number at all.** Widening a search does not protect against a wrong
+referent, and checking a referent does not protect against a narrow search. **Collapsing them costs
+the record a distinct, reusable lesson:**
+> *"I did not find X" is only "X does not exist" if the search was exhaustive. Presence claims carry
+> a citation by convention; absence claims almost never carry a stated scope — which is what makes
+> them the easier ones to get wrong.*
+
+**Its meta-observation is the best single summary of this run**, and I told it so: *"caught each
+time only because corrections got independently re-verified rather than folded in on trust."* That
+is what happened in both directions — **I caught two of its errors, it caught three of mine, and in
+at least two cases a correction-to-a-correction is what reached the right answer. Neither session
+was reliably right; the re-verification was.**
+
+**State: substantively complete.** Forensics (F1-F8), validated harness, the truncation finding with
+its 93/7 decomposition, a model that passed its pre-registered gate, the evaluator-resolution
+finding, a verified demo, a standalone `RESULTS.md`, and 19 LANDMINES entries of which six are
+transferable review-discipline lessons.
+
+**Remaining: seed-2 (~1.5h), generation live test.** Nothing else outstanding on either side.
+Now 17:14Z; SOFT 01:46Z, HARD 03:16Z.

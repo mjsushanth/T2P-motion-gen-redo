@@ -739,3 +739,72 @@ different loads, similarity scores for queries of different length or specificit
 be individually correct and still be dangerous once placed next to another number a reader will
 naturally compare it to.
 
+---
+
+## 20. "I did not find X" is only "X does not exist" if the search was exhaustive
+
+**Status: VERIFIED in this repository, 2026-09-06 (`RESULTS.md`'s F1-F8 miss, review
+SUP-20260906-69) — the fifth review-discipline entry, alongside §16-19.**
+
+**The trap.** Writing `RESULTS.md`, a claim was needed about how many findings this project's
+forensics stage produced. `FORENSICS.md` was checked (Stage 1's own empirical write-up: F1-F4)
+and `LEDGER.md`'s audit of a later set of findings was checked (F6-F8). Neither mentioned an F5.
+**Concluded: F5 was never assigned.** It was wrong — F5 (the original project's engineering
+state: monolithic notebook cells, triplicated classes, no seeds, hardcoded paths) was defined in
+`BRIEFING.md`, verified by direct code inspection during the original task specification, and was
+never in either of the two places actually searched.
+
+**Why this is a distinct failure from reusing a wrong number (§16, §18-19 catalogue variations on
+that instead).** A *presence* claim ("X is true") comes with a citation by construction — you
+quote or point at the thing that makes it true, and a reader can check that one source. An
+*absence* claim ("X does not exist," "X was never done," "no evidence of X") has no such natural
+anchor. It is only as strong as the search that produced it, and **the search's own scope is
+usually invisible in the final sentence** — "F5 was never assigned" reads identically whether it
+followed an exhaustive search of every relevant document or a check of the two most convenient
+ones.
+
+**Do instead.** Before writing any claim of the shape "X does not exist" / "was never done" /
+"no such thing was found," name the search scope explicitly, even just to yourself: which
+documents, which code paths, which time range did the search actually cover, and is that
+scope *complete* for the kind of thing being claimed absent — or just the most obvious or
+recently-handled subset. If the true scope needed for confidence is larger than what was
+actually checked, say "not found in X and Y" rather than "does not exist," and treat the
+stronger claim as unearned until the wider search actually happens.
+
+**Generalisation:** this applies to any absence claim in any domain — "no relevant prior work,"
+"this bug was never reported," "no test covers this case," "nothing else depends on this
+function." Each is only as strong as an explicit, checkable search scope, which is far easier to
+state honestly before writing the conclusion than to reconstruct after someone else finds the
+counterexample.
+
+---
+
+## Review-discipline lessons (§16-20), gathered
+
+Five entries in this file are not about this project's own domain (motion generation, diffusion
+models, evaluation metrics) but about the process of producing and reviewing research work
+itself. Gathered here as one list because they transfer further than anything else in this
+document — they would apply to a different project in a different field unchanged. Cross-
+referenced from `RESULTS.md`.
+
+- **§16 — Naming a limitation in a pre-registration is not the same as checking whether it
+  disables the check.** A disclosed limitation can manufacture false comfort precisely because
+  disclosure looks like rigor.
+- **§17 — A stochastic arm's across-seed spread is treatment variance, not measurement noise.**
+  Reseeding a deterministic arm controls incidental variance; reseeding a stochastic one changes
+  the treatment itself. Averaging the wrong one produces a comparison that looks symmetric and
+  isn't.
+- **§18 — A hypothesis and a success criterion are not a pre-registration without a power
+  calculation.** "What would convince us" and "can this run possibly convince us at all" are
+  different questions, and only the second determines whether the run is worth its cost.
+- **§19 — A correct computation can still produce a display that supports the opposite
+  conclusion.** Static review checks the computation; only running the thing with real, varied,
+  uncurated input checks what the interface as a whole invites a reader to conclude.
+- **§20 — "I did not find X" is only "X does not exist" if the search was exhaustive.** An
+  absence claim's strength is bounded by its search scope, which is usually invisible in the
+  sentence stating the conclusion.
+
+Each was found in this project by the same underlying practice: re-deriving a claim (one's own,
+or a peer's) from source before accepting it, rather than trusting that a plausible-looking
+result, an absent hit, or a clean run meant the work was done.
+
