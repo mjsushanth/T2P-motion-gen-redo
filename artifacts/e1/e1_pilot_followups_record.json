@@ -1,0 +1,59 @@
+{
+  "experiment": "E1-pilot-followups",
+  "description": "SUP-38 (length-matched control) + SUP-39 (non-fallback-subset conditional effect), both real retrieval re-runs, not arithmetic estimates from the original E1-pilot's aggregate numbers.",
+  "seed": 10,
+  "n_total_keys": 4648,
+  "n_fallback_keys": 2049,
+  "n_nonfallback_keys": 2599,
+  "pct_nonfallback": 0.5591652323580034,
+  "full_corpus_r_precision": {
+    "full_caption": [
+      0.51875,
+      0.7174568965517242,
+      0.8116379310344828
+    ],
+    "truncated_caption": [
+      0.390948275862069,
+      0.5525862068965517,
+      0.6551724137931034
+    ],
+    "length_matched_control": [
+      0.38405172413793104,
+      0.5553879310344828,
+      0.6467672413793103
+    ]
+  },
+  "full_corpus_matching_score": {
+    "full_caption": 2.9441940537814437,
+    "truncated_caption": 3.9464788108036437,
+    "length_matched_control": 3.9454760189714104
+  },
+  "nonfallback_subset_r_precision": {
+    "full_caption_nonfallback": [
+      0.5135030864197531,
+      0.7056327160493827,
+      0.8036265432098766
+    ],
+    "truncated_caption_nonfallback": [
+      0.27314814814814814,
+      0.43016975308641975,
+      0.53125
+    ]
+  },
+  "nonfallback_subset_matching_score": {
+    "full_caption_nonfallback": 2.993601725425249,
+    "truncated_caption_nonfallback": 4.771708953527757
+  },
+  "original_e1_pilot_reference": {
+    "r_precision_top3_full": 0.8013,
+    "r_precision_top3_truncated": 0.6563,
+    "drop": 0.145,
+    "note": "recomputed here under deterministic single-caption-per-key selection, not random.choice -- expected close but not bit-identical"
+  },
+  "summary": {
+    "corpus_wide_drop_recomputed": 0.15646551724137936,
+    "length_matched_control_drop": 0.1648706896551725,
+    "rule_specific_drop_beyond_length": -0.008405172413793127,
+    "conditional_drop_on_nonfallback_subset": 0.2723765432098766
+  }
+}

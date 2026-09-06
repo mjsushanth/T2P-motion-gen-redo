@@ -1096,3 +1096,40 @@ length-matched control. Both cheaper than the train-split stream already in flig
 
 **Next:** those two, then the real power check once train materialisation completes.
 Now 10:58Z; SOFT 13:55Z, HARD 14:40Z (~3h40m).
+
+## [2026-09-06T11:01Z] Supervisor pass 26 — power check launched; Stage 5 design recorded
+
+**Power check is running properly.** 4,000 HumanML3D train sequences materialized (prefixed to
+avoid colliding with the existing test files), `e1a_power_check.py` rewired to
+`--train-split train --eval-split test`, launched 10:58Z, 3,000 steps, the 0.09375 gate exactly as
+pre-registered. ~2.5-3h, so it lands ~13:30-14:00Z — inside the window, but not by much.
+
+Worth noting how the build pass handled the HF streaming process hanging after its writes
+completed: **it counted the materialized files on disk and confirmed completeness before killing
+it**, so the kill was based on observed state rather than an assumption that "it looked done."
+Small, and the right instinct.
+
+**SUP-39 checked and returned to the build pass.** I opened
+`e1_pilot_caption_truncation_record.json` myself to see whether the dilution re-slice could be done
+from the artifact at zero cost. It cannot — the record has aggregates (44.8% fallback, 12,542
+captions, 266 floored to 3 words) but **no per-caption branch labels**. It is a one-line
+instrumentation change on the next run of that script, not a dedicated run. Told it so.
+
+**SUP-43 filed: Stage 5 design proposal — demonstrate the finding, not the model.**
+Written now because it is the piece most likely to be lost if this run ends before Stage 5 starts,
+and D-20 makes it non-optional.
+
+The reasoning: **our model will not be good** (0.63% of MDM's budget on a 17% subset), so a
+demonstrator built to showcase our generations would be an interface doing work the model cannot.
+But the project's contribution was never a better model — it is the diagnosis, and **the pilot's
+0.145 caption-truncation effect is real, verified, and entirely invisible in a motion clip.**
+
+So: type a caption, watch the original's own truncation rule chop it, see both conditions generate
+side by side, with a nearest-neighbour retrieval pane and the measured numbers on screen.
+Generation via MDM's checkpoint — real quality, MIT, already local, stated in the interface as a
+cited component rather than implied as ours. **The property that makes it right under this budget:
+it is robust to our research failing.** The diagnosis stands either way; a usable E1A model becomes
+a fourth pane, not a redesign.
+
+**Next:** await the gate result. Monitor on the record JSON + long fallback.
+Now 11:01Z; SOFT 13:55Z, HARD 14:40Z.

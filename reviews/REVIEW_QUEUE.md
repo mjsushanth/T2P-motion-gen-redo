@@ -1099,3 +1099,68 @@ of us has written today.** It generalises well past this project — a disclosed
 handled one, and the disclosure can create false comfort precisely because it looks like rigour.
 Consider it for `LANDMINES.md` as a standalone entry; it is not a domain trap, it is a
 review-discipline trap, and this repository has now produced a documented instance of it.
+
+---
+
+# SUP-20260906-43 · Stage 5 design proposal — demonstrate the FINDING, not the model
+
+**Written 2026-09-06 while the E1A power check runs.** Not a finding against anything; a design
+proposal recorded now because it is the piece most likely to be lost if this run ends before Stage 5
+starts. D-20 makes Stage 5 non-optional and it is the author's stated priority — *"people want to
+see a usable PRODUCT out of AI projects"* — so it should not be left to be improvised at the end.
+
+## The problem Stage 5 walks into
+
+**Our own model will not be good.** 3,000 steps is 0.63% of MDM's budget on a 17% data subset. Even
+if the power check passes, E1A's samples will be visibly poor. A demonstrator built to show *our
+model generating motion* would be a demo of a bad model — and the honest version of that is worse
+than no demo, because the interface would be doing the work the model cannot.
+
+**But this project's contribution was never going to be a better model.** It is the diagnosis: F1's
+decode bug, F6's inert conditioning, and now the pilot's measured **0.145 R-Precision loss from the
+original's caption-truncation rule**. That is real, verified work — and none of it is visible in a
+motion clip.
+
+## The proposal: make the demonstrator show the measurement
+
+**Type a caption. See the original project's own truncation rule chop it. See both versions
+generate, side by side.** The left pane is what the original project actually trained on; the right
+is the full caption. The gap between them *is* the finding, made visible to someone who will never
+read an R-Precision table.
+
+Concretely, and every piece already exists:
+- **Generation: MDM's released checkpoint** (MIT, vendored, already runs here, published numbers
+  reproduce). Quality is real because the model is real. **We are not passing it off as ours** —
+  the demo is about conditioning, and the generator is a stated, cited component.
+- **Truncation: the original project's own rule**, already faithfully reimplemented for the pilot.
+- **Baseline: nearest-neighbour retrieval** from the training set, third pane. This is the criterion
+  I said I would hold hardest — "just look it up" is what a sceptical viewer silently thinks, and
+  showing it answers the objection instead of ducking it.
+- **Metrics: the measured numbers, on screen.** 0.8013 full vs 0.6563 truncated, the noise floor,
+  and the internally-comparable-only label where it applies.
+
+## Why this satisfies the pre-registered Stage 5 bar
+
+| criterion | how |
+|---|---|
+| one command, from a checkpoint, no GPU | MDM checkpoint + evaluator, both already local |
+| non-specialist gets it in 30s | a sentence visibly gets cut; the motion visibly degrades |
+| baseline visible in the interface | retrieval pane, always on |
+| failure cases reachable | the user types their own caption — nothing is curated |
+| metrics + comparability label surfaced | printed beside the panes |
+| reproducible by someone else | README + pinned deps + a fetch script |
+
+## What it must not become
+
+**Not a wrapper that implies we built the generator.** State it plainly in the interface. And **not
+a curated highlight reel** — a free text box is what makes it honest, because the user will
+immediately try something that breaks it, and that is the point.
+
+## If E1A's model does become usable
+
+Add a fourth pane later. The architecture above does not depend on it — which is exactly why it is
+the right design under a budget that may never produce a good model of our own. **The demonstrator
+should be robust to our research failing**, because the diagnosis stands either way.
+
+**Not to be built before E1 concludes.** Recorded now so the decision is deliberate rather than
+improvised, and so a successor session has it.

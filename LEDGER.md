@@ -1132,3 +1132,61 @@ stop window (started 10:58Z).
 `docs/EXPERIMENT_LOG.md`'s E1A-power entry and to the director the moment it lands; do not start
 any further E1 scaffolding or the full A/B matrix until this result is in and reviewed.
 
+## [2026-09-06T11:35:00 UTC] Item 23 — E1-pilot sharpened: the effect is length-driven, not rule-specific (SUP-38); conditional effect is ~0.27, nearly 2x the corpus-wide number (SUP-39); review-discipline landmine recorded (SUP-42)
+**Status:** complete
+**Acceptance criteria:** run both of the director's requested sharpenings as real retrieval
+re-computations (not arithmetic estimates from the original E1-pilot's aggregate numbers) while
+the E1A power check trains in the background: SUP-38's length-matched control, SUP-39's
+non-fallback-subset conditional effect. Also record the review-discipline lesson from SUP-37
+(Item 21) as its own `LANDMINES.md` entry, per the director's explicit request that it belongs
+next to the domain traps, not buried in a ledger entry.
+**Files changed:** `scripts/e1_pilot_followups.py` (new — builds three deterministic-single-
+caption-per-key dataset instances (full, rule-truncated, length-matched-control), plus a
+key-subset restriction helper for the non-fallback-only re-run; first version had a real bug,
+caught by its own sanity print rather than trusted blindly — see Self-critique).
+`docs/EXPERIMENT_LOG.md` (E1-pilot entry: appended, not overwritten, a follow-up section with
+both results). `docs/LANDMINES.md` (new §16, the review-discipline trap — "naming a limitation
+is not the same as checking whether it disables the check"). `artifacts/e1/
+e1_pilot_followups_record.json` (new, plus two `.log` sibling files from the two
+`evaluate_matching_score` calls inside it).
+**Environment changes:** none.
+**Result — SUP-38 (length-matched control): the effect is a length effect, not specific to the
+original's clause-selection rule.** Length-matched (naive first-N-words) control scored
+R-Precision-top3 = 0.6468; the rule-truncated arm (recomputed under this script's own
+deterministic single-caption scheme) scored 0.6552 — **the "smart" rule was marginally LESS
+damaging than blind truncation, not more** (`rule_specific_drop_beyond_length` = -0.0084). This
+refines the E1-pilot's finding: caption truncation genuinely destroys real alignment signal
+(confirmed again: corpus-wide drop 0.1565 here vs. 0.1450 in the original run), but the honest
+description is "shortening captions costs retrieval accuracy," not "the original's specific
+truncation heuristic is uniquely destructive." A less flattering-to-the-original-narrative
+result than I'd have guessed going in, reported as measured rather than reframed.
+**Result — SUP-39 (non-fallback-subset conditional effect): real, not estimated, and close to
+the director's own back-of-envelope guess.** Restricting to the 2,599 keys (55.9% of this run's
+per-key accounting) where the truncation rule actually fired (found a CCONJ/SCONJ tag, didn't
+fall through to first-sentence): full-caption R-Precision-top3 = 0.8036, truncated = 0.5312,
+**drop = 0.2724** — compare the corpus-wide 0.1565/0.1450. The director's linear estimate from
+the aggregate number and the fallback share (`0.145/0.552≈0.263`) came out close to the real,
+directly-measured 0.272 — a useful confirmation that the approximation wasn't misleading here,
+though it was checked rather than assumed correct.
+**Self-critique:** the first version of `e1_pilot_followups.py` had a real bug — restricting a
+dataset to a key subset by filtering only `name_list`/`length_arr` left `__len__` (which reads
+`len(data_dict) - pointer`, not `len(name_list)`) reporting the old, unrestricted count, causing
+an `IndexError` once `__getitem__` was asked for an index past the shrunk `name_list`. Caught
+immediately from the traceback and the sanity print ("restricted dataset sizes -- full: 4648,
+trunc: 4648" — visibly still the *original* size, which should have read ~2599 and didn't) rather
+than from silent wrong output; fixed by also pruning `data_dict` itself, re-ran, got the expected
+restricted sizes on the second attempt. Recorded because the sanity-print habit (log an
+intermediate count you can eyeball against expectation) is what caught this, not a design that
+prevented the bug in the first place.
+**Verification performed:** re-ran the corrected script and confirmed "restricted dataset sizes
+-- full: 2599, trunc: 2599" matched the expected non-fallback key count before trusting the
+retrieval numbers that followed. Both `evaluate_matching_score` calls' underlying arithmetic
+(top-3 differences) were computed directly from the printed per-arm R-Precision arrays in this
+entry, not copied from the script's own `summary` block without re-checking.
+**Next:** report both sharpened numbers to the director alongside SUP-40's E1B-scope question —
+my own read, given the length-matched-control finding, is that E1B's value shifts further toward
+"does *caption shortening in general* propagate to generation," not "does this specific
+clause-truncation heuristic propagate," which may itself argue for a still-narrower E1B design if
+it proceeds. Awaiting the E1A power check's own result (still running, background) before any
+final scoping decision, since SUP-40 explicitly ties E1B's value to what the power check shows.
+

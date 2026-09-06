@@ -597,3 +597,65 @@ analogous zero-training check exists for it, per the asymmetry note above. Wheth
 `/ADV then|after|before` literal-substring sub-branch of the original's regex ever fires in
 practice (this run only distinguishes "any conjunction/adverb branch matched" from "fell through
 to first-sentence fallback," not which literal alternative matched).
+
+---
+
+### E1-pilot follow-ups — length-matched control (SUP-20260906-38) and non-fallback-subset conditional effect (SUP-20260906-39)
+
+**Ran by:** `../scripts/e1_pilot_followups.py`   **Date:** 2026-09-06   **Seeds:** 10
+**Data:** same HumanML3D test-split subset as the E1-pilot above. One determinism change from
+that run, stated plainly: this script fixes each motion to its **first** text entry rather than
+`Text2MotionDatasetV2`'s own `random.choice` per draw, because SUP-39's subgroup restriction needs
+a stable fallback/non-fallback label per key. This is why this run's own full/truncated numbers
+(0.8116/0.6552) are close to but not bit-identical to the original E1-pilot's (0.8013/0.6563) —
+both are reported, neither substituted for the other.
+**Record:** `../artifacts/e1/e1_pilot_followups_record.json`
+**Status:** VERIFIED — both are real retrieval re-runs, not arithmetic estimates from the
+original aggregate numbers.
+
+**SUP-38's question:** is the 0.145 drop caused by *which words the original's rule selects*, or
+just by *captions getting shorter*? Control: truncate the same full captions to the same
+per-caption word count via a content-neutral first-N-words rule, re-measure.
+
+**SUP-38 result — the effect is a length effect, not a rule-specific one.** Length-matched
+control R-Precision-top3 = **0.6468**, essentially the same as the rule-truncated arm's **0.6552**
+(this run's own recomputation) — the rule-truncated arm scored *very slightly higher*
+(`rule_specific_drop_beyond_length` = -0.0084, i.e. the "smart" conjunction-based truncation was
+marginally less damaging than blind first-N-words truncation, not more). **This refines, not
+negates, the E1-pilot's headline finding:** caption truncation genuinely destroys real
+text-motion alignment signal (confirmed again here: corpus-wide drop recomputed at 0.1565,
+consistent with the original 0.1450) — but the *mechanism* is caption length/information density,
+not something specifically bad about the original project's clause-selection heuristic. A naive
+"take the first N words" truncation would have done comparable damage. This matters for how the
+finding should be described going forward: "truncating captions destroys alignment signal" is
+supported; "the original's specific rule for choosing where to cut is uniquely bad" is not.
+
+**SUP-39's question:** does the corpus-wide 0.145/0.157 drop understate the effect where the
+rule actually fires, since 44.8% of captions fell through to a near-harmless first-sentence
+fallback and dilute the average?
+
+**SUP-39 result — yes, substantially.** Restricting to the 2,599 keys (55.9% of the corpus, not
+44.8% — the run's own fallback/non-fallback split, computed directly, not assumed) where the
+rule actually truncated at a conjunction tag: full-caption R-Precision-top3 = **0.8036**,
+truncated = **0.5312**, **drop = 0.2724** — compare the corpus-wide 0.1565/0.1450. Real
+measurement, not the director's back-of-envelope `0.145/0.552≈0.263` estimate, and it lands close
+to that estimate anyway (0.272 vs 0.263), which is itself a useful cross-check that the linear
+approximation wasn't misleading here. **The mechanistically meaningful number for "what does this
+rule do when it actually fires" is 0.272, not the corpus-wide 0.145-0.157** — the corpus-wide
+number describes what the original project's data actually suffered on average (a fair number to
+quote for "how bad was this in practice"); 0.272 describes the rule's effect size where it applied
+at all (the fairer number for "how destructive is this kind of truncation," which is also more
+directly comparable to SUP-38's length-matched control finding, since non-fallback captions are
+the longer, more heavily truncated ones).
+**Establishes:** Two real numbers, not one: **0.145-0.157 corpus-wide** (what the original
+actually suffered, averaged over its whole caption distribution) and **~0.27 conditional** (what
+happens specifically where truncation fired, roughly double the corpus-wide figure and the
+number that should anchor any comparison to E1B if it proceeds). Separately, that the mechanism is
+caption shortening in general, not the original's specific clause-boundary heuristic — a real,
+if less flattering-to-the-original-narrative, refinement.
+**Does NOT establish:** Whether the length-matched control finding (effect is length-driven) also
+holds specifically *within* the non-fallback subset — this run did not compute a length-matched
+control restricted to just the 2,599 non-fallback keys, so it cannot rule out that some of the
+0.272 conditional effect is content-selection-specific after all, even though the corpus-wide
+result suggests otherwise. Whether either effect propagates into a trained generative model's
+output — that is still E1B's question, unaddressed by any zero-training check.

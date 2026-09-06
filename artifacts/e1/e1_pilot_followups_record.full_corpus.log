@@ -1,0 +1,6 @@
+---> [full_caption] Matching Score: 2.9442
+---> [full_caption] R_precision: (top 1): 0.5188 (top 2): 0.7175 (top 3): 0.8116 
+---> [truncated_caption] Matching Score: 3.9465
+---> [truncated_caption] R_precision: (top 1): 0.3909 (top 2): 0.5526 (top 3): 0.6552 
+---> [length_matched_control] Matching Score: 3.9455
+---> [length_matched_control] R_precision: (top 1): 0.3841 (top 2): 0.5554 (top 3): 0.6468 

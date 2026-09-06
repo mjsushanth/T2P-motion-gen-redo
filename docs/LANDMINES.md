@@ -529,3 +529,47 @@ pass` around per-sample processing, common in dataset-loading code written to to
 files) will silently absorb a systemic parsing bug as if it were normal missing-data filtering.
 Check the *count* of what survived a bulk load, not just that the load completed without error.
 
+---
+
+## 16. Naming a limitation in a pre-registration is not the same as checking whether it disables the check
+
+**Status: VERIFIED in this repository, 2026-09-06 — this is a review-discipline trap, not a
+domain trap like the entries above, and it belongs here anyway because this project produced a
+documented instance of it (review SUP-20260906-37, on `docs/EXPERIMENT_LOG.md`'s E1A-power
+pre-registration).**
+
+**The trap.** The E1A power check's pre-registration stated, in its own "Does NOT establish"
+line, that it trained and evaluated on the same materialized subset, and characterized this as
+showing the architecture "*can* exploit text at this budget when the eval captions were also
+seen in training, which is a **necessary but weaker condition** than generalizing to held-out
+captions." That sentence is honest, specific, and was written down *before* the run — every
+surface signal of rigor is present. **It is also wrong**, because "weaker" implies the same kind
+of evidence at reduced strength, when the actual failure mode is categorical: a model can score
+above the pre-registered chance threshold (3/32 = 0.09375) purely by memorising which of ~4,648
+training captions pairs with which training motion, with zero generalisable text conditioning
+learned. That is not a weaker version of the signal the gate exists to detect — it is a different
+mechanism that produces the identical observable number. **The gate could have passed for a
+reason unrelated to the question it was built to answer**, and the disclosure of the limitation
+would have made that failure *harder* to notice on a later re-read, not easier, because the
+caveat reads like the risk was already considered and accepted.
+
+**Why this is worse than an undisclosed limitation.** An undisclosed train/test overlap looks
+unfinished and invites scrutiny. A disclosed one, phrased as "a real limitation, stated here, not
+hidden," looks like due diligence already performed — it manufactures exactly the false comfort
+that rigor is supposed to prevent. The tell was available at write-time: the disclosure named the
+condition ("evaluated on seen captions") but never asked what a model doing *only* that, and
+nothing else, would score on the gate's own metric. Working that out is one more step past
+naming the limitation, and it is the step that actually matters.
+
+**Do instead.** For any pre-registered check with a stated limitation, ask explicitly: "under
+this limitation alone, with none of the capability the check is trying to detect, what would the
+gate's own metric read?" If that hypothetical failure mode can clear the pre-registered threshold,
+the limitation does not weaken the check — it invalidates it, and the check needs a design fix
+(here: disjoint train/eval splits, materialized before running), not a footnote.
+
+**Generalisation:** this applies to any gate, not just ML power checks — a benchmark run on
+warmed cache, a security test against a non-production config, a load test with the rate limiter
+disabled. In each case, ask whether the stated caveat is a *dial* (the same signal, turned down)
+or a *different mechanism* that can independently satisfy the pass condition. Only the first kind
+is safely absorbed by a caveat; the second kind requires redesigning the check.
+
