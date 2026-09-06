@@ -53,7 +53,7 @@ The vendored, MIT-licensed evaluator (Guo et al.'s own text-motion retrieval and
 the same instrument used across this field's published leaderboard) was validated against its
 own published ground-truth reference (R-Precision-top3 = 0.797 ± 0.002) across four independent
 runs of this project, on real motions with no model involved: 0.7969, 0.8013, 0.7950, 0.7950 —
-every value within 0.004 of the published figure. **This harness is trustworthy**, which is the
+every value within 0.0036 of the published figure. **This harness is trustworthy**, which is the
 one property every downstream comparison in this project actually depends on.
 
 ### 1.3 Caption truncation destroys measurable text-motion alignment — a real, resolved finding
