@@ -229,9 +229,15 @@ is refuted, say so prominently and update `docs/LANDMINES.md` — do not soften 
    hypothesis with a pre-registered success criterion and the metric that decides it**. Include
    a compute estimate (what runs on MPS, what needs a rented GPU, hours and cost). Include an
    honest risk register with kill criteria.
-3. **Positioning**, one page, blunt: what this is worth as a learning artifact, an interview
-   artifact, and a business artifact. **If a track has no business case, write that in those
-   words.**
+3. **Positioning** `-> POSITIONING.md`. **A first-class deliverable, not an appendix.** Joel's
+   framing: *"the whole agenda is a proper redo, full redo, it might involve full business idea
+   changes, research changes, architecture changes."* Treat the business question as real work.
+   Cover: what this is worth as a learning artifact, an interview artifact, and a **product**;
+   who would use a text-to-pose system and for what; where pose sits as a *control signal* for
+   downstream image/video/animation generation; what the smallest demonstrable end-to-end thing
+   is that a non-expert can look at and immediately understand the value of; and what would have
+   to be true for this to be worth more than a portfolio piece. **If a track genuinely has no
+   business case, write that in those words** — but establish it, do not assume it.
 
 ### Stage 3 — Harness and baseline `-> src/t2p/`, `tests/`, `RESULTS.md`
 1. Scaffold the package per `docs/CODE_MAP.md`. Typed config, global seeding, structured

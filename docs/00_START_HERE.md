@@ -95,6 +95,11 @@ This project runs in stages, and **each stage is gated on the previous one's ver
 validated against a *published* baseline number before any new model is trained. A harness
 nobody checked is worth nothing, and the original project is the proof.
 
+**But evaluation-first is a method, not this project's identity.** The scope is a genuine redo:
+the architecture, the dataset, the problem framing, and the business case are all open to being
+replaced rather than repaired (`DECISIONS.md` D-17). Stage 2 is where those get decided, and it
+is expected to propose changes the original never considered — not to rebuild it correctly.
+
 ---
 
 ## 5. What is real vs what is not

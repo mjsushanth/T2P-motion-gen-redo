@@ -1,9 +1,16 @@
 # T2P-Reboot — text-to-pose generation, rebuilt around measurement
 
 A 2026 course project spent three months on CLIP-conditioned diffusion for text-to-pose
-generation and produced no measurement — every number in its report is a training loss. This
-repository is the rebuild: **find out what actually went wrong, build an evaluation harness
-that has been validated against a published number, and only then train anything.**
+generation and produced no measurement — every number in its report is a training loss.
+
+**This is a full redo, not a repair.** The architecture, the dataset, the problem framing and
+the reason this work should exist at all are open questions here, not inherited ones. Stage 1
+established that the original was compensating for a data-decode bug, which means very little
+of its design carries forward on merit.
+
+Measurement is the **discipline**, not the agenda. Nothing counts as a result until it comes
+off a validated harness on a held-out split — but that is how the redo is kept honest, not what
+the redo is for.
 
 **Start at [`docs/00_START_HERE.md`](docs/00_START_HERE.md).**
 

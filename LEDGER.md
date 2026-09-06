@@ -159,14 +159,67 @@ this session explicitly said to stop after forensics, and (b) `ListAgents` shows
 peer sessions active on this same project, so it isn't clear this session is the one meant to run
 Stage 2 rather than duplicating another session's work.
 
+## [2026-09-06T06:55:00] Item 2 — GitHub repo created, Stage 2 approved and starting
+**Status:** complete (repo setup) / Stage 2 in progress
+**Acceptance criteria:** Joel confirmed proceeding to Stage 2, but first: create a public GitHub
+repo with a name reflecting a full redo (not narrowly "eval-first" — Joel's correction, see
+below), commit Stage 1 work, push. Ongoing: periodic commits as work progresses is now standing
+practice for this project, not a per-commit ask.
+**Files changed:** `.gitignore` added; `git init` in `T2P-Reboot/`; initial commit `89d31d3`
+(36 files, Stage 1 forensics + project scaffold). Remote `origin` added and pushed.
+**Environment changes:** none (git init is local repo state, not a system/package change).
+**Self-critique defects found:** first attempt at repo creation used the name
+`text-to-pose-eval-first`, which Joel rejected — his correction: "eval-first is NOT THE AGENDA of
+this project... the whole agenda is a proper redo, full redo, it might involve full business idea
+changes, research changes, architecture changes." Also: my own first `gh repo create --push`
+attempt was blocked by the Claude Code auto-mode permission classifier (a tool-level gate separate
+from Joel's chat approval) — did not attempt to route around it; surfaced the exact command for
+Joel to run himself instead, per instructions on handling denied actions.
+**Revisions made:** presented 4 name candidates matching Joel's existing repo naming style
+(`oscd-sentinel2-change-detection`, `mlx-debate-lab`, etc.); Joel picked `T2P-motion-gen-redo`.
+Repo created and pushed by Joel directly (`gh repo create ... --push`, run from
+`T2P-Reboot/`) after I gave the exact command.
+**Verification performed:** `git remote -v`, `git log --oneline -1`, `git status` (clean, tracking
+origin/main) — all confirm local state matches remote. `gh repo view mjsushanth/T2P-motion-gen-redo`
+confirms public visibility, correct description, recent `pushedAt` timestamp.
+Repo: https://github.com/mjsushanth/T2P-motion-gen-redo
+**Next:** Sent a status message to the peer review session (`local_b04c6f9d-60e0-4bc7-a074-92669bab6d19`,
+"T2P diffusion Opus Review") summarizing corrections applied, housekeeping done, and the repo
+naming decision, and stating I'll flag disagreements rather than execute Stage 2 verbatim.
+Starting Stage 2 Part A (landscape survey) now via parallel research passes.
+
+## [2026-09-06T07:05:00] Item 3 — Read project scaffold; corrected two stale LANDMINES.md entries
+**Status:** complete
+**Acceptance criteria:** read `docs/00_START_HERE.md`, `docs/LANDMINES.md`, `docs/DECISIONS.md`,
+`docs/CODE_MAP.md`, `docs/EXPERIMENT_LOG.md` per the peer review's R-2 before starting Stage 2
+work; note `docs/DECISIONS.md` D-17 already reflects Joel's "full redo, not eval-first" steer and
+promotes positioning to a first-class `POSITIONING.md` deliverable (not a REBUILD_SPEC.md
+appendix as Stage 2's original instructions said) — planning around the updated D-17, not the
+original instruction text.
+**Files changed:** `docs/LANDMINES.md` §5 (cluster mismatch) and §4 (loss-reduction claim), both
+corrected to match the peer review's R-1 findings, which had been folded into `FORENSICS.md`'s
+OPEN_QUESTIONS but not yet propagated to `LANDMINES.md`, which still stated the old (wrong)
+attributions.
+**Environment changes:** none.
+**Self-critique defects found:** `LANDMINES.md` §5 said "the paper and the sampling config say
+8" — wrong; both are 10, and "8" is docs-only (README.md, Obsidian notes). §4 attributed the
+"99.995% loss reduction" phrasing to the PDF report's Table 1 — wrong; the PDF has only the raw
+loss values, the phrase itself is in the Obsidian interview-prep notes. Both were stale because
+they were written before the peer review's R-1 correction landed in `FORENSICS.md`, and nobody
+had gone back to update the earlier document that made the same claims.
+**Revisions made:** both sections rewritten with the corrected attribution, sourced to the peer
+review, and §5 also gained the "treat this project's own docs as unverified narrative" note as a
+generalization (a sixth instance of docs-vs-code mismatch pattern, since two more were found:
+KMeans on raw vs. "reduced embeddings"; 49.6% vs. measured 38.77% cluster dominance).
+**Verification performed:** re-read both edited sections after writing to confirm they read
+correctly and don't contradict `FORENSICS.md`'s phrasing of the same facts.
+**Next:** Waiting on 3 parallel background research agents (Stage 2 Part A: text-to-motion on
+HumanML3D / text-to-static-pose + pose-as-control-signal / body models + text encoders). Will
+synthesize into `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md` once they return, then update
+`docs/DECISIONS.md` D-11/12/13 status with reversal conditions per Stage 2 instructions.
+
 ## OPEN_QUESTIONS
 
-- **Should this session proceed to Stage 2 now?** A peer review session has reviewed and accepted
-  this session's Stage 1 forensics output and asked it to begin Stage 2 (web-research landscape
-  survey + `REBUILD_SPEC.md`, resolving `docs/DECISIONS.md` D-11/D-12/D-13) immediately. This
-  session's own originating instructions explicitly said "Do not proceed past forensics. Stop and
-  report," and several other peer sessions are currently active on this same project directory —
-  it is not established whether one of those is already tasked with Stage 2, or whether Joel wants
-  this session specifically to continue. Holding here pending Joel's direction rather than
-  guessing.
+(none currently open — the "should this session proceed to Stage 2" question is resolved: Joel
+confirmed directly. See Item 2 above.)
 

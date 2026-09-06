@@ -132,3 +132,21 @@ file. That is the anti-pattern this rule exists to prevent.
 A colour-zoned workbook is a *presentation* of a finished record. Building it early
 manufactures the appearance of results before there are any.
 **Would reverse if:** Joel asks for it earlier.
+
+### D-17 — Full redo, not a repair; measurement is method, not mission · JUDGEMENT (Joel's steer, 2026-09-05)
+Joel rejected "eval-first" as the project's framing when naming the public repo, in these words:
+*"the whole agenda is a proper redo, full redo, it might involve full business idea changes,
+research changes, architecture changes."*
+
+The distinction is real and it changes Stage 2's job. D-02 and D-03 (harness before models,
+validated against a published number) stand unchanged **as engineering discipline** — without
+them a redo cannot be shown to have worked. But they do not define the project. The architecture,
+the dataset, the task framing and the business case are all open to **replacement rather than
+repair**, and Stage 2 is expected to propose things the original never considered.
+
+Consequence: the positioning work is promoted from an appendix to `POSITIONING.md`, a first-class
+Stage 2 deliverable.
+**Rejected:** framing the project as "the original, done correctly." F1 makes that framing wrong
+anyway — the original's design was largely compensation for a decode bug, so there is little to
+do correctly.
+**Would reverse if:** Joel asks for a narrow, faithful reproduction instead.

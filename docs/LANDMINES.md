@@ -132,7 +132,15 @@ numbers, three different objectives, the first a bug artifact. It reads like a r
 It is not one. It cannot be — a loss is only comparable to another loss over the same
 objective on the same data.
 
-**The evidence.** Table 1 of the original `the original project report (PDF)`.
+**The evidence.** Table 1 of the original `the original project report (PDF)` reports the three raw
+loss values (1.52e15, 1.17, 0.69) with no derived percentage. **Correction (2026-09-05, peer
+review):** the "99.995% loss reduction" phrasing itself does not appear in the PDF at all — a
+`pdftotext -layout` + grep found the string `99.995` zero times in the report. It appears five
+times in the Obsidian deep-dive notes (`DL - T2P Deep Dive.md`), including inside a scripted
+60-second interview-answer passage. So the invalid comparison is a study-notes / interview-prep
+artifact that the published report itself does not make — worth knowing precisely because it
+means the number is something Joel has been rehearsing to say out loud, not just something once
+written down.
 
 **Do instead.** Nothing is a result until it comes off the evaluation harness on a held-out
 split, and the harness itself has been validated against a published number. Loss curves go
@@ -154,12 +162,29 @@ height and root velocity, K-means was partly clustering *how fast the root was m
 
 **The evidence.** `extract_static_poses` in the original EDA notebook uses
 `frame_idx = random.randint(0, len(motion)-1)`; the training processor uses
-`frame_selection='first'`. The EDA `main()` also uses `n_clusters=10` while the paper and the
-sampling config say 8.
+`frame_selection='first'`. The array-position-to-dataset-row mapping is also broken: the true
+row ID per clustered-array position lives only in `caption_indices.npy`, which the training
+notebook never loads — empirically, `caption_indices[i] != i` for 23,382/23,384 positions
+(99.99%), so training selects essentially arbitrary rows, not merely mislabelled ones
+(`FORENSICS.md` F2).
+
+**Correction (2026-09-05, peer review):** an earlier version of this entry said "the paper and
+the sampling config say 8" clusters vs. EDA's 10. That was wrong. Both notebooks, as read, use
+10 consistently — the code never uses 8 anywhere. The "8" traces to **documentation only**:
+`README.md` ("8-cluster balanced sampling strategy") and the Obsidian deep-dive ("8 pose
+clusters"); the PDF report states no cluster count at all. So the discrepancy is docs-vs-code,
+not code-vs-code — a fifth instance of this project's documentation describing a cleaner
+pipeline than the code implements. Two more of the same kind, also peer-review-verified: the PDF
+claims K-means ran "on the reduced embeddings" (PCA/t-SNE) but the code fits it on the raw 66-d
+slice; `README.md` claims sampling "avoided 49.6% cluster dominance" but the largest cluster
+measured directly from `clusters.npy` is 38.77% — 49.6% does not reproduce from the saved
+artifacts.
 
 **Do instead.** Fit and apply any grouping on **exactly** the vectors you will train on, after
 the same normalisation. Assert it: the array you cluster and the array you sample must be the
-same object, and a test should enforce that.
+same object, and a test should enforce that. Also: treat this project's own docs/README/notes as
+**unverified** narrative, same as any other secondary source — verify claims against code and
+saved artifacts, not against what the writeup says the code does.
 
 ---
 
