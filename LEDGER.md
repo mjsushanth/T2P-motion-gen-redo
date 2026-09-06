@@ -296,17 +296,13 @@ statement.
 correction prominently since it changes D-11's argument structure, not just its wording; leave
 `docs/DECISIONS.md` D-11/12/13 as PENDING per the agreed process.
 
-## OPEN_QUESTIONS
+## OPEN_QUESTIONS (see also the later, current OPEN_QUESTIONS block at the end of this file —
+## items below are kept per append-only convention but both are now RESOLVED)
 
-- **D-11/12/13 status.** Argued in full in `REBUILD_SPEC.md` (dataset: switch to full-sequence
-  HumanML3D, not static pose; representation: redundant vector baseline + rotation/FK ablation;
-  text encoder: CLIP-token-level baseline + DistilBERT ablation). Left PENDING in
-  `docs/DECISIONS.md` pending the director session's review, per our agreed process — this is
-  the one deliberate incompleteness in an otherwise "complete" Stage 2.
-- **Task-reframing proposal** (`REBUILD_SPEC.md` §0): switching the primary research task from
-  static single-pose to full text-to-motion sequences is a real disagreement-in-waiting with the
-  original Stage 2 brief's framing (which asked to resolve "PoseScript vs corrected HumanML3D,"
-  both static-pose). Flagging prominently rather than quietly substituting one task for another.
+- ~~**D-11/12/13 status.**~~ **RESOLVED 2026-09-06** — all three decided in `docs/DECISIONS.md`,
+  gate-accepted by the director session's Stage 2 review.
+- ~~**Task-reframing proposal.**~~ **RESOLVED 2026-09-06** — accepted as D-18, gate-accepted by
+  the director session.
 
 ## [2026-09-06T08:30:00] Item 6 — Peer review (Review 1) of LANDSCAPE.md: 3 findings actioned
 **Status:** complete
@@ -718,4 +714,54 @@ or the full n~1000 scale (~5 CPU-hours) to remove the question. Holding before s
 reporting the exhausted-leads status to the director first, consistent with checking in before
 further compute spend rather than continuing unilaterally (SUP-24's commendation for doing this
 last time still applies; not treating it as a one-time exception).
+
+## [2026-09-06T12:00:00] Item 15 — D-22: stop chasing E0b, take D-03's fallback, move to E1
+**Status:** complete (decision recorded and executed; E0b closed as an open question, not resolved)
+**Acceptance criteria:** director's decision (`docs/DECISIONS.md` D-22, already written by the
+director) — the subset-composition hypothesis is refuted for free (ground-truth R-Precision is
+0.06σ off the 20-replication reference; an easier subset would inflate ground truth too, and it
+doesn't; generated R-Precision is ~3.5σ high, real and unexplained). Director independently
+verified the driver's config against MDM's own `eval_humanml.py` (CFG applied once not doubled;
+`batch_size=32` correctly overrides the checkpoint's own `64`; `use_ema` default matches) —
+every cheap surface is now checked by two independent readings, mine and the director's. Decision:
+do not spend ~5 CPU-hours on n~1000 (buys comparability to a published number, not correctness —
+already established via the 0.06σ ground-truth match); take D-03's fallback explicitly; record
+the anomaly as a live open question; move to E1.
+**Files changed:** `LEDGER.md` (this entry; marked the two stale OPEN_QUESTIONS items above as
+resolved rather than leaving them looking live; added the current open question below).
+`docs/DECISIONS.md` D-22 was written directly by the director session — read and accepted, not
+authored by me.
+**Environment changes:** none.
+**Verification performed:** re-read D-22 in full before proceeding, rather than acting on the
+cross-session message's summary alone.
+**Next:** E1 — measure what the original project's task-framing bug (F3: pairing "first action of
+caption" with "frame 0 of sequence") actually cost, on the corrected pipeline. Per
+`REBUILD_SPEC.md` §6, this needs a working generation model (frame-0-only vs. full-sequence,
+same architecture, same corrected decode) — the first model this project actually trains, not
+just harness/evaluator validation. Real new scope; assessing shape before starting.
+
+## OPEN_QUESTIONS (current)
+
+- **The E0b generation anomaly, per D-22 — a live open question, not dropped.** Generated
+  motions from MDM's own released checkpoint, under this project's harness, score R-Precision-top3
+  ~3.5σ **above** the published/reference value (0.7578-0.7578 across two runs vs. reference
+  0.611) while FID scores ~2x **above** (worse) the published value (1.07-1.40 vs. 0.544). Every
+  cheap explanation has been checked and eliminated: guidance scale (2.5, matches exactly),
+  diffusion steps (1000, no respacing), sampler (`p_sample_loop`, not DDIM), CFG wrapping (once,
+  not doubled), batch size (32, correctly overriding the checkpoint's own 64), generated motion
+  length distribution (matches ground truth closely), caption uniqueness (128/128 unique),
+  caption-to-motion scoring pairing (verified correct by code inspection), subset-composition/
+  easier-retrieval-task (refuted — would inflate ground-truth R-Precision too, and it doesn't:
+  0.06σ off reference), single-replication noise (refuted — pattern reproduces across two
+  independent runs, and the author's own 20-replication spread doesn't reach either of our
+  FID values). **Cost to close: ~5 CPU-hours at n~1000 (full protocol scale).** Deliberately not
+  spent, per D-22 — the ground-truth reproduction already establishes this project's harness is
+  correct, which is the property internal comparisons (E1 onward) actually depend on; closing
+  this question would buy comparability to the published ladder specifically, judged not worth
+  the cost against E1's value. Revisit if a cheap explanation surfaces later, or if the project
+  ever needs to claim comparability to MDM's published numbers specifically.
+- **D-03 status, restated plainly for whoever reads this next:** UNRESOLVED, not satisfied, not
+  going to be resolved further within this stage per D-22. **Every number from E1 onward is
+  internally-comparable-only** — this must be stated loudly in `RESULTS.md` when it exists and
+  in every relevant `EXPERIMENT_LOG.md` entry, not left as an implicit footnote.
 

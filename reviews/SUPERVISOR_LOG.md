@@ -671,3 +671,34 @@ Run window: SOFT 13:55Z / HARD 14:40Z. Now ~10:35Z, ~3h20m to soft stop.
     task framing actually cost — because that is the one number in this project that nobody else
     could produce. The unexplained anomaly is documented, not buried, and reversible if you ever
     want the leaderboard claim.
+
+## [2026-09-06T11:10Z] Supervisor pass 15 — round 2 misread; SUP-16 retracted; R-Prec anomaly isolated
+
+**SUP-25 (P1): round 2 did not test generation variance.** `fixseed(seed=10)` makes generation
+deterministic; the added diagnostic code only shifted RNG before `gt_loader`'s shuffle. Converting
+to counts makes it unambiguous — **vald 97/128 in both runs, identical to 4 s.f.**, while GT moved
+102/128 -> 104/128. Same motions scored twice. Its conclusion "further evidence this is not
+single-run noise" is unsupported.
+
+**SUP-26 (P1): I retract SUP-16.** Round 2 accidentally ran a better experiment than intended —
+generated set held identical, reference redrawn — and **vald FID moved 1.0731 -> 1.3997, a +30%
+swing from the reference redraw alone.** A statistic that unstable cannot adjudicate a 2x
+difference against a +/-5% tolerance. My bias-subtraction arithmetic assumed a stability the
+estimator does not have at n=128. **The build pass's original "this run cannot distinguish"
+framing was right and I pushed back on it too hard.**
+
+**SUP-27: the same design strengthens the R-Precision finding.** Generation pinned, GT batching
+noise ~+/-2/128 ~ 0.016; generated excess 0.147 ~ **9x that**. Clean split now on the record:
+**FID underpowered at this n, no conclusion; R-Precision anomaly real, ~9x noise, unexplained.**
+
+**SUP-28: the only remaining E0b work, and it is free.** Motions are cached, so fix one
+full-scale GT reference (E0a's 4198 embeddings) and re-score the cached 128 against it. Kills the
+redraw variance and makes every future FID mutually comparable — which is what
+"internally-comparable-only" must mean to be worth anything. Then E1.
+
+**Score so far: two supervisor findings withdrawn (SUP-16, SUP-17) against one build-pass error
+(the D-03 misstatement).** Recorded deliberately. That ratio is the arrangement working — the
+measurements are deciding, not the seniority.
+
+**Next:** SUP-28's free re-score, then E1. Monitors b6bbwpaim and bfovb8dqn both exited; re-arm.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~11:10Z, ~2h45m to soft stop.

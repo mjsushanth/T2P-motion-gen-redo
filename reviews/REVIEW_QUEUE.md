@@ -443,3 +443,77 @@ Fixing SUP-15 in both files and naming it your own error plainly. Disproving my 
 empirically rather than deferring to it. And holding before spending another 40 minutes to ask —
 under D-19 you did not have to, and checking when the cost is real rather than the permission is
 required is the right instinct.
+
+---
+
+# Review 6 — E0b round 2: the second run did not test what it was read as testing
+
+**Date:** 2026-09-06 · **Artifact:** `docs/EXPERIMENT_LOG.md` E0b round 2.
+**Note:** D-22 (stop E0b) was issued while this run was in flight; not a compliance issue.
+
+The diagnostics are good work — length distribution, caption uniqueness, and pairing all properly
+ruled out, and generated motions are now cached per SUP-23, which makes everything below free.
+**But the round-2 interpretation has an error that reverses one of its conclusions, and I have a
+retraction of my own to make.**
+
+## SUP-20260906-25 · P1 · Round 2 did not sample generation variance. The seeds were identical.
+
+Round 2 concludes the repeated pattern is *"further evidence this is not single-run noise."*
+It is not evidence of that, because **the generated motions in round 2 are the same motions as
+round 1.**
+
+`fixseed(args.seed)` with MDM's default seed=10 makes generation deterministic. Round 2's added
+diagnostic code shifted RNG state before `gt_loader`'s shuffle — which is why **ground truth
+moved** (102/128 -> 104/128) — but generation ran from the same fixed seed and produced the same
+output. The tell is exact:
+
+| run | vald R-Prec-top3 | as a count |
+|---|---|---|
+| round 1 | 0.7578 | **97/128** |
+| round 2 | 0.7578 | **97/128** |
+
+Identical to four significant figures across two runs is not a coincidence surviving a different
+draw; it is the same set of motions scored twice. **Round 2 cost ~39 minutes and measured
+ground-truth batching variance, not generation variance.** Correct the claim in the entry.
+
+## SUP-20260906-26 · P1 · Retracting SUP-16. Round 2 shows FID at n=128 cannot resolve this.
+
+Round 2 gives a controlled measurement I did not have: with the generated set **held identical**,
+re-drawing only the ground-truth reference moved
+
+- **vald FID 1.0731 -> 1.3997** — a **+30% swing from the reference redraw alone**
+- GT FID 0.1339 -> 0.1428
+
+**A statistic that moves 30% when you redraw the reference cannot adjudicate a 2x difference
+against a ±5% tolerance.** My SUP-16 arithmetic — subtracting the measured bias floor to get
+~0.968 and calling the FAIL unrescued — assumed a stability the estimator does not have at this n.
+**SUP-16 is retracted.** Your round-1 framing, that this run *"cannot distinguish a real
+discrepancy from n=128 is too few,"* was right about FID and I pushed back on it too hard.
+
+## SUP-20260906-27 · P2 · The R-Precision anomaly survives, and is now better isolated
+
+The same design that invalidates the FID comparison *strengthens* the R-Precision one. With
+generation pinned, GT R-Precision moved 102/128 -> 104/128 — about ±2/128 ≈ 0.016 of batching
+noise. The generated excess is 0.7578 - 0.6110 = **0.147, roughly 9x that**. So:
+
+- **FID: underpowered at n=128. No conclusion available.**
+- **R-Precision: anomaly is real, ~9x the observed noise, and unexplained after every cheap lead.**
+
+That is a cleaner statement than either round produced, and it is the one that belongs in the
+record.
+
+## SUP-20260906-28 · P2 · The free next step, now that motions are cached
+
+D-22 stands — no further generation runs. But caching makes one thing free that was not before:
+**fix a single full-scale ground-truth reference** (E0a already computed embeddings over 4198
+test sequences) **and re-score the cached 128 generated motions against it.** That eliminates the
+reference-redraw variance entirely — the 30% swing above — and makes every future FID in this
+project comparable to every other, which is exactly what "internally-comparable-only" requires to
+mean anything. Zero regeneration cost. Do this instead of any further run.
+
+## SUP-20260906-29 · P3 · Commended
+Caching the generated motions the moment it was raised, and noting the reuse value explicitly.
+Ruling out all three generation leads with actual measurements — length means within 0.7 frames,
+128/128 unique captions, pairing confirmed by reading `__getitem__` rather than assuming. And
+retracting the "maybe the paper's number is odd" framing in its own entry rather than leaving it
+to stand.
