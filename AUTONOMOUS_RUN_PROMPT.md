@@ -7,9 +7,19 @@ a demo. Executed notebooks, tested modules, and markdown that a newcomer to huma
 generation can follow cold — where every number states the split it came from and every claim
 is labelled VERIFIED or UNVERIFIED.
 
-**The one sentence that governs this run:** the project this replaces failed by producing three
-months of work and zero measurements, so **nothing here counts as a result until it comes off a
-validated evaluation harness on a held-out split.**
+**Two sentences govern this run.**
+
+**On rigour:** the project this replaces failed by producing three months of work and zero
+measurements, so **nothing here counts as a result until it comes off a validated evaluation
+harness on a held-out split.**
+
+**On purpose:** this is a self-funded personal research project. Its value is **educational,
+self-development, interview, and genuine AI-research value — there is ZERO commercial intent**
+(`docs/DECISIONS.md` D-20). Two things follow, and both matter. First, non-commercial licence
+terms (SMPL, AMASS, PoseScript CC BY-NC-SA) **do not constrain this project** — they explicitly
+permit exactly this use. Never route around them or treat them as a wall. Second, **numbers are
+not the deliverable.** The research ladder produces evidence; Stage 5 turns it into something a
+person can look at and understand. A project that ends at a metrics table has not finished.
 
 ---
 
@@ -229,15 +239,15 @@ is refuted, say so prominently and update `docs/LANDMINES.md` — do not soften 
    hypothesis with a pre-registered success criterion and the metric that decides it**. Include
    a compute estimate (what runs on MPS, what needs a rented GPU, hours and cost). Include an
    honest risk register with kill criteria.
-3. **Positioning** `-> POSITIONING.md`. **A first-class deliverable, not an appendix.** Joel's
-   framing: *"the whole agenda is a proper redo, full redo, it might involve full business idea
-   changes, research changes, architecture changes."* Treat the business question as real work.
-   Cover: what this is worth as a learning artifact, an interview artifact, and a **product**;
-   who would use a text-to-pose system and for what; where pose sits as a *control signal* for
-   downstream image/video/animation generation; what the smallest demonstrable end-to-end thing
-   is that a non-expert can look at and immediately understand the value of; and what would have
-   to be true for this to be worth more than a portfolio piece. **If a track genuinely has no
-   business case, write that in those words** — but establish it, do not assume it.
+3. **Positioning** `-> POSITIONING.md`. **A first-class deliverable, not an appendix.**
+   **Revised 2026-09-06 per D-20 — the earlier "is there a business case" framing is retired.**
+   There is no commercial intent and no funding, so do not evaluate commercial viability, do not
+   treat non-commercial licences as constraints, and do not look for users to monetise.
+   The questions that actually matter here: what does this project *teach* that is worth
+   learning; what makes it defensible under hard questioning in an interview; what genuine
+   research contribution is available to a self-funded single author with a laptop; and — the
+   one that decides Stage 5 — **what is the smallest thing a non-specialist can look at and
+   immediately understand the value of?** Answer that last one concretely enough to build from.
 
 ### Stage 3 — Harness and baseline `-> src/t2p/`, `tests/`, `RESULTS.md`
 1. Scaffold the package per `docs/CODE_MAP.md`. Typed config, global seeding, structured
@@ -260,6 +270,32 @@ hypothesis and the success criterion in the ledger before running**, then report
 happened — including when the hypothesis is falsified. A falsified pre-registered prediction is
 one of the most valuable things this project can produce; write it up as a finding, not a
 failure.
+
+### Stage 5 — Demonstrator `-> demo/`, and it is not optional
+**Added 2026-09-06 per `docs/DECISIONS.md` D-20.** The research ladder produces numbers. Numbers
+are evidence, not an outcome — a non-specialist cannot look at an FID and see anything. This
+project does not end at `RESULTS.md`.
+
+Build a **local, runnable artifact** that shows the work. Explicitly **not** a deployed web
+service, not a cloud demo, not infrastructure. Something that runs on this machine with one
+command and that someone can *use* for thirty seconds and understand.
+
+Design it yourself, but it must satisfy all of:
+1. **A non-specialist gets it without explanation.** Type a sentence, see a human move.
+2. **The value is legible, not asserted.** Show the generated motion beside a baseline — a
+   retrieval/nearest-neighbour result from the training set is the honest comparison, because it
+   is what "just look it up" would give you. If the model is not beating that, the demo should
+   make that visible rather than hide it.
+3. **It exposes the research honestly.** Surface the real metrics and the seed spread somewhere
+   in the interface. The failure cases too. A demo that only shows its best output is the same
+   sin as a loss curve with no held-out split.
+4. **It runs from a checkpoint, not a training run.** One command, no GPU, no re-training.
+5. **It is reproducible by someone else** — a README section, pinned deps, and a checkpoint that
+   is either committed or fetched by a script.
+
+Reach for the smallest thing that satisfies those. A local Gradio or Streamlit app rendering an
+animated skeleton is likely enough. Rendering to a short video or GIF is a legitimate alternative
+if interactivity costs more than it returns. **Do not build a product. Build a demonstration.**
 
 ### If the queue empties
 Go **deeper, not wider**: more seeds on an existing comparison, a laterality-specific metric, a

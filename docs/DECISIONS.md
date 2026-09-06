@@ -250,3 +250,45 @@ this project folder; no purchases; nothing sent externally; no posting.
 cycle elapsed with the build pass idle at a download prompt, which is exactly the failure the autonomous-run
 design exists to prevent.
 
+### D-20 — The goal is educational and demonstrable, not commercial · FORCED (author's instruction, 2026-09-06)
+The author is a post-graduate student self-funding this work. There is no company, no funding, and
+no revenue intent. Stated plainly: *"I WON'T GET any business profit from this... I just need
+EDUCATIONAL value, self value, interview value, deep AI research value. ZERO business."*
+
+**Two consequences, and the second is the one that changes the plan.**
+
+**1. The licence wall is moot.** `POSITIONING.md` correctly established that SMPL/AMASS terms bar
+training networks for *commercial* use, and treated that as a constraint to route around. With no
+commercial intent, the constraint does not bind: SMPL's licence **explicitly permits**
+non-commercial research, education, and personal projects. HumanML3D, PoseScript, `smplx` and the
+SMPL body models are all fully available for this project's actual purpose. **Do not choose a
+representation to preserve a commercial option that is not wanted.** D-11's redundant-vector
+decision stands on its own merits; the 2D-keypoint route is now one option among several rather
+than the only licence-clear exit.
+
+**2. "No business case" is not an acceptable stopping point.** The author's framing:
+*"people want to see a usable PRODUCT out of AI projects... I need you to help me move past
+research AFTER FINISHING research architectures, and do an outcome, productive show."* The
+research track produces numbers; numbers are not a demonstrable outcome to a non-specialist.
+A **local, runnable artifact** is required — explicitly not a deployed web service.
+*"Something local is fine too."*
+
+This adds a stage: **Stage 5 — Demonstrator**, after the research ladder completes.
+**Rejected:** ending the project at `RESULTS.md`. A metrics table is the *evidence*, not the
+deliverable.
+**Would reverse if:** never, absent the author saying so.
+
+### D-21 — Sole authorship; no institutional or third-party identifiers · FORCED (author's instruction, 2026-09-06)
+This repository is the author's work and is credited solely to them. The original project's
+partner was absent throughout and agreed to full credit transfer, which is why that repository has
+no forks or pull requests.
+
+Removed from all tracked files 2026-09-06: course code, institution name, group number, any
+reference to a partner or co-author, and tool/assistant attributions. The absolute path to the
+read-only original-project archive now lives in `.archive_path`, which is gitignored; tracked
+documents refer to it as `<ARCHIVE>/`.
+
+**Standing rule:** no institutional identifiers, no third-party names, no assistant attributions
+in tracked files. Agents describing their own work use role words (build pass, review pass), not
+product names.
+

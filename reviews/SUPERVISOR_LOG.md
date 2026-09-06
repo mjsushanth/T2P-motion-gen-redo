@@ -333,3 +333,54 @@ b7nnio6j5 remains armed.
    interview would be.** Worth one editing pass against the code before you use that document
    again — and worth doing it from the code, not from memory, since writing from memory is how
    the numbers drifted in the first place.
+
+---
+
+# RUN WINDOW — set 2026-09-06 by the author before leaving
+
+**RUN_START:** 2026-09-06T07:55:11Z
+**SOFT STOP (take no new work item):** 2026-09-06T13:55:11Z
+**HARD STOP (stop mid-item, write handover):** 2026-09-06T14:40:11Z
+
+Author's instruction: work at least 5-6 hours, hard stop at 6-7. If a usage limit interrupts the
+run, that is expected — resume on the next firing and continue toward the same deadlines. Do not
+treat an interruption as a reason to end the run early.
+
+**Every firing must re-read this block first** and compare against `date -u`. Context may be
+compacted between firings; this file is the memory. At HARD STOP, call ScheduleWakeup with
+`stop: true` and write the handover at the top of this log.
+
+## [2026-09-06T08:05Z] Supervisor pass 8 — author departed; instructions updated; E0a/E0b split registered
+
+**Author's instructions before leaving, all encoded:**
+- **D-19** standing technical authorisation (downloads, envs, installs, code, CUDA->MPS,
+  notebooks). Encoded in `CLAUDE.md` rule 4, `AUTONOMOUS_RUN_PROMPT.md` §2/§13,
+  `SUPERVISOR_LOOP_PROMPT.md` §0. **The gate that idled C1 cost a full supervisor cycle.**
+- **D-20** zero commercial intent; educational / interview / research value only. Two
+  consequences: non-commercial licences **do not constrain this project** (SMPL explicitly permits
+  exactly this use — stop routing around it), and **numbers are not the deliverable**.
+- **D-21** sole authorship; identifiers scrubbed repo-wide; `<ARCHIVE>/` + gitignored
+  `.archive_path`. Residual count on every identifier: zero.
+- **Stage 5 — Demonstrator** added to `AUTONOMOUS_RUN_PROMPT.md` §8, not optional, five stated
+  requirements, local-only.
+- `AUTONOMOUS_RUN_PROMPT.md` §Purpose rewritten (rigour + purpose, two governing sentences) and
+  Stage 2 Part C's retired "is there a business case" framing replaced.
+- `SUPERVISOR_LOOP_PROMPT.md` §1 rewritten to point at this log rather than carry stale state,
+  and to make the RUN WINDOW binding.
+
+**Review action this pass: endorsed and formalised C1's own improvement to E0.** Its ledger shows
+it planning to compute metrics on ground truth against itself (targeting the paper's Real row,
+FID ~0.002) before attempting MDM's number. That is better than the single-gate E0 I specified,
+because it separates *evaluator correctness* from *checkpoint loading and generation* — the two
+fail independently and the diagnoses differ completely. Asked it to pre-register as **E0a**
+(evaluator sanity: real-vs-real FID at the noise floor, R-Prec-top3 near 0.797) and **E0b**
+(MDM 0.544 +/-5%), with criteria written before either number exists — the same discipline
+SUP-06 blocked E2 on, applied consistently to my own rung design.
+
+**Flagged a real risk to C1:** hand-reconstructing the `opt` Namespace is structurally identical
+to F1 — a plausible reconstruction that produces working code and wrong numbers with no error
+raised. E0a is the invariant test for it. Asked it to mark any guessed field as a guess in the
+ledger *before* seeing the result.
+
+**State:** no experimental result exists yet anywhere in this project. Monitor b7nnio6j5 armed.
+**Next:** hold until E0a/E0b report. Standing queue is otherwise exhausted pending results.

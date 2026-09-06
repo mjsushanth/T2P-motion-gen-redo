@@ -16,9 +16,9 @@ generation on HumanML3D, as a graduate course project. It ran. It trained. It pr
 
 There is no validation loop, no test-split evaluation, no seeding, no experiment tracking,
 and not one of the field's standard metrics — no R-Precision, no FID, no MM-Dist, no
-Diversity, no MultiModality, no MPJPE. The paper's headline, a "99.995% loss reduction,"
-compares three numbers produced by three *different loss functions*, the first of which was
-a bug artifact of order 1e15.
+Diversity, no MultiModality, no MPJPE. The much-quoted "99.995% loss reduction" compares three
+numbers produced by three *different loss functions*, the first of which was a bug artifact of
+order 1e15. (That figure appears nowhere in the report itself — it is a later summary of it.)
 
 **So the results were never subpar. They were never taken.** That is the thing to
 internalise before you form any other impression of this work.

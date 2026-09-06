@@ -458,3 +458,51 @@ R-Precision/FID via `utils/metrics.py` on ground truth against itself as the fir
 (targeting the paper's own "Real" row: FID ~0.002, before attempting reproduction of any
 generated-model's published number).
 
+## [2026-09-06T09:35:00] Item 9 — E0 sanity check run and written up (2 seeds, full test split)
+**Status:** partial (sanity check complete; the actual D-03 gate — reproducing a published
+generated-model number — is not yet done, no generative model exists in this repo)
+**Acceptance criteria:** Joel confirmed broad standing technical authorization applies to this
+session directly (see Item 8); build and run the previously-scoped E0 test to completion, report
+honestly whether it's the actual D-03 gate or a precursor, with seed spread per project convention.
+**Files changed:** `scripts/e0_evaluator_sanity_check.py` (new — builds `opt` manually avoiding
+the evaluator's on-disk `opt.txt` dependency; sorts batches by `sent_len` descending matching the
+official `collate_fn`, a requirement discovered only by hitting `pack_padded_sequence`'s sorted-
+order assertion; batches R-Precision by 32 candidates matching the paper's protocol, discovered
+necessary only after an initial 200-candidate-pool run gave badly-wrong numbers). `checkpoints/`
+gained `t2m_dataset_stats/{Mean,Std}.npy` (official HumanML3D normalization stats, fetched
+directly, not reconstructed). `docs/EXPERIMENT_LOG.md` gained the E0 entry (full method,
+progression table showing the protocol-bug-fix impact, 2-seed spread table, explicit "does NOT
+establish" section). `artifacts/e0/` gained the two seed-specific result records.
+**Environment changes:** none — ran entirely in `mjs_mlcvdl_unified_m5`, no new packages needed.
+**Self-critique defects found:** the first working run (R-Precision on a single 200-candidate
+pool instead of 32-candidate batches, matching the paper's own protocol) gave R-Prec-top3=0.28
+and FID=0.745 — badly wrong-looking numbers. Caught this myself before reporting it as any kind
+of result, diagnosed the actual cause (pool-size mismatch inflates retrieval difficulty; FID is
+separately unstable with too few samples relative to the 512-dim embedding space), fixed both,
+and documented the wrong version in `EXPERIMENT_LOG.md`'s progression table rather than quietly
+discarding it — the fact that the harness *can* produce a badly-wrong-looking number from an
+honest methodology bug (not a broken checkpoint) is itself worth keeping as a record.
+**Revisions made:** see Files changed. Also removed a redundant unseeded artifact file
+(`artifacts/e0/e0_evaluator_sanity_check_record.json`, byte-identical to seed0's after a filename
+fix mid-session) rather than leaving an ambiguous duplicate.
+**Verification performed:** ran with 2 different seeds (0, 1) on the full HumanML3D test split
+(4384 sequences, 4198 usable after length filtering — matches the field's commonly-cited test-set
+size, a further indirect confirmation this project's HF-streamed data matches the original
+split). Seed spread is tiny (R-Prec-top3: 0.7202 vs 0.7159, spread 0.0043; FID: 0.02870 vs
+0.02890, spread 0.00020) — this ran entirely on CPU (the evaluator's BiGRU encoders are small),
+so `LANDMINES.md` §7's MPS non-determinism does not apply to this specific check; the small
+residual spread reflects only which random crop/subset-split each seed drew.
+**Result, precisely:** matched text/motion pairs retrieve each other at 72% top-3 accuracy out of
+32 candidates (vs. ~9% chance) — strong signal. FID between disjoint real subsets is 0.029,
+down 25x from the buggy protocol's 0.745, converging as sample size increased to the full split.
+Remaining gap from the paper's own numbers (0.720 vs. 0.797 R-Prec; 0.029 vs. 0.002 FID) is real,
+stable across both seeds and across the sample-size increase from 1024->2099, and most likely
+attributable to this project's single-crop-per-motion evaluation vs. the paper's typical
+multi-crop-averaged protocol (`--repeat_time` in their own `final_evaluations.py`) — stated as a
+plausible, not confirmed, explanation.
+**Next:** this sanity check gives strong confidence the harness/checkpoint/data-pipeline are
+sound, but does **not** complete D-03 — that requires reproducing an actual published
+*generated-model* number (e.g. MDM's FID 0.544), which needs either MDM's own released checkpoint
++ generated samples, or this project's own future E2 baseline once a model exists. Reporting this
+precisely to Joel and the director rather than overclaiming the gate is passed.
+

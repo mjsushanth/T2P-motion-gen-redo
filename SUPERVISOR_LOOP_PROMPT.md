@@ -29,20 +29,28 @@ under `FOR JOEL`, and you move to the next item.
 
 ---
 
-## 1. State as of 2026-09-05, ~23:00 local
+## 1. State — re-derive it, do not trust this block
 
-| stage | status |
-|---|---|
-| **1 — Forensics** | **DONE, reviewed, accepted.** F1 VERIFIED (bone-length CV 25.81% raw vs ~0.00008% correct decode), F2 VERIFIED (plus C1's own find: 99.99% `caption_indices` row-ID mismatch), F3 VERIFIED but moderate (1.43x), F4 VERIFIED exhaustively. In `FORENSICS.md`. |
-| **git** | **DONE.** Public repo `github.com/mjsushanth/T2P-motion-gen-redo`, pushed by the build pass with Joel's approval. Clean: no names, no emails, no coursework files, no data. |
-| **2 — Landscape / spec / positioning** | **IN FLIGHT in C1.** Expected: `LANDSCAPE.md`, `REBUILD_SPEC.md`, `POSITIONING.md`. the build pass will leave `docs/DECISIONS.md` D-11/12/13 PENDING until you review its reasoning. |
-| **3 — Harness + baseline** | **QUEUED IN the build pass BUT GATED.** the build pass has the instructions and has been told not to start until you approve the Stage 2 spec. **Holding that gate is your job.** |
+**Read `reviews/SUPERVISOR_LOG.md` from the bottom for actual current state.** As of the last
+edit: Stage 1 (forensics) and Stage 2 (landscape / spec / positioning) are complete and reviewed;
+the Stage 3 gate is RELEASED; C1 is executing E0 (vendoring the Guo et al. evaluator and
+reproducing MDM's FID 0.544 +/-5%). Eight defects in the original are VERIFIED (F1-F8).
 
-**The steer that governs everything (D-17):** Joel rejected "eval-first" as the project's
-framing. His words: *"the whole agenda is a proper redo, full redo, it might involve full
-business idea changes, research changes, architecture changes."* Harness-before-models stands as
-**engineering discipline**; it is not the mission. the build pass has been told it may propose replacing the
-task entirely. **Do not let the review drift back into "rebuild the original correctly."**
+**The RUN WINDOW block at the bottom of `reviews/SUPERVISOR_LOG.md` is binding.** Read it every
+firing and compare against `date -u`. Past SOFT STOP, take no new work item. Past HARD STOP,
+write the handover and call `ScheduleWakeup(stop: true)`. If a usage limit interrupts the run,
+resume on the next firing toward the same deadlines — an interruption is not a reason to stop
+early.
+
+**Standing authorisations (D-19, D-20, D-21) — do not re-litigate these:**
+- Downloads, environments, installs, code edits, CUDA-to-MPS rewrites, notebook execution are all
+  **pre-authorised**. Never hold C1 at a technical gate; never create one in a review finding.
+- **Zero commercial intent.** Non-commercial licences do not constrain this project. Do not let a
+  review finding push C1 to route around SMPL/AMASS to preserve an option nobody wants.
+- **Sole authorship.** No institutional identifiers, no third-party names, no assistant
+  attributions in tracked files. Role words only.
+- **Stage 5 (Demonstrator) is not optional.** The project does not end at `RESULTS.md`. Judge
+  design choices partly on whether they keep a local, runnable demonstrator reachable.
 
 ---
 
