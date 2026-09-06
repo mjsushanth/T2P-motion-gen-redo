@@ -287,20 +287,47 @@ Each rung is a pre-registered hypothesis with the metric that decides it, per
 | rung | hypothesis | success criterion | what it settles |
 |---|---|---|---|
 | **E0 (gate, not a result)** | The vendored Guo et al. evaluator reproduces a published FID to within a stated tolerance on a released checkpoint (e.g. MDM's own) | FID within +/-5% of the paper's reported 0.544 (or the checkpoint actually used) | D-03: is the harness trustworthy at all |
-| **E1 — reproduce the original's failure, correctly instrumented** | The original's exact task framing (frame-0-only static pose, corrected decode) produces measurably worse text-alignment than full-sequence generation, on the *same* corrected pipeline | **FID** measurably worse for frame-0-only vs. full-sequence **by more than the seed-to-seed spread** (`LANDMINES.md` §7 — same threshold discipline as E3, per review SUP-20260906-07: "measurably worse" alone is not a criterion), holding architecture fixed; R-Precision-top3 reported alongside as a sanity check only, not decisive | Converts F3 from "moderate effect, ~1.4x dispersion" into an actual measured performance delta — the single most valuable number this project can produce (per `AUTONOMOUS_RUN_PROMPT.md` Stage 3 item 4) |
-| **E2 — redundant-vector baseline** | A from-scratch diffusion model, predicting the full 263-d vector (matching MDM/MotionDiffuse's actual representation), reaches FID in the neighborhood of MDM's 0.544 on a laptop-MPS budget | FID within a stated multiple of MDM's number. **Process requirement (review SUP-20260906-06): this tolerance must be fixed and written into `docs/EXPERIMENT_LOG.md` as its own dated entry, after E0 completes but strictly before E2 is run** — deferring a threshold until after a measurement exists is how pre-registration dies, however honest the intent. `LEDGER.md` must show this ordering (E0 result recorded, then the E2 tolerance entry dated after it, then E2 itself dated after that) | First honest baseline number this project has ever had |
-| **E3 — rotation+FK ablation** | Predicting rotations-only + root params, decoded via `skeleton.py`'s FK, beats E2 on FID and/or a direct bone-length-error metric | FID or bone-length-error improves over E2 by more than the seed-to-seed spread (`LANDMINES.md` §7) | Tests D-11's structural-correctness argument empirically, not just logically |
+| **E1A (control)** | Full caption, full-sequence target, corrected 263-d pipeline throughout | Baseline R-Precision-top3/FID this stage's B/C arms are measured against | Establishes what the corrected pipeline achieves with no conditioning defect present |
+| **E1B — caption-truncation arm** | First-action-clause-only caption (the original's actual truncation rule), full-sequence target | **R-Precision-top3 measurably worse than E1A by more than the seed-to-seed spread** (decisive; regime exception to the FID-decisive rule below, see note) — FID reported alongside as secondary, with its n=128 instability stated inline wherever it appears, not used to decide the rung | Isolates and measures F3's caption-truncation half of the conditioning-mismatch defect, output space held identical to E1A so the evaluator applies without confound |
+| **E1C (stretch, budget-permitting)** | Full caption, frame-0-representative conditioning instead of the full sequence's actual content, full-sequence *output* space still preserved | Same R-Precision-decisive/FID-secondary discipline as E1B | Isolates F3's frame-selection half separately from truncation — exact conditioning construction to be designed when/if this rung is reached |
+| **E2 — redundant-vector baseline** | A from-scratch diffusion model, predicting the full 263-d vector (matching MDM/MotionDiffuse's actual representation), reaches FID in the neighborhood of MDM's 0.544 on a laptop-MPS budget | **R-Precision-top3 decisive at this laptop-scale regime, same reasoning as E1** (see regime note below); FID reported secondary/instability-flagged unless a later measurement affords generated n large enough to trust it. **Process requirement (review SUP-20260906-06) still applies to whichever metric is decisive: its tolerance must be fixed and written into `docs/EXPERIMENT_LOG.md` as its own dated entry, after E0 completes but strictly before E2 is run** | First honest baseline number this project has ever had |
+| **E3 — rotation+FK ablation** | Predicting rotations-only + root params, decoded via `skeleton.py`'s FK, beats E2 on FID and/or a direct bone-length-error metric | FID or bone-length-error improves over E2 by more than the seed-to-seed spread (`LANDMINES.md` §7) — **re-assess whether this rung's own generated n affords trusting FID before treating it as decisive here; fall back to R-Precision-decisive if not** | Tests D-11's structural-correctness argument empirically, not just logically |
 | **E4 — text-encoder ablation** | Token-level CLIP (baseline) vs. DistilBERT (ablation), both measured on a laterality-specific metric in addition to aggregate FID/R-Precision | Laterality metric improves measurably for at least one alternative over pooled-CLIP-equivalent | Tests D-13 empirically; also the first time laterality is actually measured under a pipeline where text conditioning is real (F6 means the original never exercised this at all, so this is a fresh measurement, not a re-measurement of the original's UNVERIFIED 0.03 cosine-distance claim, `LANDMINES.md` §6) |
-| **E5 (stretch, not gating) — PoseScript comparison** | If pursued (§2), the same pipeline's static-pose mode, evaluated on PoseScript's own metrics, is compared against E1's frame-0-HumanML3D result | Both numbers reported side by side, explicitly not treated as directly comparable (different eval protocols) | Whether a dataset actually built for static pose changes the picture at all |
+| **E5 (stretch, not gating) — PoseScript comparison** | If pursued (§2), the same pipeline's static-pose mode, evaluated on PoseScript's own metrics, is compared against E1's own captured numbers | Both numbers reported side by side, explicitly not treated as directly comparable (different eval protocols) | Whether a dataset actually built for static pose changes the picture at all |
 
-**Why FID is the decisive metric and R-Precision is not, across this whole ladder (review,
+**Regime note on the E1/E2 R-Precision-decisive exception (`docs/DECISIONS.md` D-25, review
+SUP-20260906-32):** the FID-decisive rule below was written about published-frontier models
+(StableMoFusion, MoMask) and does not transfer unchanged to this project's own laptop-scale,
+early-rung models. At E1/E2's affordable generated sample count (n~128, per the feasibility
+projection below), FID's covariance estimate is rank-deficient and unusable as a decision
+criterion (`LANDMINES.md` §14's three-FID-values-from-one-generated-set illustration); R-Precision
+does not estimate a covariance and was shown stable at this same n (ground-truth R-Precision
+reproduced to three decimals against a 20-replication reference, batching noise floor ~2/128).
+This exception is scoped to the low-quality/small-n regime only — if a later rung's quality or
+affordable n approaches the published frontier, the FID-decisive rule below re-applies, and each
+rung's entry must state which regime it is in when setting its criterion.
+
+**Why FID is the decisive metric and R-Precision is not, at the published frontier (review,
 `reviews/REVIEW_QUEUE.md` SUP-20260906-02):** in `LANDSCAPE.md`'s own published-numbers table,
 StableMoFusion's R-Prec-top3 (0.841) and MoMask's (0.807) both **exceed** the paper's own
 ground-truth "Real" row (0.797). Generated data outscoring real data means R-Precision has no
 dynamic range left at the frontier of published results — it can confirm a rebuild is in the
 right regime at all, but it cannot be trusted to rank or gate anything close to competitive. FID
-still shows an intact, informative range (MDM 0.544 -> MoMask 0.045) and is the metric E0-E3
-above actually gate on. This applies to every rung in this table, not just E1.
+still shows an intact, informative range (MDM 0.544 -> MoMask 0.045) at that frontier.
+**Corrected 2026-09-06 (`docs/DECISIONS.md` D-25, review SUP-20260906-32): this rule does not
+transfer unchanged to this project's own early, laptop-scale rungs.** At the generated sample
+count E1/E2 can actually afford (n~128, per the feasibility projection below), FID's covariance
+estimate is the thing that is unstable — proven directly by three different FID values
+(1.0731 / 1.3997 / 3.2909) computed from one bit-identical set of 128 generated motions, varying
+only which reference or how it was drawn (`LANDMINES.md` §14). R-Precision has no such
+instability at this n. So E1/E2 gate on R-Precision instead (see the regime note above); E3
+onward re-assess per-rung which regime applies, and E0/frontier-adjacent comparisons still use
+this original FID-decisive rule.
+
+**E1 status note:** A vs B is the minimum viable E1 — both must run for E1 to count as
+complete. C is a stretch rung, run only if the feasibility measurement (§7) shows headroom
+after A and B. Whichever arms actually ran must be stated plainly in
+`docs/EXPERIMENT_LOG.md`'s E1 entry; do not present a partial ladder as the full result.
 
 Every rung's actual results go to `artifacts/<NN>_<name>_record.json` and
 `docs/EXPERIMENT_LOG.md`, per `CLAUDE.md`. **No rung is a result until E0 has passed.**
@@ -309,17 +336,44 @@ Every rung's actual results go to `artifacts/<NN>_<name>_record.json` and
 
 ## 7. Compute estimate
 
-**What runs on this Mac (Apple Silicon, MPS, `LANDMINES.md` §7 non-determinism applies to all
-of these):**
-- E0 (evaluator reproduction) — CPU/MPS inference only, no training. Minutes, not hours.
-- E1-E4 — small denoiser (the original was ~2.1M params; a redundant-vector or rotation-space
-  UNet/transformer at similar scale is realistic on MPS). Rough order of magnitude: hours per
-  run on a subset of HumanML3D's ~23k train sequences, not the full published training budgets
-  (MDM/MotionDiffuse train for days on datacenter GPUs — matching their exact training length is
-  not the goal; landing in a reasonable, honestly-labeled range is).
-- **This estimate is a placeholder or judgment**, not independently benchmarked — no model has
-  been trained in this repository yet (`docs/00_START_HERE.md` §5). Treat these as first-pass
-  planning numbers, to be replaced with actual measured wall-clock times starting at E0.
+**What runs on this Mac — MEASURED, 2026-09-06 (`LEDGER.md` Item 18,
+`artifacts/e1/e1_training_feasibility_probe_record.json`), replacing the placeholder below:**
+- **MPS cannot train this architecture as vendored.** MDM's diffusion schedule
+  (`diffusion/gaussian_diffusion.py`'s `_extract_into_tensor`) indexes a float64 numpy array;
+  MPS refuses float64 (`TypeError: Cannot convert a MPS Tensor to float64 dtype`), confirmed
+  reproducible, not a config error. This retroactively explains why all E0 work ran CPU-only.
+  **All E1-E4 training runs are CPU-only** unless someone patches the schedule to float32
+  first (not done, out of scope for the feasibility probe).
+- **CPU training-step cost, MDM's true default architecture** (trans_enc, 8 layers,
+  latent_dim=512, 1000 diffusion timesteps, CLIP text encoder — 17.88M trainable params
+  excl. CLIP, batch_size=32; this is real MDM scale, not the original failed project's
+  ~2.1M-param model): **median 2.252 s/step, mean 2.222 s/step**, tight spread across 8 timed
+  steps (2.142s-2.297s, <7% range).
+- **Extrapolation, training only (superseded — see corrected total below):** 3,000 steps/run
+  ~ 1.9h; a 4-run matrix (E1A+E1B x 2 seeds) ~ 7.5h. **This omitted generation/evaluation cost
+  and was flagged incomplete by review (SUP-20260906-32) before being treated as final** —
+  training a model is not the same as scoring it, and E1's decisive metric (R-Precision, per the
+  regime note in §6) requires generating and evaluating samples for every arm/seed, not just
+  training.
+- **Corrected extrapolation, training + generation (per-run: 3,000 training steps at 2.252 s/step
+  ~ 1.877h, plus generation+evaluation at n=128 — sufficient for R-Precision-decisive per §6's
+  regime note, no need to reach FID's n>>512 requirement — at the E0b-measured rate of ~39 min /
+  128 samples ~ 0.65h):**
+  | matrix | training | generation (n=128) | total |
+  |---|---|---|---|
+  | 4 runs (E1A+E1B x 2 seeds) | 7.5h | 2.6h | **~10.1h** |
+  | 6 runs (+E1C x 2 seeds) | 11.3h | 3.9h | **~15.2h** |
+  For contrast, had E1 stayed FID-decisive (superseded, `docs/DECISIONS.md` D-25): generation
+  alone at the n~512 FID would need is ~9.8h for 2 arms x 3 seeds (review SUP-20260906-32) — the
+  R-Precision-decisive inversion is what keeps E1 affordable at all on this hardware.
+- **Proposed step/sample budget (flagged as a judgment call, not yet run — pending the director's
+  research-design sign-off, `LEDGER.md` Items 18-19):** 3,000 training steps/run, n=128 generated
+  samples/run for evaluation, E1A+E1B only at 2 seeds each (~10.1h total), E1C deferred. Step
+  count chosen to be checkable in an afternoon on a materialized subset (HumanML3D's full
+  ~23k-sequence train split is not yet materialized on disk — only the ~4.6k test split is), not
+  derived from a convergence criterion; matching MDM/MotionDiffuse's own datacenter-scale training
+  length is explicitly not the goal (`docs/DECISIONS.md` D-23). Sample count set by §6's
+  R-Precision-decisive regime note, not chosen independently.
 
 **What would need a rented GPU:** matching a full published training budget for direct
 apples-to-apples comparison against, e.g., MoMask's exact reported number (rather than "in the
@@ -327,9 +381,9 @@ neighborhood of," per E2's stated tolerance). Not required for E0-E4 to produce 
 labeled-as-such results; would matter if a later stage wants to actually contend for a
 leaderboard position rather than produce a measured, honestly-scoped baseline.
 
-**Cost:** not estimated here — genuinely unknown until E0-E1 give real wall-clock numbers on this
-hardware. Flagging as UNVERIFIED/not yet estimated rather than inventing a plausible-sounding
-dollar figure.
+**Cost:** wall-clock now measured and projected above (CPU-only, real numbers). Dollar cost not
+estimated — this Mac is already owned hardware, no rented compute has been used or is currently
+proposed for E1.
 
 ---
 

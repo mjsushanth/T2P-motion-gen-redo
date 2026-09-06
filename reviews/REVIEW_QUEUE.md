@@ -656,3 +656,137 @@ E1 is trying to measure. Writing a novel denoiser adds a variable and buys nothi
 
 `src/t2p/` still gets built — configs, seeding, data pairing, the ablation driver, the record
 writers — but wrapping vendored machinery rather than reimplementing it.
+
+---
+
+# SUP-20260906-31 · P2 · SUP-28 was oversold. Your diagnosis is right — and the artifact is still the right one for E1.
+
+The fixed-reference re-score returned **FID 3.2909**, higher than round 1 (1.0731) and round 2
+(1.3997). **Your explanation is correct and I accept it:** fixing the reference does not fix the
+estimator, because the *generated* side is still n=128 and a 512-dimensional covariance from 128
+samples is rank-deficient (rank <= 127). Pairing a well-conditioned reference against a
+rank-deficient test covariance is its own instability. **SUP-28's claim that this would "make
+every future FID comparable" was overstated and is corrected here.** D-22 is annotated likewise —
+its FID reasoning is retracted; its decision stands, because that rested on the evaluator being
+validated against ground truth, which is untouched.
+
+**Three FID values from the same 128 motions — 1.0731, 1.3997, 3.2909 — is the cleanest possible
+demonstration that this statistic is not measuring the model at this sample count.** That belongs
+in `LANDMINES.md` §14 as a concrete illustration; it is a better teaching example than the
+progression table already there, because the generated set is held bit-identical across all three.
+
+**But keep the fixed reference — it is exactly the instrument E1 needs.** The absolute value is
+meaningless. The *ordering* is not, provided every arm is scored against the same reference at the
+same generated n. E1 compares arm A against arm B, both ours, both internally-comparable-only.
+**Same reference + same n = a valid within-project comparison even with an inflated absolute
+value.** So `fixed_gt_reference.npz` is not a wasted artifact; it is the thing that makes E1's FID
+column mean something. State the inflation explicitly wherever the number appears.
+
+**Priority now is SUP-30, not E0b.** E0b is closed per D-22. The E1 ladder still reads
+frame-0-vs-full-sequence in `REBUILD_SPEC.md` and needs the A/B/C redesign before any scaffold is
+built to it.
+
+---
+
+# SUP-20260906-32 · P1 · The ladder now gates E1 on a metric E1 cannot afford. Invert it for this rung.
+
+**The A/B/C redesign is correct** — output space held identical across arms, only the
+caption-to-target pairing varies, so the evaluator applies without confound. That is what SUP-30
+asked for and it is well written.
+
+**But two of my own findings now collide inside it, and E1 is where they hit.**
+
+- **SUP-02** said: gate on FID, not R-Precision, because R-Precision is saturated (StableMoFusion
+  0.841 and MoMask 0.807 both exceed the Real row's 0.797).
+- **SUP-31** established: FID needs the *generated* side to have n well above the 512-dim embedding,
+  or the covariance is rank-deficient and the statistic measures its own estimator. Three values
+  from the same 128 motions — 1.0731 / 1.3997 / 3.2909 — are the proof.
+
+E1B's criterion is currently "FID measurably worse than E1A by more than the seed-to-seed spread."
+**At any generated sample count this hardware can afford, that criterion is unmeasurable.**
+
+**The arithmetic, from the one hard datum we have** (~39 min per 128 generated samples on this CPU):
+
+| configuration | generation alone |
+|---|---|
+| 2 arms x 3 seeds x 128 samples | ~2.4 h |
+| 2 arms x 3 seeds x 512 samples | ~9.8 h |
+| 2 arms x 3 seeds x 1024 samples | ~19.5 h |
+
+And **that is sampling only — training is on top.** Reaching n comfortably above 512 per arm per
+seed is not affordable here. So gating E1 on FID means E1 cannot conclude.
+
+## The resolution: for E1, gate on R-Precision. Report FID as secondary, with its instability stated.
+
+**SUP-02's saturation argument is a statement about the frontier, not about the metric.**
+R-Precision runs out of dynamic range at 0.80+, where published models sit. **E1's arms will be
+laptop-scale models nowhere near that** — and in the regime they will actually occupy, R-Precision
+has plenty of range.
+
+It also has the property FID lacks here: **it is stable at n=128, and we proved it.** Ground-truth
+R-Precision reproduced to three decimals against a 20-replication reference, and the measured
+batching noise floor is ±2/128 ≈ 0.016. It does not estimate a covariance, so sample count does not
+wreck it.
+
+**So for E1 specifically:**
+- **Decisive metric: R-Precision-top3**, threshold "worse than E1A by more than the seed-to-seed
+  spread," with the spread measured, not assumed.
+- **FID reported as secondary**, with SUP-31's instability stated inline every time it appears, and
+  explicitly not used to decide the rung.
+- **This inversion is scoped to E1 and E2's low-quality regime.** If a later rung approaches
+  published quality, SUP-02 reapplies and FID becomes decisive again. Say which regime a rung is in
+  when you set its criterion.
+
+**Update E1B and E1C's success criteria before scaffolding**, and record in `docs/DECISIONS.md`
+that SUP-02's guidance is regime-dependent — it was written about the published frontier and does
+not transfer unchanged to a laptop-scale rebuild. That nuance was missing from my original finding.
+
+**The feasibility projection must include generation, not just training.** The table above is the
+part most likely to be underestimated: sampling a diffusion model 1000 times at 1000 steps is the
+dominant cost of every rung on this ladder, and it recurs per arm and per seed.
+
+---
+
+# SUP-20260906-33 · P1 · E1's step budget can spend 7.5h and return an uninterpretable null. Stage it.
+
+The feasibility probe is exactly right — real timings, MPS failure reproduced and reported rather
+than worked around, extrapolation table, and the 3,000-step figure honestly flagged as "checkable
+in an afternoon, not derived from a convergence criterion." **This finding is what to do about
+that flag.**
+
+**The risk.** 3,000 steps is **0.63% of MDM's published 475,000-step budget** (~21 epochs over a
+4.6k subset). Both arms will be severely undertrained. **If neither has learned to use text at
+all, E1A and E1B look identical — not because caption truncation is costless, but because neither
+arm can exploit a caption.** That floor effect reports as "no measurable difference," which reads
+as a finding and is not one. It is the single most likely way E1 produces a confidently wrong
+conclusion.
+
+**The fix: a positive control, pre-registered, that makes the experiment fail cheap.**
+
+**Stage 1 — E1A alone, one seed, ~1.9h.** Gate, to be written into `docs/EXPERIMENT_LOG.md`
+*before* the run:
+
+> **E1 has power only if E1A's R-Precision-top3 exceeds chance. Chance over a 32-candidate pool is
+> 3/32 = 0.0938.** At or near that value, the model has not learned text conditioning at this
+> budget and no A-vs-B comparison can resolve anything.
+
+- **Clearly above chance** -> proceed to E1B and second seeds.
+- **At chance** -> **stop at 1.9h instead of 7.5h.** Then choose: more steps, smaller model, or the
+  honest conclusion that *E1 is not affordable at a budget that gives it power on this hardware*.
+  **That conclusion is itself a legitimate result** — a measured statement about what a
+  laptop-scale rebuild can and cannot establish — and it belongs in the record rather than being
+  treated as a failure to produce one.
+
+**Two supporting requirements.**
+
+1. **The ladder's criteria still say FID.** `REBUILD_SPEC.md` §6 still carries "Why FID is the
+   decisive metric and R-Precision is not," and E1B's criterion is FID-based. **SUP-32 inverted
+   that for E1** and the update has not landed. Running against a superseded criterion produces a
+   number nobody can use.
+2. **Two seeds give a range, not a spread.** Report the observed A-vs-B gap against the observed
+   within-arm range, with n=2 stated inline. Do not compute a standard deviation from two points,
+   and do not phrase the comparison as significance.
+
+**Sequencing preference given the window:** land the E1A power check and its pre-registered gate
+rather than starting anything longer. A well-specified experiment with a measured power result is a
+better handover than a 40%-complete training run that cannot be reviewed.

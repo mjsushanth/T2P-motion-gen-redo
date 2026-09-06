@@ -359,3 +359,101 @@ sweep (right answer to a question that is not this project's question).
 **Would reverse if:** a cheap explanation surfaces, or the project later needs to claim
 comparability to published numbers — at which point the n~1000 run becomes worth its cost.
 
+### D-23 — E1 as originally specified was a tautology; replaced with an A/B/C conditioning-mismatch design · CORRECTION (review pass, 2026-09-06)
+D-22 (and `REBUILD_SPEC.md` §6 before this entry) specified E1 as: compare the original's
+frame-0-only static-pose output against full-sequence generation, on the same corrected pipeline,
+deciding on FID. **This was wrong, and it was the review pass's own error to catch, not the build
+pass's.** A frame-0-only model produces a single static pose; a full-sequence model produces a
+sequence. Scoring both through a sequence-only evaluator (`third_party/text-to-motion`'s FID/R-Precision,
+built for temporal HumanML3D motion) guarantees the static-pose arm scores badly for evaluator-shape
+reasons alone, independent of whether F3's actual conditioning defect (caption truncation, frame
+selection) is present. The comparison was rigged to "succeed" before any data existed — a
+tautology, not a measurement.
+
+**What F3 actually claims, re-examined:** the original project's defect was a *conditioning
+mismatch* — the text caption paired with a single frame does not describe that frame alone,
+because (a) captions were truncated to a first-action clause and (b) the frame selected was not
+representative of the described action. Both are properties of the *input pairing*, not the
+*output space*. Measuring them does not require changing what the model predicts; it requires
+holding the output space fixed (full sequence throughout) and varying only the caption/target
+pairing.
+
+**The corrected design**, now in `REBUILD_SPEC.md` §6:
+
+| arm | caption | target | isolates |
+|---|---|---|---|
+| **E1A (control)** | full caption | full sequence | the corrected pipeline, no defect present |
+| **E1B** | first-action-clause only (the original's actual truncation rule) | full sequence | caption truncation |
+| **E1C (stretch)** | full caption | frame-0-representative conditioning | frame selection |
+
+All three arms share one output space and one evaluator, so the FID/R-Precision comparison is
+apples-to-apples — the only variable is the conditioning/pairing under test. **A vs B is the
+minimum viable E1**; C runs only if the feasibility measurement below shows budget for it.
+
+**Attribution, per the append-only convention:** the original E1 row's rationale is left in place
+in `REBUILD_SPEC.md`'s edit history (git blame) rather than deleted outright; this entry is the
+correction record. The error was the review pass's own — the design was proposed and written into
+the spec by that session, not by the build pass executing it. Recorded plainly because the
+multi-agent review protocol only works if both sides' mistakes go on the record the same way.
+
+**Would reverse if:** a reason emerges that output-space mismatch is actually what F3 is claiming
+(re-reading `FORENSICS.md`'s F3 finding does not support this — F3 is about caption/frame pairing,
+not architecture) — no such reason has surfaced.
+
+### D-24 — Training is CPU-only. MPS is unusable for this codebase. · FORCED (measured 2026-09-06)
+*(Renumbered from a collided D-23 — two sessions appended a new decision at the same number
+within the same hour; this is the later-appearing entry in file order, bumped to keep IDs
+unique. No content changed. The E1-tautology correction above keeps the D-23 slot.)*
+
+D-08 assumed torch-on-MPS would be the compute target. **Measured and refuted.** MDM's
+`diffusion.gaussian_diffusion._extract_into_tensor` indexes a float64 numpy array
+(`sqrt_alphas_cumprod`) and moves it to the timesteps' device; MPS refuses float64
+(`TypeError: Cannot convert a MPS Tensor to float64 dtype`). Reproduced deliberately on
+`--device mps`, then run on `--device cpu`, both reported — the failure was not silently worked
+around. This retroactively explains why all E0 work ran CPU-only.
+
+**Measured CPU cost:** 2.252 s/training-step (median of 8 timed steps after warmup, <7% spread),
+MDM `trans_enc` defaults, 17.88M trainable params excluding CLIP, batch 32.
+
+**Consequences.** Every wall-clock projection on this hardware is a CPU projection. D-08's
+"MPS not CUDA" guidance still holds for *inference and evaluation*, which do run on MPS, but not
+for training this architecture. `LANDMINES.md` §7's MPS non-determinism caveat does **not** apply
+to CPU training runs — which is a small mercy, since it means seed variation there is genuine
+initialisation/ordering variance rather than device noise.
+
+**Would reverse if:** MDM's diffusion schedule is patched to float32 throughout. That is a real
+option and it is not large — but it is a change to vendored numerical code, so it needs its own
+before/after equivalence check against CPU results before any number produced under it is trusted.
+
+### D-25 — SUP-02's FID-decisive rule is regime-dependent; E1/E2 gate on R-Precision instead · CORRECTION (review pass SUP-20260906-32, 2026-09-06)
+SUP-02 (`reviews/REVIEW_QUEUE.md`) established FID as the decisive metric project-wide, because
+R-Precision is saturated at the published frontier (StableMoFusion 0.841, MoMask 0.807, both
+exceeding the paper's own "Real" ground-truth row of 0.797). That argument is correct **about the
+frontier** and was wrongly generalized to every rung in `REBUILD_SPEC.md` §6, including E1/E2.
+
+**The collision:** SUP-31 (this same review pass) established, from three FID values computed on
+one bit-identical set of 128 generated motions (1.0731 / 1.3997 / 3.2909, `LANDMINES.md` §14),
+that FID's covariance estimate is rank-deficient and unusable as a decision criterion at
+generated sample counts this hardware can afford (n~128; n well above the 512-dim embedding
+would be needed, and the feasibility projection in `REBUILD_SPEC.md` §7 shows that is not
+affordable for a multi-arm, multi-seed matrix). Gating E1/E2 on FID under SUP-02's original,
+unscoped rule means those rungs cannot conclude, ever, at this project's compute scale.
+
+**The fix:** SUP-02's rule was written about published-frontier models and does not transfer
+unchanged to this project's own early, laptop-scale rungs. **For E1 and E2 specifically,
+R-Precision-top3 is decisive** (it estimates no covariance, so small n does not wreck it — proven
+directly: ground-truth R-Precision reproduced to three decimals against a 20-replication
+reference, batching noise floor ~2/128 ~ 0.016), **FID is reported as secondary**, with its n=128
+instability stated inline wherever it appears. E3 onward must re-assess, per rung, which regime
+applies (`REBUILD_SPEC.md` §6's regime note) — if a later rung's quality or affordable sample
+count approaches the published frontier, SUP-02's original FID-decisive rule re-applies.
+
+**Attribution:** this is the review pass's own correction to its own earlier finding (SUP-02),
+caught by the same session before any run used the collided rule, not a build-pass catch. Recorded
+per the append-only convention alongside D-22/D-23's precedent for reviewer self-corrections.
+
+**Would reverse if:** a later rung's generated sample count can affordably reach the range FID
+needs (roughly n in the high hundreds to low thousands per arm/seed, per the rank-deficiency
+argument), at which point FID becomes trustworthy again for that rung specifically and the
+regime note in `REBUILD_SPEC.md` §6 should be updated to say so.
+

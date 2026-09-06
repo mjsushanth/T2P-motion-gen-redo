@@ -789,3 +789,108 @@ Run window: SOFT 13:55Z / HARD 14:40Z. Now ~11:55Z, ~2h to soft stop.
     motion and only the *caption-to-target pairing* changes, which is what your original project
     actually got wrong. Caught before any training happened, by criteria I had written down an hour
     earlier for judging someone else's work.
+
+## [2026-09-06T10:20Z ACTUAL] Supervisor pass 18 — SUP-28 oversold; E0b closed for good
+
+**TIMESTAMP CORRECTION:** passes 8-17 carried hand-estimated times that drifted ahead of the clock.
+Real time is 10:20Z. **RUN_START 07:55Z, SOFT 13:55Z, HARD 14:40Z — ~3h35m to soft stop.**
+Future passes: read `date -u`, do not estimate.
+
+**SUP-31 (P2): my SUP-28 was overstated and the build pass's diagnosis is correct.** The
+fixed-reference re-score returned **FID 3.2909** — higher than round 1 (1.0731) and round 2
+(1.3997). Fixing the reference does not fix the estimator: the *generated* side is still n=128, and
+a 512-dim covariance from 128 samples is rank-deficient (rank <=127). A well-conditioned reference
+paired against a rank-deficient test covariance is its own instability. My claim that this would
+"make every future FID comparable" was wrong as stated.
+
+**Three FID values from the same bit-identical 128 motions — 1.0731 / 1.3997 / 3.2909 — is the
+cleanest demonstration in this project that a statistic can measure its own estimator rather than
+the thing under test.** Asked for it in `LANDMINES.md` §14 as a worked example; better than the
+progression table already there because generation is held constant and only the reference moves.
+
+**The artifact is still right for E1, and I said so rather than abandoning it.** Absolute value
+meaningless, *ordering* valid provided every arm uses the same reference at the same generated n —
+which is exactly E1's within-project A-vs-B comparison. `fixed_gt_reference.npz` is what makes
+E1's FID column mean anything.
+
+**Noted: the build pass had already annotated D-22 itself**, correctly, with attribution, before I
+attempted the same edit — my change was redundant and I dropped it. Append-or-annotate working in
+the direction it was designed for.
+
+**Running tally of withdrawn/corrected supervisor findings: SUP-16, SUP-17, SUP-28, plus E1's
+original specification (SUP-30 was self-caught).** Against one build-pass error (the D-03
+misstatement) and one build-pass misread (round-2 independence). Recorded deliberately.
+
+**Next:** SUP-30 — E1's A/B/C redesign and the feasibility projection. That is what I most want
+landed before the hard stop; a well-specified experiment with an honest cost estimate is a better
+pause point than a half-trained model.
+
+## [2026-09-06T10:30Z] Supervisor pass 19 — SUP-32: the ladder gates E1 on a metric E1 cannot afford
+
+**E1 redesigned to A/B/C as SUP-30 asked** — output space held identical across arms, only the
+caption-to-target pairing varies, evaluator applies without confound. Correct.
+
+**SUP-32 (P1): two of my own findings collide inside the new ladder.**
+- SUP-02 said gate on FID, not R-Precision (saturated at the frontier: StableMoFusion 0.841 and
+  MoMask 0.807 both exceed the Real row's 0.797).
+- SUP-31 established FID needs the *generated* side well above the 512-dim embedding or the
+  covariance is rank-deficient — proven by three values from one bit-identical set of 128 motions.
+
+E1B's criterion is currently FID-based. **At any generated sample count this hardware affords, that
+is unmeasurable.** From the hard datum (~39 min / 128 samples on CPU): 2 arms x 3 seeds gives
+**~3.9 h at n=128, ~15.6 h at n=512, ~31.2 h at n=1024 — generation alone, training on top.**
+
+**Resolution: for E1, invert SUP-02. Gate on R-Precision; report FID as secondary with its
+instability stated.** SUP-02's saturation argument is about *the frontier*, not about the metric.
+E1's arms will be laptop-scale, nowhere near 0.80, where R-Precision has ample range — and it is
+**stable at n=128**, which the build pass proved (GT reproduced to three decimals; batching noise
+floor +-2/128 ~ 0.016). It estimates no covariance, so sample count does not wreck it.
+
+Scoped the inversion explicitly to the low-quality regime, and asked for `docs/DECISIONS.md` to
+record that **SUP-02's guidance is regime-dependent** — written about the published frontier, does
+not transfer unchanged to a laptop-scale rebuild. That nuance was missing from my original finding;
+my correction to make, not the build pass's.
+
+**Also required of the feasibility projection: include generation, not just training.** Sampling a
+diffusion model at 1000 steps is the dominant recurring cost per arm per seed, and it is the number
+most likely to be underestimated.
+
+**Fifth supervisor correction of the run** (SUP-16, SUP-17, SUP-28, E1's original spec, now SUP-02's
+scope). Each caught before it cost a run.
+
+**Next:** E1 criteria update + feasibility projection. That is the thing I want landed before hard
+stop. Re-arm monitor. Now 10:30Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T10:40Z] Supervisor pass 20 — feasibility probe accepted; E1 staged to fail cheap
+
+**Probe accepted, and it exceeded the brief.** Real per-step timings (2.252 s/step median, <7%
+spread, MDM `trans_enc` defaults, 17.88M params, batch 32), a full extrapolation table, and — the
+part worth naming — **the MPS failure reproduced deliberately and reported** rather than silently
+falling back to CPU. Recorded as **D-23**: training is CPU-only; MDM's diffusion schedule indexes a
+float64 array and MPS refuses float64. D-08's MPS assumption is refuted by measurement. Side
+benefit: `LANDMINES.md` §7's non-determinism caveat does not apply to CPU training, so seed
+variance there is genuine.
+
+**SUP-33 (P1): declined to sign off on 3,000 steps x 4 runs as a single 7.5h commitment.**
+3,000 steps is **0.63% of MDM's published budget**. Both arms will be severely undertrained, and
+**if neither learns to use text at all, E1A and E1B look identical — a floor effect that reports as
+"no measurable difference" and reads as a finding.** That is the most likely route to a confidently
+wrong E1.
+
+**Staged instead, with a pre-registered positive control:** run E1A alone, one seed, ~1.9h, gated on
+**R-Precision-top3 exceeding chance = 3/32 = 0.0938**. Above chance -> the comparison has power,
+proceed. At chance -> **stop at 1.9h instead of 7.5h**, and treat "E1 is not affordable at a budget
+that gives it power on this hardware" as a legitimate measured result about what a laptop-scale
+rebuild can establish — which it is.
+
+Also flagged: **SUP-32's metric inversion has not landed yet** — `REBUILD_SPEC.md` §6 still says
+FID is decisive and E1B's criterion is still FID-based. Running against a superseded criterion
+produces an unusable number. And: two seeds give a **range, not a spread** — report the gap against
+the within-arm range with n=2 inline; no standard deviation from two points, no significance
+phrasing.
+
+**Handover framing set.** My window ends 14:40Z (~3h15m). A 7.5h E1 will not fit; a staged 1.9h
+E1A might. Told the build pass to prefer landing the power check plus its gate, and to write
+`LEDGER.md` for a successor with none of this conversation.
+
+**Next:** E1A power check. Re-arm monitor. Now 10:40Z; SOFT 13:55Z, HARD 14:40Z.

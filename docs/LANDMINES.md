@@ -458,6 +458,27 @@ compare FID across runs with different n. Get n comfortably above d — the publ
 `--repeat_time` averaging is partly what buys this. And before attributing an FID gap to your
 model, sweep n and confirm the gap survives.
 
+**A second, sharper illustration: three FID values from one bit-identical generated set.**
+The real-vs-real sweep above varies both sides of the comparison. This one holds the *generated*
+side completely fixed — the same 128 cached motions, scored three separate times, only the
+reference computation varying — which isolates the estimator problem from any question about
+whether generation itself is noisy:
+
+| round | what varied | FID |
+|---|---|---|
+| 1 | first ground-truth reference draw | 1.0731 |
+| 2 | ground-truth reference redrawn (generation held fixed by MDM's default deterministic seed) | 1.3997 |
+| 3 | fixed, full-scale (n=4640) ground-truth reference — same cached generated motions, zero regeneration | 3.2909 |
+
+Same 128 generated motions, three different numbers, a 3x spread top-to-bottom. Fixing the
+reference's own sample size (round 3) did not shrink the gap — it grew, because the *generated*
+side is still n=128 and a 512-dim covariance from 128 samples is rank-deficient (rank <=127)
+regardless of how well-estimated the other side of the comparison is. **The lesson is stronger
+than "get n big on both sides": a well-conditioned reference paired against a rank-deficient test
+covariance is still an unusable comparison.** Full detail in `docs/EXPERIMENT_LOG.md`'s E0b entry
+and `LEDGER.md` Item 16; the regime-dependent consequence for which metric gates E1/E2 is in
+`docs/DECISIONS.md` D-25.
+
 ---
 
 ## 15. A multi-line packed field parsed with a single split silently drops every sample after the first

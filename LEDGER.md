@@ -817,3 +817,161 @@ than adjusted to match a prior expectation.
 unexplained (a genuine open question, per D-22/Item 15); FID at achievable sample sizes on this
 hardware supports no conclusion in either direction. Moving to E1.
 
+## [2026-09-06T13:05:00] Item 17 — E1 redesigned (A/B/C conditioning-mismatch) after director's SUP-30 tautology finding; corrected in DECISIONS.md as D-23
+**Status:** complete
+**Acceptance criteria:** the director (review pass) found E1 as specified (D-22/original
+`REBUILD_SPEC.md` §6) compared frame-0-only static-pose output against full-sequence output
+through a sequence-only evaluator (`third_party/text-to-motion`) — a tautology, not a
+measurement, since the static-pose arm was guaranteed to score badly for evaluator-shape reasons
+alone regardless of whether F3's actual defect (caption truncation, frame selection) was present.
+Required fix, per the director's instruction: replace with an A/B/C design that holds the output
+space fixed (full sequence throughout, one evaluator) and varies only the caption/target pairing —
+E1A (control: full caption -> full sequence), E1B (first-action-clause caption -> full sequence,
+isolates caption truncation), E1C (stretch: full caption -> frame-0-representative conditioning,
+isolates frame selection). "A vs B is the minimum viable E1."
+**Files changed:** `REBUILD_SPEC.md` §6 (E1 row replaced with the E1A/E1B/E1C table, plus a status
+note that A+B must both run for E1 to count complete and C is budget-gated). `docs/DECISIONS.md`
+(new D-23, the correction record — states plainly the error was the review pass's own, proposed
+and written into the spec by that session, not caught by the build pass; the old E1 row's
+rationale is left in git history rather than deleted, per the append-only convention).
+**Environment changes:** none.
+**Self-critique:** I did not catch this myself before the director flagged it, despite having
+written and re-read the tautological E1 row across several turns. Worth naming: the failure mode
+was accepting "same corrected pipeline" as sufficient without asking what evaluator the two arms'
+outputs would actually pass through, and whether that evaluator's *shape assumptions* (temporal
+motion, not a single pose) were symmetric between arms. A generically useful check for future
+ablation rows: before accepting a comparison as valid, ask "what would make this arm score badly
+for reasons unrelated to the hypothesis under test."
+**Verification performed:** re-read `FORENSICS.md`'s F3 finding directly (not from memory) to
+confirm the corrected E1A/B/C design still targets what F3 actually claims — caption/frame
+*pairing*, not output-space/architecture. Confirmed: F3 is entirely about caption truncation and
+non-representative frame selection, both properties of the input pairing, so holding the output
+space fixed across arms is the correct isolation, not a dilution of the original claim.
+**Next:** measure real training feasibility before scaffolding or committing to any arm (Item 18,
+this same session) — the director's explicit ordering: measure first, decide step budget from the
+measurement, do not scaffold `src/t2p/` until a wall-clock projection exists in this ledger.
+
+## [2026-09-06T13:40:00] Item 18 — E1 training feasibility probe: real seconds-per-step measured, MPS ruled out, step-budget proposal
+**Status:** complete (measurement); step-budget decision proposed, not yet run
+**Acceptance criteria:** per the director's instruction, measure real per-training-step wall-clock
+cost on this machine BEFORE writing any E1 scaffolding or committing to a training run — training
+(forward+backward+optimizer step) is a categorically different cost than the generation-only
+sampling already measured in E0b (~39 min / 128 samples, which is 1000 *reverse-diffusion* steps
+per sample, not 1000 training steps).
+**Files changed:** `scripts/e1_training_feasibility_probe.py` (new — reuses MDM's own
+`train_args()` parser via constructed `sys.argv`, same pattern as the E0b driver reusing
+`evaluation_parser()`, so architecture/optimizer hyperparameters are MDM's real defaults, not
+hand-built guesses; builds the real `HumanML3D` train-mode dataset loader, the real
+`create_model_and_diffusion` model, and times N actual `training_losses` -> `backward` ->
+`optimizer.step()` cycles after a short untimed warmup. Produces no checkpoint and claims no
+result — a timing instrument only). `artifacts/e1/e1_training_feasibility_probe_record.json`
+(new — raw per-step timings, losses, device used).
+**Environment changes:** none (ran inside the pre-existing `mjs_mlcvdl_unified_m5` conda
+environment, same one E0a/E0b used; no new environment created, consistent with
+`REBUILD_SPEC.md` §8's "written, not created" status for `t2p-redo` itself).
+**What was measured:**
+- **MPS (Apple Silicon GPU) is not usable for training this architecture as vendored.**
+  `diffusion.gaussian_diffusion._extract_into_tensor` indexes a `float64` numpy array
+  (`sqrt_alphas_cumprod`) and moves it to the timesteps' device — MPS refuses float64
+  (`TypeError: Cannot convert a MPS Tensor to float64 dtype`). This is a real, reproduced
+  incompatibility, not a config error on this project's part; it also retroactively explains why
+  all prior E0 work ran CPU-only. Fixing it would mean patching MDM's diffusion schedule to cast
+  to float32 throughout — out of scope for a feasibility probe; noting it here as a real
+  constraint rather than silently working around it.
+- **CPU training-step cost, real architecture (trans_enc, 8 layers, latent_dim=512, 1000
+  diffusion timesteps, CLIP text encoder — MDM's true defaults, not the original failed
+  project's ~2.1M-param model): 17.88M trainable params (excl. CLIP), batch_size=32.**
+  8 timed steps after 2 warmup steps: times ranged 2.142s-2.297s, **median 2.252 s/step, mean
+  2.222 s/step** — tight spread (<7% range), a stable number to extrapolate from.
+- **Extrapolation (median 2.252 s/step, single run, no eval-during-training overhead):**
+  | steps | wall-clock, 1 run | wall-clock, 4 runs (E1A+E1B x 2 seeds) | wall-clock, 6 runs (+E1C x 2 seeds) |
+  |---|---|---|---|
+  | 1,000 | 37.5 min | 2.5 h | 3.75 h |
+  | 3,000 | 112.6 min (~1.9 h) | 7.5 h | 11.3 h |
+  | 5,000 | 187.7 min (~3.1 h) | 12.5 h | 18.8 h |
+  | 10,000 | 375.3 min (~6.3 h) | 25.0 h | 37.5 h |
+**Proposal (not yet executed — a design call the director should weigh in on before it's final):**
+3,000 steps per run, E1A + E1B only at 2 seeds each (4 runs, ~7.5h total wall-clock), E1C deferred
+unless this comes in comfortably under budget and the A-vs-B result itself calls for a third
+data point. Rationale for 3,000 steps specifically: this is a from-scratch small-model run on a
+~4.6k-sequence materialized subset (not HumanML3D's full ~23k train split, which is not yet
+materialized on disk — only the test split is, per `materialize_humanml3d_test_subset.py`), so
+matching a real training budget in the tens-of-thousands-of-steps range is neither necessary nor
+honestly framed as comparable to MDM's own published training length; 3,000 steps is a
+first-pass number chosen to be checkable in an afternoon, not derived from a convergence
+criterion — **this is a judgment call, flagged as such, and open to the director's pushback
+before it is treated as final.** Under D-19a this does not need Joel's approval to run (well
+under the "hundreds of GB / system-breaking" bar) — it needs the director's research-design
+sign-off, since step count is a methodology choice, not a resource-risk one.
+**Self-critique:** I have not yet verified whether 3,000 steps produces a model whose loss has
+actually stabilized (the 8 timed steps above show losses bouncing 0.82-1.52 with no trend
+visible over so few steps — expected at this scale, not informative about convergence). If E1A's
+loss curve at 3,000 steps still looks like pure noise, that is itself a finding requiring either
+more steps or an honest "did not converge" label on the result, not a silently accepted result.
+**Verification performed:** ran the timing probe twice in effect — once on `--device mps` (failed
+with the float64 error, confirmed reproducible, not a fluke) and once on `--device cpu`
+(succeeded, numbers reported above). Did not fabricate an MPS number or silently skip reporting
+the failure.
+**Next:** send this measurement and the proposed step budget to the director for review before
+committing to run E1A/E1B; if approved (or amended), materialize the HumanML3D train split
+(extending `materialize_humanml3d_test_subset.py`'s pattern to `train.txt`), then scaffold
+`src/t2p/`'s data-pairing logic (E1A/E1B caption construction) as a thin wrapper around this
+vendored MDM training loop — not a reimplementation of it.
+
+**Correction appended 2026-09-06T13:55:00 (review SUP-20260906-32, P1) — Item 18's projection
+above was incomplete, not wrong in what it measured, wrong in what it omitted.** It timed
+training-step cost only. The director caught, correctly, that E1's decisive metric requires
+*generating and evaluating* samples for every arm/seed too, and that generation is diffusion
+sampling at 1000 steps — the same operation E0b measured at ~39 min/128 samples — which is not a
+small addition. Two of the director's own earlier findings also collided inside the ladder this
+same review pass: SUP-02 (gate on FID) vs. SUP-31 (FID unusable at affordable n) — resolved by
+inverting to R-Precision-decisive for E1/E2 specifically (`docs/DECISIONS.md` D-25), which is
+also what keeps the *corrected* generation-inclusive projection affordable: R-Precision needs
+only n=128 to be decisive (proven stable at that n), whereas the superseded FID-decisive
+requirement would have needed n~512+ per arm/seed — compare the two generation-cost rows below.
+See `docs/DECISIONS.md` D-25 and `REBUILD_SPEC.md` §6/§7 for the corrected criteria and cost
+table; not repeating the full table here to avoid a second copy drifting out of sync.
+
+## [2026-09-06T13:55:00] Item 19 — Corrected E1 feasibility: training + generation, R-Precision-decisive regime
+**Status:** complete (measurement + design correction); still pending director sign-off before any
+real run
+**Acceptance criteria:** produce one feasibility number that actually reflects everything an E1
+run costs (training AND generation/evaluation), under the metric that will actually decide the
+rung (R-Precision, per D-25 — not FID, which Item 18 implicitly assumed by only timing training).
+**Files changed:** `REBUILD_SPEC.md` §6 (E1B/E1C success criteria inverted to R-Precision-decisive
+with FID-secondary, regime note added, "why FID is decisive" paragraph corrected in place with the
+original reasoning kept and the exception layered on top; E5's stale "E1's frame-0-HumanML3D
+result" reference fixed since E1 no longer produces a frame-0-only output under any arm); §7
+(compute estimate: training-only projection marked superseded/incomplete rather than deleted,
+replaced with a training+generation table using the E0b-measured ~39min/128-sample generation
+rate). `docs/DECISIONS.md` (new D-25, the SUP-02 regime-dependence correction; also fixed an
+accidental duplicate-ID collision — a second, independently-written "D-23" for the MPS/CPU-only
+finding was renumbered to D-24 with a note explaining why, no content changed). `docs/LANDMINES.md`
+§14 (added the three-FID-values-from-one-generated-set worked example, per the director's request
+in SUP-20260906-31, with its own decisive-vs-secondary consequence cross-referenced to D-25).
+**Environment changes:** none.
+**Corrected combined projection (training 3,000 steps/run at 2.252 s/step ~1.877h, plus
+generation+evaluation at n=128 — sufficient because R-Precision is decisive, not FID — at
+~39min/128 samples ~0.65h/run):** 4-run matrix (E1A+E1B x 2 seeds) ~10.1h; 6-run matrix (+E1C x 2
+seeds) ~15.2h. For contrast, the superseded FID-decisive path would have needed n~512+/arm/seed,
+costing ~9.8h in generation alone for just 2 arms x 3 seeds (director's SUP-32 arithmetic) before
+any training time — the R-Precision inversion is a meaningful, not cosmetic, feasibility unlock.
+**Self-critique:** this is the second time in two consecutive ledger items that a measurement I
+called complete was actually partial — Item 18 measured a real number correctly but scoped the
+question too narrowly (training cost alone) without first checking which metric would decide the
+rung and what *that* metric's own cost requirement was. The generically useful check going
+forward, stated once so it does not need restating: before calling any feasibility measurement
+"done," name the decisive metric first, then measure everything that metric's computation touches
+(sampling included, not just the model update step), not just the most obviously expensive-looking
+piece.
+**Verification performed:** re-derived the R-Precision-vs-FID sample-count argument directly from
+E0b's own numbers (ground-truth R-Precision reproduced to 0.06σ of a 20-replication reference at
+n~4640; the 2/128 batching-noise-floor figure was measured directly, not assumed) rather than
+accepting SUP-31/32's arithmetic on faith; the generation-cost multiplication (39min/128 samples
+scaled to 4 and 6 runs) is simple arithmetic, checked by hand against the table now in
+`REBUILD_SPEC.md` §7.
+**Next:** send this corrected projection and the R-Precision-decisive inversion to the director for
+sign-off (it is their own finding being incorporated, but the numeric table and doc edits are
+mine and should be checked); if confirmed, materialize the HumanML3D train split and begin
+`src/t2p/` scaffolding as a thin wrapper around vendored MDM training — still not started.
+

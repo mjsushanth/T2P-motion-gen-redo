@@ -1,0 +1,33 @@
+{
+  "device_requested": "cpu",
+  "device_used": "cpu",
+  "batch_size": 32,
+  "split_used": "test",
+  "dataset_size": 4648,
+  "n_params_millions": 17.880327,
+  "warmup_steps": 2,
+  "timed_steps": 8,
+  "step_times_seconds": [
+    2.1746052079979563,
+    2.2529944170091767,
+    2.2968983339960687,
+    2.1975537079997594,
+    2.254056457997649,
+    2.206011332993512,
+    2.251824666003813,
+    2.1424013750074664
+  ],
+  "median_seconds_per_step": 2.251824666003813,
+  "mean_seconds_per_step": 2.222043187375675,
+  "losses_seen": [
+    1.3133982419967651,
+    0.8234598636627197,
+    1.1816940307617188,
+    1.184756875038147,
+    0.9238156080245972,
+    1.5163747072219849,
+    0.9175543189048767,
+    1.1203110218048096
+  ],
+  "note": "training-step timing only, no checkpoint produced, no result claimed"
+}
