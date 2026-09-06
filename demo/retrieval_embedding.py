@@ -1,7 +1,7 @@
 """SUP-20260906-58: TF-IDF alone is a weak "just look it up" baseline -- the strongest honest
 form of retrieval uses the same validated joint text-motion embedding space this project's whole
 evaluation harness already relies on (EvaluatorMDMWrapper, ground-truth R-Precision reproduced to
-within 0.003 of a published reference across five independent runs this session). Beating TF-IDF
+within 0.0036 of a published reference across four independent full-split runs). Beating TF-IDF
 and getting "you used a weak lookup" as the reply is not good enough; beating this retriever
 leaves no such reply.
 

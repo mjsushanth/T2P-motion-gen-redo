@@ -2309,3 +2309,50 @@ before writing §21's account of them.
 generation path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it
 completes.
 
+
+## [2026-09-06T18:40:00 UTC] Item 48 — Repo-wide numeric-consistency sweep (SUP-20260906-73): DECISIONS.md fix confirmed real, one additional instance found outside the director's own sweep scope
+**Status:** complete
+**Acceptance criteria:** the director's SUP-73 stated a new standing rule — "when a number is
+corrected, the unit of correction is the repository, not the document it was noticed in;
+`git grep` the value and its paraphrases before calling the fix done" — and named one concrete
+finding under it: `docs/DECISIONS.md` (D-03's status paragraph) still carried the stale, wrongly-
+attributed "~12 CPU-hours" figure (the MDM authors' own bundled-log number for their hardware,
+silently reused earlier as if it were this project's cost) after the correct figure had already
+been fixed elsewhere (RESULTS.md, EXPERIMENT_LOG.md). Verifying meant: (1) confirm the DECISIONS.md
+instance is real, fix it; (2) `grep` the whole repo (excluding `third_party/`, `primary_source/`)
+for both this figure and the OTHER live numeric correction from this session (the 0.0036-vs-0.0044
+evaluator-reproduction figure) to check for any further instance the director's own sweep might
+have missed, since their sweep covered `reviews/`, `README.md`, `docs/00_START_HERE.md`,
+`docs/METRICS_EXPLAINED.md`, `SUPERVISOR_LOOP_PROMPT.md` but not `demo/` code.
+**Files changed:** `docs/DECISIONS.md` (D-03 status paragraph: old "the full protocol costs ~12
+CPU-hours on this hardware" replaced with the real, properly-attributed figures — ~5 CPU-hours
+for one full-scale replication (n~1000) and ~100 CPU-hours for the full 20-replication protocol,
+both derived from this project's own measured generation rate, ~39 min/128 samples; the
+checkpoint's bundled log's ~12 Hrs figure named explicitly as the *authors'* hardware, not this
+project's). `demo/retrieval_embedding.py` (module docstring, lines 1-6: "within 0.003 of a
+published reference across five independent runs this session" — the old, superseded figure —
+replaced with "within 0.0036 of a published reference across four independent full-split runs,"
+matching the wording already consistent everywhere else in the repo. This file's own sweep scope
+(`demo/`) had not been covered by the director's prior pass, since it is code, not docs — a real
+gap in scope, not a duplicate finding.)
+**Environment changes:** none.
+**Self-critique defects found:** the first broad-pattern grep (`"0\.003.*five\|five independent
+runs\|within 0.003"`) produced false positives against `SUPERVISOR_LOOP_PROMPT.md`,
+`docs/METRICS_EXPLAINED.md`, and `docs/00_START_HERE.md` — all three already correctly say
+"0.0036," and the loose pattern was simply substring-matching "0.003" inside "0.0036." Caught by
+re-reading each hit individually rather than trusting the grep count; recorded here so the false-
+positive rate of a loose sweep pattern doesn't get silently treated as three additional real
+findings.
+**Verification performed:** `git grep -n` for both figures across all tracked `.py`/`.json`/`.md`
+files outside `third_party/`/`primary_source/`; each hit read in context individually. Confirmed
+`scripts/e0b_mdm_reproduction.py` (lines 4, 145) and `artifacts/e0/e0b_mdm_reproduction_record.json`
+(line 3) already correctly attribute their own "~12 Hrs" mentions to "the author's own bundled
+eval log ... on their hardware" — no fix needed there; this was directly re-checked in this turn,
+not assumed from earlier-session context. `LEDGER.md` and `reviews/` hits for both figures are
+correction-notes quoting the old value by design (append-only record of what was wrong) and are
+correctly left as-is.
+**Next:** report back to the director: SUP-73's DECISIONS.md finding confirmed real and fixed;
+`demo/retrieval_embedding.py` flagged as a genuine additional catch outside their sweep's scope
+(code, not docs) — consistent with the day's established pattern of each side's independent pass
+catching what the other's missed. Still open: the generation path's live browser test
+(CPU-deferred), E1A seed-2's decomposition whenever it completes.

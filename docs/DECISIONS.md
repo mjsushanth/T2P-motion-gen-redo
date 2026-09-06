@@ -45,8 +45,12 @@ weights, in which case the downgrade path is taken and stated loudly, not silent
 passed and was correctly labelled "NOT the D-03 gate itself." E0b (the actual reproduction
 attempt, MDM's released checkpoint against its own published FID 0.544±.044) is the gate this
 decision names, and it missed its pre-registered ±5% tolerance (measured FID 1.0731) at a
-reduced sample size (n=128, 1 replication — the full protocol costs ~12 CPU-hours on this
-hardware). Per this decision's own fallback clause: **every number from E1 onward is
+reduced sample size (n=128, 1 replication — from this project's own measured generation rate,
+~39 min/128 samples: one full-scale replication, n≈1,000, would cost ~5 CPU-hours on this
+hardware, and the full 20-replication protocol ~100 CPU-hours; the checkpoint's own bundled log
+reports ~12 Hrs for that protocol on the *authors'* hardware, a different machine — corrected
+here per SUP-20260906-73 after the same figure was found quietly reused as if it were this
+project's own cost). Per this decision's own fallback clause: **every number from E1 onward is
 internally-comparable-only until D-03 resolves**, stated loudly wherever such numbers appear
 (`RESULTS.md`, `docs/EXPERIMENT_LOG.md`). Full diagnostic detail in `docs/EXPERIMENT_LOG.md`'s
 E0b entry — the miss is not cleanly attributable to sample size alone (a cheap runtime check
