@@ -955,7 +955,32 @@ claim about either arm alone, and testable later at higher generator quality. **
 before the control's number is known, specifically so it cannot be read as after-the-fact
 rationalization if it turns out to match.**
 
----
+**Landed 2026-09-06 (`../artifacts/e1/e1a_seed2_train_record.json`). Supplementary context only
+— does NOT reopen or revise the closed 0.80σ conclusion above (D-26); reported because it was
+already running and pre-registered, not because it changes the answer.**
+
+- **Arm A, seed 20:** R-Precision-top3 = **0.34375** (44/128) — close to E1B's 0.3438, well
+  above seed-1's 0.2969.
+- **SUP-49 decomposition control** (the same seed-20 generated motions, rescored against
+  *truncated* captions instead of the full captions they were generated from): R-Precision-top3
+  = **0.3125** (40/128) — **lower**, not higher or flat, than the full-caption score.
+- **The pre-registered prediction (above) is not supported.** "Neutral-to-helpful" would predict
+  the truncated-rescore score should match or exceed 0.34375; it came in 0.03125 lower. Binomial
+  check: SE(combined) = 0.0587, z = 0.03125 / 0.0587 = **0.53σ** — like every other gap on this
+  ladder, this is noise, not evidence against the prediction either. **The decomposition control
+  answers "is any of the A-vs-B gap explained by retrievability alone" with "not measurably, at
+  this n" — consistent with D-26, not a new result.**
+- **A second, independent confirmation of D-26's own logic, this time empirical rather than
+  projected:** seed-1 E1A (0.2969) vs seed-2 E1A (0.34375) — same arm, same training recipe,
+  different seed only — gap = 0.0469, z = **0.80σ**. This is, to three significant figures, the
+  *same* z-score as the original E1A-vs-E1B comparison (also 0.80σ). Seed-to-seed noise within
+  one arm is statistically indistinguishable in size from the cross-arm "effect" this ladder set
+  out to measure — not a theoretical projection this time, an observed instance of it. Averaging
+  E1A's two seeds ((0.2969+0.34375)/2 = 0.3203) and comparing to E1B (0.3438) narrows the gap
+  further, to 0.0235 (z = 0.46σ) — moving *closer* to indistinguishable, not further, exactly as
+  D-26 predicted seed averaging would do.
+- **Does NOT establish:** any direction for the truncation-generation question, still open per
+  D-26. Does not license running E1C or further seeds — the ladder still stops here.
 
 ## E-side finding — the standard text-motion evaluator does not generalize from 32-candidate to full-corpus retrieval (review SUP-20260906-58/62/63)
 

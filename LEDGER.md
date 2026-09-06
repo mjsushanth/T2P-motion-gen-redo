@@ -2356,3 +2356,36 @@ correctly left as-is.
 (code, not docs) — consistent with the day's established pattern of each side's independent pass
 catching what the other's missed. Still open: the generation path's live browser test
 (CPU-deferred), E1A seed-2's decomposition whenever it completes.
+
+## [2026-09-06T19:05:00 UTC] Item 49 — E1A seed-2 (SUP-49 decomposition control) completed; supplementary, does not reopen D-26
+**Status:** complete
+**Acceptance criteria:** this run was launched hours earlier (per prior agreement with the
+director) specifically as supplementary context — a second seed of arm A plus the SUP-49
+retrievability-alone decomposition control — with the explicit prior agreement that its numbers
+would be reported once available but would NOT reopen the already-closed E1 statistical
+conclusion (0.80σ, D-26). Completing the task means: recording the numbers, checking them against
+the pre-registered prediction (SUP-54, written into `docs/EXPERIMENT_LOG.md` before this run's
+number was known), and stating plainly whether anything here changes D-26 (it does not).
+**Files changed:** `docs/EXPERIMENT_LOG.md` (E1B entry: new supplementary block after the
+pre-registered SUP-54 prediction, recording seed-20 arm A's R-Precision-top3 = 0.34375, the
+decomposition control's 0.3125, the binomial check on that gap (0.53σ, not a signal — the
+pre-registered "neutral-to-helpful" prediction is not supported, though the gap is too small to
+call refuted either), and two further binomial checks: E1A seed-1 (0.2969) vs seed-2 (0.34375)
+lands at 0.80σ — the *same* z-score, to three significant figures, as the original cross-arm
+E1A-vs-E1B gap, an observed instance (not merely a projection) of seed noise matching the
+"effect" in size; and the seed-averaged E1A (0.3203) vs E1B (0.3438) narrowing to 0.46σ, moving
+closer to indistinguishable rather than resolving anything, exactly as D-26's own logic
+predicted averaging would do).
+**Environment changes:** none. Background process (pid from `e1_train_arm.py --arm a --seed 20
+...`) exited 0, per the task-completion notification.
+**Self-critique defects found:** none new — this entry deliberately avoids the trap the
+pre-registered SUP-54 note was written to guard against (fitting a story to the number after
+seeing it): the prediction was checked against the actual result and found not supported, stated
+as such, rather than reframed to fit.
+**Verification performed:** read `artifacts/e1/e1a_seed2_train_record.json` directly (not just
+the tail of the run log) for the exact `mean_dict` and `e1a_truncated_rescore_control` numbers.
+Recomputed all three binomial z-scores independently in Python rather than trusting mental
+arithmetic, matching the same SE formula used throughout E1A-power/E1B's own analysis.
+**Next:** E1's ladder is now fully closed, including its one deferred supplementary run — nothing
+further scheduled on this rung. Still open: the demo's generation path live browser test
+(CPU-deferred, no longer blocked by E1A seed-2 contention for CPU).
