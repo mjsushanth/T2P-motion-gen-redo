@@ -229,8 +229,26 @@ invalid poses through.
 **Do instead.** Parameterise in **rotation space** — joint rotations plus a fixed skeleton —
 and decode with a differentiable forward-kinematics layer. Bone lengths are then correct by
 construction, exactly, with no loss term, no reference database and no post-hoc clamping.
-This is what MDM and MotionDiffuse do. If you find yourself building a bone-length loss,
-stop and ask whether you have chosen the wrong output space.
+If you find yourself building a bone-length loss, stop and ask whether you have chosen the
+wrong output space.
+
+**Correction (2026-09-06, Stage 2 landscape research):** this entry previously claimed "this is
+what MDM and MotionDiffuse do." Checked directly against both papers — **that is not accurate.**
+MDM's own paper states its pose representation "is a sequences of human poses represented by
+either joint rotations or positions... MDM can accept motion represented by either locations,
+rotations, or both," and for its HumanML3D experiments specifically it uses "the same
+representation" as Guo et al.'s own redundant vector — i.e. joint positions, velocities, *and*
+rotations all together, predicted directly, the same representation the original failed project
+misdecoded (just correctly used here). MotionDiffuse's paper is explicit that its pose state
+"generally contains joint rotation, joint position, joint velocity, and foot contact conditions"
+and is "robust to the various motion representations" — again the redundant vector, not a
+rotation-only parameterisation. **Neither flagship model's published HumanML3D numbers rely on
+predicting rotations-only-plus-FK.** The rotation-space argument above is sound **as an
+engineering argument on its own terms** (HumanML3D's bone lengths are a verified dataset
+constant, `LANDMINES.md` §1, so a parameterisation that makes that constancy structural rather
+than learned is a real advantage) — but it should be argued from that first-principles logic, not
+from a false claim about field precedent. See `REBUILD_SPEC.md` D-11 for how this is actually
+argued.
 
 ---
 
@@ -261,3 +279,109 @@ anything published.
 published figure with it** to a stated tolerance. If you cannot, say exactly why and label
 every subsequent number as internally-comparable-only. This is Stage 3's gate and it is the
 single most important thing this project does differently from its predecessor.
+
+---
+
+## 11. Classifier-free guidance applied to the TRAINING objective
+
+**Status: VERIFIED (2026-09-05, Opus 5 supervisor audit of `DL_T2P_IMPL.ipynb` cell 47).
+This is a root-cause-grade defect on par with §1.**
+
+**The trap.** CFG is an *inference-time* extrapolation. At training time the only correct
+mechanism is **conditioning dropout**: replace the text embedding with a null embedding some
+fraction of the time (~10%) so the network learns both `eps(x,t,c)` and `eps(x,t,null)`. The
+original instead ran the guidance formula *inside the loss*:
+
+```python
+if text_embeddings is not None and guidance_scale > 1.0:
+    null_embeddings   = torch.zeros_like(text_embeddings)
+    uncond_noise_pred = self.model(noisy_poses, t, null_embeddings)
+    cond_noise_pred   = self.model(noisy_poses, t, text_embeddings)
+    predicted_noise   = uncond_noise_pred + guidance_scale * (cond_noise_pred - uncond_noise_pred)
+...
+diffusion_loss = F.mse_loss(predicted_noise, noise)
+```
+
+`self.guidance_scale` defaults to 3.0 and `train_model` ramps it 2.0 -> 7.0, so
+`guidance_scale > 1.0` is **always true** during Phase 3. This branch always ran.
+
+**Why it is fatal, not merely wrong.** Write `u = eps_uncond`, `c = eps_cond`, `w = guidance`.
+The objective is:
+
+```
+    minimise  MSE( u + w*(c - u),  eps )
+```
+
+Set `c = u = eps`. Then `u + w*(c-u) = u = eps` and **the loss is exactly zero** — for any `w`.
+That solution requires the conditional and unconditional predictions to be *identical*, which
+is to say it requires **no text dependence whatsoever**.
+
+**The training objective is fully satisfiable by a model that ignores the conditioning
+signal.** There is no gradient pressure to use the text. This is not a subtle inefficiency; it
+removes the very thing Phase 3 was built to add.
+
+**What it looks like.** Loss falls smoothly. Phase 3's loss is the lowest of the three phases
+(0.69), which reads as success. Generated poses are anatomically fine and semantically random.
+The team concludes CLIP is weak at spatial language and starts tuning guidance scales. Every
+downstream observation is consistent with a working system that just needs more capacity.
+
+**Three compounding consequences:**
+
+1. **No conditioning dropout exists anywhere in the notebook.** Both branches run on every
+   sample and both receive gradient. The null branch never learns the marginal distribution;
+   it learns whatever makes the *combination* fit. Note the deep-dive troubleshooting guide
+   says "Ensure 10% null conditioning during training" — the notes describe the correct
+   mechanism, the code does something else. See §12.
+2. **The objective function changes every epoch.** Because `w` ramps 2.0 -> 7.0 across training,
+   the quantity being minimised is literally a different function each epoch. Loss values are
+   therefore not comparable *even within a single phase*. This compounds §4.
+3. **Self-inflicted gradient instability.** At `w = 7` the two forward passes of a
+   shared-weight network carry coefficients `+7` and `-6`, largely cancelling. The
+   `5*tanh(x/5)` output squash and the gradient clipping that the project treats as
+   architectural insights are compensations for an amplification the objective created.
+
+**Do instead.** Conditioning dropout at training:
+```python
+mask = torch.rand(batch_size, device=dev) < 0.1
+cond = torch.where(mask[:, None], null_embedding, text_embeddings)
+loss = F.mse_loss(self.model(noisy, t, cond), noise)      # ONE forward pass
+```
+and apply the guidance formula **only in the sampling loop**. Prefer a *learned* null embedding
+over `zeros_like`. If you ever see a guidance scale in a training signature, that is the smell.
+
+---
+
+## 12. The same batch's statistics used to normalise the diffusion target
+
+**Status: VERIFIED (same audit). Two separate defects in one function.**
+
+**12a — per-batch normalisation of `x_0`.**
+```python
+batch_mean = batch.mean(dim=0, keepdim=True)
+batch_std  = batch.std(dim=0, keepdim=True) + 1e-5
+normalized_batch = (batch - batch_mean) / batch_std
+```
+The clean pose is renormalised **against the current batch** before noise is added. A diffusion
+noise schedule assumes a *fixed* data scale; here `x_0`'s distribution shifts every step with
+whatever 96 samples happened to be drawn. Two identical poses in different batches become
+different training targets. Dataset-level statistics computed once are the fix.
+
+**12b — one timestep applied to the whole batch.**
+```python
+estimated_clean_pose = self.noise_scheduler.scheduler.step(
+    model_output=predicted_noise,
+    timestep=t[0].item(),        # <-- t is a per-sample random vector
+    sample=noisy_poses
+).prev_sample
+```
+`t` is sampled per-sample, then **only element 0's timestep** is used to step the entire batch.
+Every sample except index 0 is denoised with the wrong noise level. That corrupted
+`estimated_clean_pose` is precisely the input to the anatomy loss — so the "Phase 2
+breakthrough" anatomy term was computed on a mis-stepped estimate for ~95 of every 96 samples.
+
+Combined with §1 (bone lengths are a dataset constant, so the anatomy loss was recovering a
+known quantity) the anatomy machinery was measuring a corrupted estimate of a constant.
+
+**Do instead.** Normalise with fixed dataset statistics. Pass the full per-sample `t` vector to
+any scheduler call. Assert it: `assert timestep.shape[0] == sample.shape[0]`.
+

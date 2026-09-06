@@ -248,8 +248,90 @@ me, and explicitly said not to act on it without Joel's instruction) that `BRIEF
 authored graded submission, without naming the co-author. Recording here for the audit trail
 only. I have not touched either file on this matter and will not unless Joel says to.
 
+## [2026-09-06T08:10:00] Item 5 — Stage 2 complete: LANDSCAPE.md, REBUILD_SPEC.md, POSITIONING.md
+**Status:** complete
+**Acceptance criteria:** deliver all three Stage 2 documents, each claim VERIFIED against a
+fetched primary source or explicitly marked UNVERIFIED; argue D-11/12/13 with evidence but leave
+`docs/DECISIONS.md` status as PENDING until the director session reviews the reasoning; propose a
+different primary task if the evidence supports it rather than defaulting to "rebuild the
+original's framing correctly," per the director's explicit widened scope.
+**Files changed:** `LANDSCAPE.md` (new — synthesizes 3 parallel research passes: text-to-motion/
+HumanML3D evaluator+published numbers; text-to-static-pose datasets + pose-as-control-signal;
+body models/tooling + text encoders). `REBUILD_SPEC.md` (new — proposes switching the primary
+task from static single-pose to full text-to-motion sequences on corrected HumanML3D, since this
+eliminates F3 by construction rather than mitigating it, and the Guo et al. evaluator gives a
+concrete, MIT-licensed, fetchable D-03 gate target; argues D-11 as redundant-vector baseline +
+rotation/FK as an ablation rung rather than the reverse; argues D-13 as CLIP-token-level baseline
++ DistilBERT ablation, T5 explicitly rejected on domain-specific evidence; full ablation ladder
+E0-E5; environment.yml written not created; risk register). `POSITIONING.md` (new — Track A [3D
+research on HumanML3D/PoseScript-derived data] has no business case, stated in those words,
+because the training data's licence forecloses it; Track B [2D pose -> image via Bonnet et al.'s
+MIT-licensed approach + ControlNet, never touching SMPL/AMASS] is plausible but unestablished,
+proposed as the "smallest demonstrable end-to-end thing").
+**Environment changes:** none. No installs performed; `environment.yml` written per D-09/D-10,
+create command printed, not run.
+**Self-critique defects found (caught before finalizing, not by an external reviewer):**
+1. `docs/LANDMINES.md` §8 and the original `docs/DECISIONS.md` D-11 both asserted "this is what
+   MDM and MotionDiffuse do" (rotation-space + FK) as justification. I checked this directly
+   against both papers before relying on it (neither of the 3 landscape research agents had been
+   asked to verify this specific architectural claim) — **it's wrong**. Both papers' HumanML3D
+   experiments predict the same redundant vector (positions + rotations + velocities together),
+   not rotation-only. Corrected `LANDMINES.md` §8 in place and re-argued D-11 in
+   `REBUILD_SPEC.md` from first-principles logic (bone lengths are a verified dataset constant,
+   so structural correctness is a real advantage) rather than false field-precedent.
+2. Checked HumanML3D's own upstream README before writing `POSITIONING.md` and found it states
+   the motion data itself (not just the processing code) inherits AMASS/SMPL's non-commercial,
+   non-redistributable licence — this wasn't asked for by name in any research agent's brief; I
+   went looking because the "business case" framing in D-17 made it clearly load-bearing.
+**Revisions made:** see Files changed. `docs/LANDMINES.md` §8 corrected in place (separate from
+the two corrections already made in Item 3).
+**Verification performed:** direct `curl`/GitHub-API license checks for
+`EricGuo5513/HumanML3D` (MIT, `primary_source/LICENSE` added, Item 4), `EricGuo5513/text-to-motion`
+(MIT — the D-03 evaluator) and `GuyTevet/motion-diffusion-model` (MIT), all this session, not
+delegated. Direct `curl`+regex fetch of MDM's (arXiv:2209.14916) and MotionDiffuse's
+(arXiv:2208.15001) own papers to check their actual output representation before relying on the
+LANDMINES §8 claim. Direct grep of `primary_source/README.md` for the AMASS distribution-policy
+statement.
+**Next:** message the director session with all three deliverables; flag the MDM/MotionDiffuse
+correction prominently since it changes D-11's argument structure, not just its wording; leave
+`docs/DECISIONS.md` D-11/12/13 as PENDING per the agreed process.
+
 ## OPEN_QUESTIONS
 
-(none currently open — the "should this session proceed to Stage 2" question is resolved: Joel
-confirmed directly. See Item 2 above.)
+- **D-11/12/13 status.** Argued in full in `REBUILD_SPEC.md` (dataset: switch to full-sequence
+  HumanML3D, not static pose; representation: redundant vector baseline + rotation/FK ablation;
+  text encoder: CLIP-token-level baseline + DistilBERT ablation). Left PENDING in
+  `docs/DECISIONS.md` pending the director session's review, per our agreed process — this is
+  the one deliberate incompleteness in an otherwise "complete" Stage 2.
+- **Task-reframing proposal** (`REBUILD_SPEC.md` §0): switching the primary research task from
+  static single-pose to full text-to-motion sequences is a real disagreement-in-waiting with the
+  original Stage 2 brief's framing (which asked to resolve "PoseScript vs corrected HumanML3D,"
+  both static-pose). Flagging prominently rather than quietly substituting one task for another.
+
+## [2026-09-06T08:30:00] Item 6 — Peer review (Review 1) of LANDSCAPE.md: 3 findings actioned
+**Status:** complete
+**Acceptance criteria:** the director session independently re-fetched and confirmed 5 load-
+bearing citations in `LANDSCAPE.md` (all exact), then raised 5 findings via
+`reviews/REVIEW_QUEUE.md` (SUP-20260906-01 through 05). Read the queue in full, act on every
+actionable finding, reply to every finding ID in `docs/REVIEW_RESPONSES.md` per the established
+protocol, edit only my own territory (never `reviews/`).
+**Files changed:** `LANDSCAPE.md` (§1.3 R-Precision-saturation note; §5.1 scope caveat on
+arXiv:2601.12809; OPEN_QUESTIONS #1 marked RESOLVED). `REBUILD_SPEC.md` (§1, §2, vendor table,
+ablation ladder, OPEN_QUESTIONS — all updated for the confirmed PoseScript/SMPL fact and the
+FID-not-R-Precision gate metric). `POSITIONING.md` (§1 rewritten to lead with the "no commercial
+product" conclusion and the three explicit exits, per the review's exact framing).
+`docs/REVIEW_RESPONSES.md` (all 5 finding IDs replied to, one per the template).
+**Environment changes:** none.
+**Self-critique defects found:** none of my own beyond what the review caught — this is the
+review doing its job, not a self-critique pass. Noting for the record that SUP-20260906-02 (the
+R-Precision saturation) was independently checkable from my own table and I hadn't remarked on
+it — a real miss, caught by the reviewer rather than by me, worth naming honestly.
+**Revisions made:** see Files changed.
+**Verification performed:** re-checked the R-Precision saturation claim directly against
+`LANDSCAPE.md`'s own table (StableMoFusion 0.841, MoMask 0.807 vs. Real 0.797) before editing —
+confirmed, not taken on the reviewer's word alone. Did not independently re-verify SUP-03's
+PoseScript-SMPL-format claim myself (stated as such in the response); flagged if that matters.
+**Next:** message the director session confirming all 5 findings actioned; Stage 2 is now
+complete pending their review of the updated documents. `docs/DECISIONS.md` D-11/12/13 remain
+PENDING as agreed.
 

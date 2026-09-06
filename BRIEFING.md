@@ -137,3 +137,38 @@ No package, no config objects, no tests, no CLI, no seeds, hardcoded Windows pat
 - Label every claim VERIFIED or UNVERIFIED. Never invent a metric, a URL, a paper result, or an
   API signature. "Unknown" beats a plausible guess.
 - Append every finding to `T2P-Reboot/LEDGER.md` as you go (append-only, timestamped).
+
+---
+
+## Findings added after Stage 1 (supervisor audit of the generative core)
+
+Stage 1 covered the data pipeline. These come from an audit of the diffusion math in
+`DL_T2P_IMPL.ipynb` cell 47, done while C1 was running the Stage 2 landscape survey.
+All three are **VERIFIED by direct code reading**; full detail in `docs/LANDMINES.md` §11-12.
+
+### F6 — CFG is applied to the training objective. [VERIFIED — root-cause grade]
+`_compute_loss` computes `u + w*(c - u)` and MSEs *that* against the true noise, with `w`
+always > 1 in Phase 3. The objective has a zero-loss solution at `c = u = eps`, which requires
+**no text dependence at all**. There is no conditioning dropout anywhere. The training signal
+does not require the model to use the caption. This is the mechanism-level explanation for
+"semantically random poses" that F1 alone does not supply — and it means Phase 3's lower loss
+is not evidence that text conditioning worked. `docs/LANDMINES.md` §11.
+
+### F7 — One timestep steps the whole batch. [VERIFIED]
+`scheduler.step(..., timestep=t[0].item(), sample=noisy_poses)` while `t` is per-sample. The
+resulting `estimated_clean_pose` — the input to the anatomy loss — is wrong for every sample
+but index 0. `docs/LANDMINES.md` §12b.
+
+### F8 — Per-batch normalisation of the diffusion target. [VERIFIED]
+`normalize_batch` rescales `x_0` against the current batch's mean and std before noising, so the
+target distribution moves every step and identical poses in different batches are different
+targets. `docs/LANDMINES.md` §12a.
+
+### Consequence for the rebuild
+F1 explains why the *poses* were wrong. F6 explains why the *text conditioning* was inert.
+Together they mean the original's three-phase narrative does not describe what happened:
+Phase 2's "anatomical breakthrough" enforced a dataset constant using a mis-stepped estimate,
+and Phase 3's "text conditioning" was trained under an objective that rewarded ignoring text.
+**Almost nothing in the original architecture is evidence about anything.** Porting its design
+decisions forward on the assumption they solved real problems is not warranted.
+
