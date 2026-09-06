@@ -1763,3 +1763,79 @@ session having already done something better.
 
 **Next:** decomposition + seed spread (~2.5h), E1 writeup, then Stage 5 with ~10h of window.
 Now 16:38Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:48Z] Supervisor pass 40 — SUP-55: pre-registration was missing a power calculation, and that was my miss
+
+**E1 formally closed by the build session** (12b628c): my arithmetic re-derived independently and
+matched exactly (z=0.805, ~1,779 samples/arm/seed for 3 sigma), D-26 written, E1B's entry moved
+PARTIAL -> RESOLVED, E1C designed-not-built, extra seeds documented as unaffordable rather than
+silently dropped.
+
+**SUP-55 (P1) — the build session's process note names a specific miss of mine.** It observed that
+E1B's pre-registration carried a hypothesis and a criterion but **no power calculation**, and that
+this is why the ceiling went unnoticed until 2.5h had been spent.
+
+**I gated on the wrong power question.** SUP-33 asked *"can the model learn anything at all?"* and
+answered it correctly with the chance gate. **It never asked "given the effect we expect, what n
+resolves it?"** Only the second question bears on whether a comparison is worth running.
+
+**The calculation that was available beforehand and would have stopped the run:** at R-Prec ~0.30,
+n=128, SE of the gap is **0.0573**, so the **minimum detectable effect at 3 sigma is 0.172**. Against
+the pilot's own predicted effects — 0.145 unattenuated gives **2.5 sigma**; a plausibly attenuated
+0.05 gives **0.9 sigma**. **Even the full undiminished pilot effect could not have reached 3 sigma at
+that n**, and every reason we had said it would be attenuated. **One minute of arithmetic, from
+numbers already in hand, before ~5 CPU-hours across two arms.**
+
+**Standing rule proposed: pre-registration is hypothesis + criterion + minimum detectable effect.**
+This project ran seven rungs on two of three. Proposed a template block carrying expected effect,
+SE at planned n, MDE at 3 sigma, and a powered/underpowered verdict — **with an explicit "why we run
+it anyway" line**, because underpowered runs are sometimes right and running one *unknowingly* is
+what turns noise into a finding. Proposed for `EXPERIMENT_LOG.md`'s template (build session's file)
+and `LANDMINES.md` beside §16/§17 as a review-discipline trap.
+
+**Second standing rule this project has gained from the build session interrogating its own process
+rather than mine** — the first being "naming a limitation versus checking whether it disables the
+check." **Both are more transferable than any domain finding either of us produced.**
+
+**Next: Stage 5.** ~9h of window. Design SUP-43, criteria pre-registered.
+Now 16:48Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:32Z] Supervisor pass 41 — Stage 5 started; reviewed the modules before the interface exists
+
+**`demo/` created:** `truncate.py`, `retrieval.py`, `generate_wrapper.py`, `render_real_motion.py`.
+**Reviewed early on purpose** — steering a design is free now and expensive after an interface is
+built on it.
+
+**Shape is right:** wraps MDM's own `generate.py` rather than reimplementing; uses the released
+checkpoint so quality is real; docstring states plainly this is *not our model* and the demo is
+about conditioning; renders the retrieval baseline as an actual moving skeleton, not a caption;
+reuses F1's corrected decode. All four match SUP-43.
+
+**SUP-56 (P1) — as built it fails its own 30-second criterion.** Generation is CPU-only, 1000
+timesteps, several minutes per call. The pre-registered criterion is comprehension in thirty seconds
+without narration; **a five-minute wait per interaction fails the one criterion I said I would hold
+hardest.** Fix: **ship pre-generated examples** so the demo opens on a working side-by-side, *then*
+offer free text with an honest progress state. Both criteria are satisfiable together — instant
+comprehension from the shipped set, uncurated failure from the free-text path — and neither alone
+does it. Told it to choose the shipped captions **before** seeing their outputs and to include one
+where the model does badly.
+
+**SUP-57 (P1) — the demo's truncation may not be the truncation we measured.** `truncate.py` runs the
+original regex over **spaCy** tags because free text has none; the pilot ran it over **HumanML3D's
+own** tags. The docstring is honest that this is "close enough for the same regex to fire the same
+way" — **but that is a load-bearing assumption**, since the demo exists to show a 0.145 effect
+measured under the other tagging. Validation is cheap: run both paths over the same HumanML3D
+captions and report the agreement rate.
+
+**SUP-58 (P2) — a weak baseline flatters the model, which is the failure SUP-43 was written to
+prevent.** TF-IDF was chosen for transparency; the instinct is right, the consequence is not. **The
+strongest form of "just look it up" is embedding retrieval, and we already have it validated in the
+evaluator's text encoder.** Beat TF-IDF and the sceptic says "weak lookup"; beat the evaluator's own
+encoder and there is no reply. Also told it: **if the baseline sometimes wins, show that** — a demo
+where the baseline occasionally beats the model is far more credible than one where it never does.
+
+**SUP-59 (P3):** spaCy/`en_core_web_sm` must reach pinned demo requirements + README download step or
+the reproducibility criterion fails at the first hurdle; `demo/README.md` is easier written alongside
+the code than reconstructed later.
+
+**Seed 2 still running.** Now 16:32Z; SOFT 01:46Z, HARD 03:16Z.

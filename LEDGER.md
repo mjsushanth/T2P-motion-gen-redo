@@ -1819,3 +1819,76 @@ supplementary), record its numbers plainly and move on. Per the director's state
 5 (the local demonstrator, designed in `reviews/` SUP-43, "demonstrate the finding, not the
 model") becomes the priority after this write-up.
 
+## [2026-09-06T16:35:00 UTC] Item 37 — Stage 5 demonstrator scaffolded: truncation, retrieval, and rendering all independently verified; live end-to-end generation not yet tested
+**Status:** in progress — backend components verified individually; the full "type a caption,
+click Generate" path (which needs MDM's checkpoint) not yet exercised, deliberately deferred
+while E1A seed 2 still holds the CPU (see Self-critique/Next below)
+**Acceptance criteria:** implement SUP-20260906-43's design (`reviews/REVIEW_QUEUE.md`) —
+type a caption, see the original project's own truncation rule applied live, generate both
+versions via MDM's released checkpoint (not this project's own undertrained model), show a
+nearest-neighbour retrieval baseline, surface the E1-pilot's real measured numbers on screen.
+**Files changed (all new):** `demo/truncate.py` (the original project's rule, faithfully ported
+from the archive — same logic as `scripts/e1_pilot_caption_truncation.py` — extended with a
+spaCy `en_core_web_sm` POS-tagging step so it runs on arbitrary free-form user text instead of
+only HumanML3D's own pre-tagged corpus). `demo/retrieval.py` (TF-IDF cosine-similarity
+nearest-neighbour baseline over the materialized corpus's real captions — deliberately simple,
+not tuned, so a viewer can trust it wasn't massaged to look good). `demo/generate_wrapper.py`
+(thin wrapper reusing MDM's own `sample/generate.py` `main()` directly — not reimplemented —
+for single-caption generation against the released checkpoint). `demo/render_real_motion.py`
+(renders an already-stored real motion for the retrieval pane, reusing MDM's own
+`recover_from_ric` decode and `plot_3d_motion` renderer). `demo/app.py` (Gradio interface tying
+all of the above together, with the measured numbers and every stated caveat — internally-
+comparable-only, checkpoint-not-ours, CPU-only-several-minutes — printed in the UI itself, not
+left to a report). `demo/README.md` (one-command reproduction instructions, requirements, and
+known limitations stated plainly, including that the two generated panes' relative quality
+cannot be attributed to truncation per D-26). `.claude/launch.json` (new — registers the demo as
+a previewable dev server for this session's browser tooling).
+**Environment changes:** installed `moviepy<2` (1.0.3 — MDM's vendored renderer imports the old
+`.editor`/`mplfig_to_npimage` API that moviepy 2.x removed), `gradio` (already present, 6.20.0),
+`spacy` + the `en_core_web_sm` model (~13MB, standard download). All small, standard packages,
+within D-19a's authorization; none touch vendored code or require re-verifying anything already
+established.
+**Two real bugs found and fixed before trusting any of this, not assumed working:**
+1. **`plot_3d_motion` does not write its own output file.** It returns a moviepy `VideoClip`
+   object; the actual `.mp4` write only happens inside `sample/generate.py`'s own
+   `save_multiple_samples()` helper, which `demo/render_real_motion.py` doesn't use (it calls
+   `plot_3d_motion` directly for a single real motion, not through the full generation pipeline).
+   First test produced no error and no file — caught because the file's existence was checked
+   directly rather than assuming a no-exception return meant success. Fixed by adding an explicit
+   `clip.write_videofile(...)` call. This also means `demo/generate_wrapper.py`'s expected output
+   filename was wrong for the same underlying reason — `save_multiple_samples` writes under its
+   "all samples" naming template (`samples_00_to_00.mp4` for a single sample), not the per-sample
+   template (`sample00_rep00.mp4`) that gets passed to (and ignored by) `plot_3d_motion`. Fixed
+   before ever having run a real generation, by reading `save_multiple_samples`'s source directly
+   rather than guessing the output path from the per-sample template's name.
+2. **A real moviepy-1.x vs. current-matplotlib incompatibility**: `FigureCanvasAgg.tostring_rgb`
+   was removed from recent matplotlib in favor of `buffer_rgba()`; moviepy 1.0.3's
+   `mplfig_to_npimage` still calls the old method. Fixed with a small, local, documented
+   monkey-patch (`demo/_mpl_moviepy_compat.py`) restoring the old method as a thin wrapper around
+   the new one — not a matplotlib downgrade (shared across other projects in this conda env) and
+   not a change to vendored MDM code.
+**Verification performed:** `demo/truncate.py` tested directly against four hand-picked
+sentences, confirming correct truncation-point selection (stops before a real CCONJ) and correct
+fallback behavior (first-sentence fallback for a caption with no conjunction). `demo/retrieval.py`
+tested against three queries, returning sensible real nearest-neighbour captions from a 24,503-
+caption corpus. `demo/render_real_motion.py` tested end-to-end on a real motion id, producing a
+verified-playable 300x300 h264 .mp4 (confirmed via `imageio` frame-reading, not just file
+existence). `demo/app.py` verified to build (`gr.Blocks` constructs without error) and to serve
+real HTML over HTTP (curl against a locally-launched instance returned 200 and a real ~36KB
+Gradio page) before being stopped again.
+**Does NOT yet establish:** that the full "type a caption, click Generate" path — which invokes
+`generate_wrapper.py` twice against MDM's actual checkpoint — works end to end. Each such call
+takes several minutes and would contend for CPU with the still-running E1A seed-2 job (Item 36);
+deliberately deferred rather than run now and risk slowing or subtly corrupting that job's own
+timing measurements. This is a real, stated gap, not a claimed-complete feature.
+**Self-critique:** per this project's own stated engineering discipline ("for UI or frontend
+changes, start the dev server and use the feature in a browser before reporting the task
+complete"), the single most load-bearing interactive path — the Generate button itself — has not
+been exercised through the actual UI yet, only its constituent pieces individually. Naming this
+gap explicitly rather than letting "everything else worked" imply the whole thing does.
+**Next:** once E1A seed 2 completes (freeing the CPU) or once a brief period of contention is
+judged acceptable, run one real end-to-end generation through `demo/app.py`'s UI (via the
+project's browser preview tooling, not just curl) with a short test caption, confirm both video
+panes and the retrieval pane render correctly in the actual interface, and only then consider
+Stage 5's core interactive path verified.
+

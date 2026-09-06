@@ -1763,3 +1763,139 @@ record table that E0b and E1A-power each got.
 
 **That is a documentation-consistency gap, not a pre-registration failure.** Naming it was right;
 grading it as equivalent to running unregistered would be over-penalising. Record it as the former.
+
+---
+
+# SUP-20260906-55 · P1 · Your process observation is right, it names a miss of mine, and it should become a standing rule
+
+**Your note — that E1B's pre-registration carried a hypothesis and a criterion but no power
+calculation, and that this is what let the ceiling go unnoticed until 2.5h was spent — is the most
+valuable thing in your message. It is also a miss of mine, and a specific one.**
+
+**I gated on the wrong power question.** SUP-33 asked *"can the model learn anything at all?"* and
+answered it properly with the 0.09375 chance gate. It never asked *"given the effect we expect, what
+n resolves it?"* Those are different questions and only the second one bears on whether the
+comparison is worth running.
+
+## The calculation that was available before E1B ran, and would have stopped it
+
+At R-Precision ~0.30 with n=128, the standard error of an A-vs-B gap is **0.0573**. So the
+**minimum detectable effect at 3 sigma is 0.172.**
+
+And we already had a predicted effect size — the pilot's, measured that morning:
+
+| expected effect | what it was | sigma at n=128 |
+|---|---|---|
+| 0.145 | pilot corpus-wide, **unattenuated** | **2.5** |
+| 0.27 | pilot conditional | 4.7 |
+| 0.05 | plausibly attenuated through an undertrained model | **0.9** |
+
+**Even the full unattenuated pilot effect reaches only 2.5 sigma at this n.** And every reason we
+had said the generation-side effect would be *attenuated* — the E1A-power entry says so explicitly.
+So the honest pre-run statement was: *"n=128 can resolve this only if the effect survives into
+generation completely undiminished, which we do not expect."*
+
+**That was computable from numbers we already had, in about a minute, before 5 hours of training
+and generation were spent across two arms.**
+
+## The rule this should become
+
+**Pre-registration is hypothesis + criterion + minimum detectable effect.** Two of three is not
+enough, and this project ran seven rungs on two of three.
+
+Concretely, every future rung's entry should carry, *before* the run:
+
+```
+Expected effect size:   <from a prior measurement, or stated as a guess and labelled one>
+Measurement SE at planned n:  <computed>
+Minimum detectable effect (3 sigma):  <computed>
+Verdict:  powered / underpowered — and if underpowered, why we are running it anyway
+```
+
+The last line matters. **Underpowered runs are sometimes worth doing** — for pipeline validation, or
+because the cost is trivial, or because a null bounds something useful. What is not acceptable is
+running one *without knowing* it is underpowered, because then a noise result gets interpreted as a
+finding. That is exactly the trap E1B set and that the 0.80 sigma check caught after the fact rather
+than before it.
+
+**This belongs in `docs/EXPERIMENT_LOG.md`'s entry template** — your file, so I am proposing rather
+than editing — **and as a `LANDMINES.md` entry** alongside §16 and §17, since like those it is a
+review-discipline trap rather than a domain one.
+
+## Credit where it is due
+
+You found this by examining *why* the failure was possible rather than just recording *that* it
+happened. That is the same move as your "naming a limitation versus checking whether it disables the
+check" line from earlier today — and it is the second standing rule this project has gained from you
+interrogating your own process rather than mine. **Both are more transferable than any of the domain
+findings.**
+
+---
+
+# Review 10 — Stage 5 demo modules (early review, before the interface is wired)
+
+**Date:** 2026-09-06 · Read `demo/{truncate,retrieval,generate_wrapper,render_real_motion}.py`.
+**Reviewed early deliberately** — steering a design costs nothing now and a great deal after an
+interface is built on it.
+
+**The shape is right.** It wraps MDM's own `generate.py` rather than reimplementing generation; it
+uses the released checkpoint so quality is real; it says plainly in the module docstring that this
+is *not our model* and that the demo is about conditioning; it renders the retrieval baseline as an
+actual moving skeleton rather than a caption; and it reuses F1's corrected decode throughout. All
+four match SUP-43.
+
+## SUP-20260906-56 · P1 · Generation takes minutes. As built, the demo fails its own 30-second criterion.
+
+`generate_wrapper.py` correctly notes CPU-only, 1000 timesteps, "several minutes per call," and that
+the UI must say so. **But the pre-registered Stage 5 criterion is "a non-specialist understands it in
+thirty seconds without narration."** A five-minute wait per interaction fails that outright — and
+the failure is in the criterion I said I would hold, not a nice-to-have.
+
+**Fix: ship pre-generated examples.** Pre-render a handful of captions — full and truncated, both
+panes, plus their retrieval matches — so the demo opens with a working side-by-side a viewer
+comprehends immediately. **Then** offer a free-text box with an honest "this takes ~N minutes"
+progress state for anyone who wants to try their own.
+
+That satisfies both criteria at once: instant comprehension from the shipped examples, and
+uncurated failure cases from the free-text path. **Neither alone does.** Choose the shipped captions
+before seeing their outputs, and include at least one where the model does poorly.
+
+## SUP-20260906-57 · P1 · The demo's truncation may not be the truncation we measured
+
+`truncate.py` applies the original's regex to **spaCy `en_core_web_sm` tags**, because free user text
+has no POS tags, while the E1-pilot applied it to **HumanML3D's own pre-tagged captions**. The
+docstring is honest that this reproduces the convention "closely enough for the same regex to fire
+the same way."
+
+**That is an assumption, and it is load-bearing** — the demo exists to show a 0.145 effect that was
+measured under the *other* tagging. If spaCy fires the rule differently, **the demo shows a
+truncation we never measured.**
+
+**Cheap validation, and you have everything for it:** run `demo/truncate.py`'s spaCy path over
+HumanML3D's own captions and compare its truncation decisions against
+`scripts/e1_pilot_caption_truncation.py`'s tag-based path on the same inputs. Report the agreement
+rate. High agreement → the demo is faithful, say so. Material divergence → either fix the tagging or
+state in the interface that the demo's rule approximates the measured one.
+
+## SUP-20260906-58 · P2 · A weak baseline flatters the model — that is the failure SUP-43 was written to prevent
+
+`retrieval.py` uses TF-IDF over captions, justified as "unglamorous, a viewer can trust it is not
+tuned to look good." The transparency instinct is right; the consequence is not.
+
+**The sceptic's question is "couldn't you just look it up?" and the strongest form of looking it up
+is embedding retrieval — which you already have, validated, in the evaluator's text encoder.** If
+the demo beats TF-IDF, the sceptic answers "you used a weak lookup." If it beats the evaluator's own
+encoder, there is no such reply.
+
+**Recommend: retrieval via the evaluator's text encoder, with TF-IDF optionally kept as a labelled
+floor.** It costs almost nothing — the encoder is already loaded elsewhere in this project — and it
+converts the baseline from a formality into a real test. **If the model loses to it on some
+captions, show that.** A demo where the baseline sometimes wins is far more credible than one where
+it never does.
+
+## SUP-20260906-59 · P3 · Two smaller things
+- **spaCy + `en_core_web_sm` is a new dependency.** Fine under D-19, but it needs to be in the demo's
+  pinned requirements and its download step in the README, or the "someone else can run it"
+  criterion fails at the first hurdle.
+- **No `demo/README.md` yet.** Not a criticism this early — flagging that the reproducibility
+  criterion lands there, and it is easier written alongside the code than reconstructed after.
