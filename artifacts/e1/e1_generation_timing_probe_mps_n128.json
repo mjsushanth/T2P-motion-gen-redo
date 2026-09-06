@@ -1,0 +1,14 @@
+{
+  "experiment": "D-27 step 3 -- generation timing probe",
+  "device_requested": "mps",
+  "device_resolved": "mps",
+  "seed": 10,
+  "batch_size": 32,
+  "num_samples_limit": 128,
+  "diffusion_steps": 1000,
+  "guidance_param": 2.5,
+  "generation_wall_clock_seconds": 403.2365777080122,
+  "seconds_per_batch": 100.80914442700305,
+  "seconds_per_sample": 3.1502857633438452,
+  "note": "freshly initialized untrained model -- timing only, not a quality measurement. Mirrors scripts/e1_train_arm.py's own generation call exactly (get_mdm_loader, same batch size, sample limit, guidance scale, diffusion steps)."
+}

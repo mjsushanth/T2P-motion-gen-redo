@@ -48,6 +48,9 @@ def dev():
     global used_device
     if th.cuda.is_available() and used_device>=0:
         return th.device(f"cuda:{used_device}")
+    # D-27: MPS usable as of the gaussian_diffusion.py::_extract_into_tensor float32 patch.
+    if th.backends.mps.is_available() and used_device>=0:
+        return th.device("mps")
     return th.device("cpu")
 
 

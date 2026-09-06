@@ -2389,3 +2389,72 @@ arithmetic, matching the same SE formula used throughout E1A-power/E1B's own ana
 **Next:** E1's ladder is now fully closed, including its one deferred supplementary run — nothing
 further scheduled on this rung. Still open: the demo's generation path live browser test
 (CPU-deferred, no longer blocked by E1A seed-2 contention for CPU).
+
+## [2026-09-06T23:15:00 UTC] Item 50 — D-24 reversed: MPS works. Two real MPS bugs found and fixed. D-26 reframed as a bounded null, then E1 CLOSED (a proposed follow-up run was independently verified as correctly powered, then retracted before launch)
+**Status:** complete
+**Acceptance criteria:** the director challenged D-24 ("MPS is unusable") directly, on the
+author's own prompt, and demonstrated the blocker (a float64-to-MPS-device transfer in
+`gaussian_diffusion.py::_extract_into_tensor`) was never tested for removability, only
+reproduced. Required of this session (SUP-20260906-76, then 77/78/79): (1) apply and verify the
+one-line patch; (2) re-run the E0a evaluator sanity check on MPS before trusting any MPS number;
+(3) time generation on MPS specifically (the actual cost-dominant term, not assumed from
+training's speedup); (4) re-derive D-26's affordability arithmetic from the two measured rates
+and state plainly whether the stopping rule holds.
+**Files changed:**
+- `third_party/motion-diffusion-model/diffusion/gaussian_diffusion.py` (`_extract_into_tensor`:
+  cast-before-transfer, D-27's patch, verified bit-identical independently before applying).
+- `third_party/motion-diffusion-model/utils/dist_util.py` (`dev()`: added an MPS branch — this
+  function only ever returned `cuda` or `cpu` before, a gap neither SUP-76 nor D-27 mentioned;
+  without this, nothing could actually reach the patched diffusion code on this machine).
+- `third_party/motion-diffusion-model/data_loaders/humanml/networks/evaluator_wrapper.py` and
+  `third_party/text-to-motion/networks/evaluator_wrapper.py` (`get_co_embeddings`/
+  `get_motion_embeddings`: same cast-after-transfer defect, a **second, independently discovered**
+  MPS bug, found only because an end-to-end validation run was executed rather than trusting the
+  E0a evaluator gate as sufficient for a different evaluator class — see self-critique below).
+- `scripts/e0_evaluator_sanity_check.py` (added `E0_DEVICE` env var, matching the existing
+  `E0_SEED` convention, to re-run the same script on MPS without duplicating it).
+- `scripts/e1_generation_timing_probe.py` (new — times MDM's generation call in isolation, on an
+  untrained model, mirroring `e1_train_arm.py`'s own generation call exactly; used for the
+  load-bearing CPU-vs-MPS generation comparison).
+- `docs/DECISIONS.md` (new D-28: gate result, measured 5.47x generation speedup vs training's
+  ~9.9x — reported separately per SUP-78, the second MPS bug and its fix, the re-derived
+  affordability table, SUP-77's bounded-null reframing of D-26 with corrected mechanistic
+  comparison number (MDM's own published *generated* score 0.611, not the ground-truth 0.797 an
+  earlier draft of the reasoning used), the regime-scoping note tying back to D-25/`LANDSCAPE.md`
+  §1.3, and the final decision: **E1 is CLOSED at n=128, no further runs**, with the retracted
+  n=384 proposal recorded next to its own retraction rather than silently dropped).
+- `docs/EXPERIMENT_LOG.md` (matching supplementary block appended to the E1B entry, in my own
+  words, not copy-pasted from any review message).
+- `docs/REVIEW_RESPONSES.md` (dispositions for SUP-76/77/78/79, each independently re-verified
+  before being marked ACCEPTED, not accepted on the reviewing session's authority alone).
+- `artifacts/e1/e1_generation_timing_probe_cpu_n32.json`, `..._mps_n128.json` (the load-bearing
+  timing records). `artifacts/e1/e1a_seed10_mps_validation_record.json` (end-to-end MPS
+  validation, arm A seed 10 — first attempt crashed on the second bug above; re-run after the fix
+  landed clean; treated as a third supplementary A-seed data point per SUP-79's own framing, not
+  as new E1 scope).
+- Housekeeping: killed a leaked, hung `load_dataset` streaming process (PID 43423, 13h37m at 0%
+  CPU, flagged by the director as safe to reap since the data was already materialized on disk).
+**Environment changes:** none (no new packages; two vendored-file patches, both authorized under
+this project's standing "replace CUDA-assuming code with MPS" mandate, D-19).
+**Self-critique defects found:** the director's own SUP-79 explicitly downgraded the end-to-end
+MPS validation run I had queued, calling it "a weaker test... the E0a check already did that job
+properly." That assessment was wrong, and running the validation anyway (rather than skipping it
+on the director's say-so) is what caught the second bug — the E0a gate and the E1 pipeline use
+two *different* vendored evaluator classes, and passing one's MPS gate does not, in fact, license
+trusting the other's MPS behavior. Recorded because it is the same shape of lesson as
+`LANDMINES.md` §16 (naming a blocker checked ≠ checking whether it actually disables the thing
+that matters), applied here to a peer's own confidence about test coverage rather than to a
+first-party claim — worth its own note if a further landmines entry is warranted later.
+**Verification performed:** every number in every SUP message (76/77/78/79) was independently
+recomputed or re-run before being accepted — the E0a gate comparison, the n/MDE table (standard
+two-proportion formula), the CPU/MPS hour table, `torch.get_num_threads()`, and the bit-identity
+of both vendored patches (unit tests plus one full end-to-end re-run after the second bug's fix).
+Nothing in this entry is asserted on the reviewing session's authority alone.
+**Next:** E1 is closed. Priority per the director's retraction message: (1) this write-up, done;
+(2) point/verify the Stage 5 demo's generation path against the pretrained MDM checkpoint it
+already uses (`demo/generate_wrapper.py`), and check whether the new MPS generation rate
+(3.15s/sample vs CPU's several-minutes) changes what's feasible in the UI — currently blocked on
+a separate, real bug: the demo's live generation has been observed hung (near-0% CPU) for over
+35 minutes after finishing its first sampling loop, not yet diagnosed; (3) no work on a full
+600k-step training run without checkpoint/resume design in place first, per the director's own
+explicit gate.

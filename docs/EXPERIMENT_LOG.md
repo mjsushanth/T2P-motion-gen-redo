@@ -982,6 +982,49 @@ already running and pre-registered, not because it changes the answer.**
 - **Does NOT establish:** any direction for the truncation-generation question, still open per
   D-26. Does not license running E1C or further seeds — the ladder still stops here.
 
+**SUPERSEDED in part (docs/DECISIONS.md D-28, review SUP-20260906-77/79): D-26's "affordably
+unresolvable" framing above was itself a defect, independent of hardware.** 1,780 samples/arm was
+the n needed to resolve **0.0469** — this run's own noise reading (0.80σ, wrong direction,
+reproducible from seed variance alone, as the seed-2 finding above shows directly). Powering an
+experiment to resolve its own noise blip is circular: the smaller the blip, the more samples it
+"needs." The actual hypothesis-motivated effect size was already measured by the E1-pilot at
+0.145-0.157 (retrieval-space truncation cost). Re-derived: n/arm at 3σ for delta=0.157 -> 159,
+0.145 -> 187, 0.0469 -> 1,781. **n=128 (what was run) is 70-80% of the n the actual hypothesis
+needs, not 7% of it.**
+
+**Restated result:** n=128 establishes a minimum detectable effect of **0.175 at 3σ, 0.117 at
+2σ**. Caption truncation's retrieval-space cost does **not propagate to generation R-Precision at
+full strength** in this regime: effects >= 0.175 are excluded at 3σ, >= 0.117 at 2σ; whether a
+smaller effect (0.05-0.10) exists is open, needing n ~ 400-1,600/arm to resolve. This is a bounded
+null, not a clean one — three caveats travel with it: (1) both arms severely undertrained (0.63%
+of MDM's budget), well above chance so not a floor artefact, but propagation may need a stronger
+generator to manifest at all; (2) retrieval-space and generation-space are different quantities,
+so attenuation is expected on theory — "not at full strength" is weaker than "absent"; (3) single
+seed per arm for the primary comparison (plus two supplementary A seeds).
+
+**A mechanistic reading (interpretation, not established fact — and corrected before being
+recorded anywhere, per SUP-79):** this project's generator scores R-Precision-top3 0.30-0.34. The
+right comparison is **MDM's own published, converged, generated score, 0.611±.007**
+(`LANDSCAPE.md` line 47) — not the ground-truth row (0.797), which an earlier draft of this
+reasoning used in error. Even MDM's real, converged model sits well below ground truth on this
+metric (a known field-wide saturation effect, `LANDSCAPE.md` §1.3); this project's model, at
+0.63% of that budget, is coarser still. R-Precision at that quality is plausibly driven by gross
+features (locomotion, speed, seated) that a first-action-clause truncation *preserves* — if so,
+the null is the expected result at this regime, not a failure to detect, and a stronger generator
+(where finer distinctions become resolvable) is what would test it.
+
+**Regime-scoping note:** D-25 gates E1/E2 on R-Precision because it survives small n, correct in
+this low-quality regime. `LANDSCAPE.md` §1.3 found R-Precision saturated at the published
+frontier and recommended FID there instead — if this project ever trains toward that frontier,
+the gate must revisit FID before trusting any convergent-model quality claim.
+
+**Decision (docs/DECISIONS.md D-28): E1 is CLOSED at n=128. No new arms, no new seeds, no E1C —
+regardless of MPS affordability (D-27 makes n~400-1,780/arm cheap, ~2-3 MPS-hours, but a tighter
+bound on this specific forensics question is not worth further compute right now).** A proposal
+to run n=384 x 2 arms x 2 seeds was made, independently verified as correctly powered, and then
+retracted before anything was launched — recorded here so the retraction is visible next to the
+proposal it retracts, not silently absent.
+
 ## E-side finding — the standard text-motion evaluator does not generalize from 32-candidate to full-corpus retrieval (review SUP-20260906-58/62/63)
 
 **Ran by:** `../demo/measure_self_retrieval.py`   **Date:** 2026-09-06   **Seeds:** 10

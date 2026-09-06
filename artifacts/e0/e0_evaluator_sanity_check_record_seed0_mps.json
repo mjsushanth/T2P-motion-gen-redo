@@ -1,0 +1,25 @@
+{
+  "experiment": "E0",
+  "description": "Evaluator harness sanity check: real-vs-real FID and matched-pair R-Precision/matching-score. NOT a reproduction of a published generated-model number (no generative model exists in this repo yet).",
+  "n_samples_subset_a_available": 2099,
+  "n_samples_subset_a_used_for_r_precision": 2080,
+  "r_precision_batch_size": 32,
+  "n_r_precision_batches": 65,
+  "n_samples_subset_b": 2099,
+  "fid_embedding_dim": 512,
+  "seed": 0,
+  "device": "mps",
+  "matching_score": 3.6056921665485087,
+  "r_precision_top1_2_3": [
+    0.4269230769230769,
+    0.6158653846153846,
+    0.7201923076923077
+  ],
+  "fid_real_vs_real_disjoint_subsets": 0.02870110275331683,
+  "checkpoint_provenance": "third-party HF re-upload (Tevior/text_mot_match), architecture-verified not cryptographically verified -- see third_party/text-to-motion/PATCHES.md",
+  "reference_paper_real_row": {
+    "r_precision_top3": 0.797,
+    "fid": 0.002,
+    "note": "paper's ground-truth-vs-itself row on the FULL test set, not directly comparable to this smaller disjoint-subset check"
+  }
+}

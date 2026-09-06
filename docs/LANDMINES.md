@@ -866,3 +866,49 @@ Each was found in this project by the same underlying practice: re-deriving a cl
 or a peer's) from source before accepting it, rather than trusting that a plausible-looking
 result, an absent hit, or a clean run meant the work was done.
 
+
+---
+
+## 22. A reproduced error is a fact about a configuration, not a property of the hardware
+
+**How it presented here.** Training on `--device mps` raised
+`TypeError: Cannot convert a MPS Tensor to float64 dtype`. This was reproduced deliberately rather
+than assumed, reported rather than silently worked around, and written up as D-24: *"Training is
+CPU-only. MPS is unusable for this codebase."* Every wall-clock estimate in the project was then
+computed from the CPU rate, and D-26 stopped an experiment partly because those estimates made it
+unaffordable.
+
+The reproduction was sound. The **generalisation from it was not.** "This code path fails on MPS
+as vendored" was written down as "MPS is unusable" — and then read by everything downstream as
+"this machine cannot do GPU training."
+
+**The tell that it was a generalisation, not a finding.** D-24 contained its own reversal clause,
+naming the fix and calling it *"a real option and it is not large."* The author of the constraint
+already knew it was probably removable and recorded that in the same breath as the constraint. The
+clause then sat untested for eight hours. **A reversal condition you can state precisely and
+cheaply test is not a caveat — it is an unrun experiment.** If you can name the test, the honest
+options are to run it or to say plainly that you chose not to and why.
+
+**What it actually cost.** The fix was one line, and provably bit-identical rather than merely
+close: `_extract_into_tensor` did `.to(device)[t].float()` — ship float64 to the device, then cast.
+Reordering to `.float().to(device)[t]` casts first. Indexing is a pure gather, so cast-then-gather
+and gather-then-cast return the same bits, and the original threw the float64 away on the very next
+operation anyway. Measured result: 2.284 s/step CPU to 0.231 s/step MPS, **9.95x**, on the same
+machine and seed. Roughly a hundred hours of projected compute was a hundred hours because of the
+order of two method calls.
+
+**The structural version.** This is §4's error (a measurement mistaken for a conclusion) relocated
+from a metric to the infrastructure — and infrastructure is where it is most dangerous, because a
+metric gets re-examined when it looks wrong, while a hardware constraint gets quietly treated as
+the shape of the world and is never revisited. Nobody re-derives the floor they are standing on.
+
+**Practice.** When an environment failure is about to become a project constraint, separate two
+claims explicitly and in writing: *this configuration fails* (a measurement) and *this capability
+is unavailable* (a conclusion that needs its own evidence). Before the second one is allowed to
+change scope, budget, or a stopping rule, cost the smallest patch that would test it. Here that was
+about fifteen minutes against a hundred projected hours.
+
+**And it was caught from outside.** No internal review pass surfaced this — the finding came from
+the author asking the obvious naive question ("MPS doesn't run here? what's going on?") that the
+people deep in the work had stopped asking, because for them it had already been settled. Settled
+is precisely the state in which a premise stops being examined.

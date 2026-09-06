@@ -58,9 +58,12 @@ class EvaluatorModelWrapper(object):
     # Please note that the results does not following the order of inputs
     def get_co_embeddings(self, word_embs, pos_ohot, cap_lens, motions, m_lens):
         with torch.no_grad():
-            word_embs = word_embs.detach().to(self.device).float()
-            pos_ohot = pos_ohot.detach().to(self.device).float()
-            motions = motions.detach().to(self.device).float()
+            # D-27/D-28: cast to float32 before the device transfer, not after -- MPS refuses
+            # float64. Provably equivalent: cast and device-transfer commute for a plain dtype
+            # conversion (no arithmetic between them), so this is bit-identical, not merely close.
+            word_embs = word_embs.detach().float().to(self.device)
+            pos_ohot = pos_ohot.detach().float().to(self.device)
+            motions = motions.detach().float().to(self.device)
 
             align_idx = np.argsort(m_lens.data.tolist())[::-1].copy()
             motions = motions[align_idx]
@@ -79,7 +82,8 @@ class EvaluatorModelWrapper(object):
     # Please note that the results does not following the order of inputs
     def get_motion_embeddings(self, motions, m_lens):
         with torch.no_grad():
-            motions = motions.detach().to(self.device).float()
+            # D-27/D-28: cast before device transfer, same equivalence as get_co_embeddings above.
+            motions = motions.detach().float().to(self.device)
 
             align_idx = np.argsort(m_lens.data.tolist())[::-1].copy()
             motions = motions[align_idx]

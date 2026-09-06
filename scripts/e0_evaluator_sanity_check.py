@@ -45,6 +45,7 @@ MAX_MOTION_LEN_FILTER = 200
 N_SAMPLES = 6000  # exceeds the test split's actual size (~4384 seqs) -- uses the whole split
 R_PRECISION_BATCH_SIZE = 32  # matches the paper's protocol: 1 correct + 31 distractors per batch
 SEED = int(os.environ.get("E0_SEED", "0"))
+DEVICE = os.environ.get("E0_DEVICE", "cpu")  # D-27: set to "mps" to re-check the CPU reference band
 
 
 def build_opt(device: torch.device) -> Namespace:
@@ -122,7 +123,7 @@ def main():
     np.random.seed(SEED)
     torch.manual_seed(SEED)
 
-    device = torch.device("cpu")
+    device = torch.device(DEVICE)
     opt = build_opt(device)
     print("Loading EvaluatorModelWrapper from", CHECKPOINTS_DIR / "t2m" / "text_mot_match")
     wrapper = EvaluatorModelWrapper(opt)
@@ -215,6 +216,7 @@ def main():
         "n_samples_subset_b": len(subset_b),
         "fid_embedding_dim": int(motion_emb_a_full.shape[1]),
         "seed": SEED,
+        "device": DEVICE,
         "matching_score": matching_score,
         "r_precision_top1_2_3": r_precision,
         "fid_real_vs_real_disjoint_subsets": fid,
@@ -229,7 +231,8 @@ def main():
     print(json.dumps(result, indent=2))
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = ARTIFACTS_DIR / f"e0_evaluator_sanity_check_record_seed{SEED}.json"
+    device_suffix = "" if DEVICE == "cpu" else f"_{DEVICE}"
+    out_path = ARTIFACTS_DIR / f"e0_evaluator_sanity_check_record_seed{SEED}{device_suffix}.json"
     with open(out_path, "w") as f:
         json.dump(result, f, indent=2)
     print("Saved:", out_path)

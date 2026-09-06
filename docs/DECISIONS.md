@@ -495,3 +495,170 @@ cost is comparable to E1B's, and the same affordability ceiling applies).
 making ~1,780 samples/arm/seed of CPU generation affordable — at which point E1B could be re-run
 at adequate power, and E1C's design (§6a) becomes worth building.
 
+
+### D-27 — D-24 is REVERSED: MPS runs, at 9.95x CPU. D-26 is reopened pending a generation measurement. · CORRECTION (measured 2026-09-06T21:41Z, author challenge)
+The author challenged "not resolvable on this hardware" and asked why MPS was ruled out and why
+no Metal/MLX alternative was pursued. The challenge is upheld. D-24's own reversal condition has
+now been executed and it reverses.
+
+**D-24's error was not the reproduction — it was the inference.** The float64 failure is real and
+C1 reproduced it honestly. What nobody did was test whether the failure was *removable*. D-24
+even names the fix in its reversal clause. It sat untested for eight hours while every downstream
+cost estimate silently inherited "CPU-only" as if it were a property of the machine.
+
+**The fix.** One line in `diffusion/gaussian_diffusion.py::_extract_into_tensor` — cast before the
+device transfer instead of after (`.float().to(device)[t]` rather than `.to(device)[t].float()`).
+This is **bit-identical, provably**: indexing is a pure gather, so cast-then-gather equals
+gather-then-cast, and the original already discarded the float64 on the next operation. The
+float64 schedule *construction* at `gaussian_diffusion.py:165` is untouched, so the "use float64
+for accuracy" rationale is preserved. Verified `th.equal` True / max abs diff 0.0 both CPU-vs-CPU
+and MPS-vs-CPU.
+
+**Measured — same machine, env, seed, session:** CPU 2.284 s/step (reproduces D-24's 2.252),
+MPS 0.231 s/step. **9.95x.** Apple M5 Pro, torch 2.13.0, batch 32, 17.88M params. Re-timed at 40
+steps with explicit `torch.mps.synchronize()`: 0.2295 s/step, timer-vs-wall gap 0.00s, no drift.
+Run under `PYTORCH_ENABLE_MPS_FALLBACK=0`, so nothing silently fell back to CPU. Step-for-step
+losses track CPU to ~1e-3 at the same seed.
+
+**On MLX / Metal alternatives.** They were never investigated, which was also a gap — but they
+turn out not to be needed and are now explicitly rejected for this project. PyTorch MPS *is* the
+Metal path: it compiles to the same Metal Performance Shaders. Porting MDM to MLX would mean
+rewriting a vendored reference implementation whose fidelity to the published model is the whole
+basis of D-03's harness gate, trading a one-line provably-equivalent patch for a from-scratch
+reimplementation that would need re-validating against every E0 number. Wrong trade. Revisit only
+if a specific op is shown to be pathologically slow under MPS.
+
+**Status of D-26 (the E1 stopping rule): REOPENED, not reversed.** D-26's affordability argument
+is dominated by *generation* cost (~9.5 min/batch on CPU), and only *training* has been re-timed.
+Generation is the same model in a 1000-step loop so a comparable speedup is plausible, but at
+batch 32 it may be launch-overhead-bound rather than compute-bound. **The ~54 min/arm/seed figure
+implied by naive 10x scaling is not a measurement and must not be quoted as one.** D-26 stands
+until generation is timed on MPS and its arithmetic re-derived from measured rates.
+
+**Standing consequence.** `LANDMINES.md` §7's MPS non-determinism caveat comes back into scope for
+any run moved to MPS, and D-24's small mercy (CPU seed variance being genuine) lapses with it.
+Before any MPS-produced number is trusted, the E0a evaluator sanity check is re-run on MPS and
+must land inside the reference band already established on CPU — bit-identity of one helper does
+not license bit-identity of a whole training run.
+
+**Would reverse if:** the E0a re-check on MPS lands outside the CPU reference band, in which case
+MPS is usable for exploration but every reported number goes back to CPU.
+
+### D-28 — Generation speedup is 5.47x, not 9.95x; D-26 is REVERSED as a bounded null, not annotated; E1 is CLOSED at n=128, no further runs · CORRECTION + JUDGEMENT (measured 2026-09-06T22:1x-23:xxZ, author-prompted)
+
+**Gate result (D-27's own precondition).** `e0_evaluator_sanity_check` re-run on MPS (seed 0):
+R-Precision-top3 0.7201923076923077 (CPU) vs identical to all displayed digits on MPS (diff
+0.0), matching score diff 4.0e-08, FID diff 7.4e-09 — against a CPU seed0-vs-seed1 spread of
+2.7e-03. The seed effect is ~67,000x the device effect. **MPS numbers from this evaluator are
+trusted.**
+
+**Generation timing (D-27 step 3, the load-bearing measurement).** Measured directly, not
+scaled from training: CPU 551.75s/batch (17.242 s/sample, batch 32, matches the historical
+~9.5 min/batch this project's cost estimates were built from), MPS 100.81s/batch (3.150
+s/sample). **5.47x** — well short of training's 9.89-9.95x, confirming the predicted
+launch-overhead effect at batch 32. **Training and generation speedups are reported
+separately from here on; there is no single "MPS speedup" number for this project.** (Caveat:
+the CPU arm was timed at n=32/one batch and MPS at n=128/four batches, so CPU warmup is less
+amortized; true steady-state CPU is somewhat below 551.75s/batch. Also, `torch.get_num_threads()`
+is 6 of this machine's 18 cores — both ratios are "against CPU as this project has actually run
+it," not against a thread-tuned baseline.)
+
+**A second real MPS bug, found by running the full pipeline rather than trusting the evaluator
+gate alone.** An end-to-end MPS validation (train+generate+evaluate arm A, seed 10, n=128 — same
+recipe as the existing CPU record) crashed: `data_loaders/humanml/networks/evaluator_wrapper.py`'s
+`get_co_embeddings`/`get_motion_embeddings` (used by every E1A/E1B run, via `EvaluatorMDMWrapper`)
+does `.to(self.device).float()` — the identical cast-after-transfer defect D-27 already fixed in
+`gaussian_diffusion.py`, in a different file. **The E0a gate above did not catch this because it
+exercises a different evaluator class** (`EvaluatorModelWrapper`, `third_party/text-to-motion/`)
+whose call site happens to already receive float32 tensors on that specific data path — the same
+`.to(device).float()` anti-pattern is present there too (confirmed by grep) but was never
+triggered by the E0a check, only by luck of dtype, not by the check having covered it. **Passing
+one evaluator's MPS gate does not license trusting a different evaluator class's MPS behavior.**
+Fixed with the same provably-equivalent cast-before-transfer reorder in both vendored files
+(`motion-diffusion-model` and `text-to-motion` copies of `evaluator_wrapper.py`); verified by
+direct unit test (`th.equal` true, MPS-vs-CPU) before re-running the crashed validation. The same
+pattern also exists, unfixed, in both vendored `trainers.py` files — not on this project's
+execution path (the evaluator networks are loaded pretrained, never retrained here), left as a
+known, flagged, unexercised instance rather than patched speculatively.
+
+**Affordability, re-derived from the two measured rates (SUP-20260906-79, independently
+recomputed and confirmed correct):**
+
+| n/arm | CPU | MPS |
+| --: | --: | --: |
+| 128 (what was run) | 2.52h | 0.30h |
+| 1,780 (D-26's original target — resolves the *observed noise blip*, 0.0469) | 10.43h | 1.75h |
+| full D-26 target, 2 arms x 2 seeds @ n=1,780 | 41.7h | 7.0h |
+
+At the measured MPS rate, even D-26's original (circular) target is one overnight run, not an
+impossibility. **D-26's stated reason to stop — "not affordable" — no longer holds as a reason.**
+
+**But SUP-20260906-77 found the deeper defect first, and it does not depend on hardware at
+all.** D-26 powered itself to resolve **0.0469** — its own noise reading, at 0.80σ, in the wrong
+direction, reproducible from seed alone (E1A seed 10 vs seed 20 differ by exactly 0.0469, the
+entire "effect," from seed variance alone). **Powering an experiment to resolve its own noise
+blip is circular.** The actual hypothesis-motivated effect size was already measured, by the
+E1-pilot, at 0.145-0.157 (retrieval-space truncation cost). Re-derived independently (matches
+SUP-77/79 to within rounding): n/arm at 3σ for delta=0.157 -> 159, 0.145 -> 187, 0.117 -> 287,
+0.100 -> 392, 0.0469 -> 1,781. **n=128 (what was run) is 70-80% of the n needed for the actual
+hypothesis, not 7% of it, as D-26's original framing implied.**
+
+**E1's result, restated (superseding D-26's "affordably unresolvable" framing):** the n=128 run
+already establishes a minimum detectable effect of **0.175 at 3σ, 0.117 at 2σ**. **Caption
+truncation's retrieval-space cost does not propagate to generation R-Precision at full strength
+in this regime: effects >= 0.175 are excluded at 3σ, >= 0.117 at 2σ; whether a smaller effect
+(0.05-0.10) exists is open**, and would need n ~ 400-1,600/arm to resolve — a number now
+affordable on MPS, but not run, per the decision below.
+
+**Three caveats that travel with this reframing — a bounded null, not a clean one:**
+1. Both arms are severely undertrained (3,000 of MDM's 475,000 steps, 0.63%). Both score well
+   above chance (0.30-0.34 vs 0.09375), so this is not a floor artefact, but propagation could
+   plausibly require a stronger generator to manifest at all — the null is regime-scoped.
+2. Retrieval-space cost and generation-space cost are different quantities; attenuation is
+   expected on theory, so "not at full strength" is weaker than "absent."
+3. Single seed per arm for the primary A-vs-B comparison (plus two supplementary A seeds, seed
+   20 and seed 10-on-MPS, the latter a bug-finding byproduct, not a design choice).
+
+**A mechanistic reading, offered as interpretation, not asserted as established — and corrected
+before being written down anywhere, per review SUP-20260906-79.** This project's own generator
+scores R-Precision-top3 0.30-0.34. The relevant comparison is **MDM's own published, converged,
+GENERATED score, 0.611±.007** (`LANDSCAPE.md` line 47) — not the ground-truth/Real row (0.797),
+which was the wrong comparison in an earlier draft of this reasoning and is corrected here before
+it propagated anywhere. Even MDM's real, converged model is well below ground truth on this
+metric (a known field-wide saturation/ceiling effect, `LANDSCAPE.md` §1.3). This project's model,
+at 0.63% of that budget, is coarser still. R-Precision at that quality is plausibly driven by
+gross features (locomotion, speed, seated) that a first-action-clause truncation *preserves* —
+if so, the null is the expected result at this regime, not a measurement failure, and says
+something real about where in the pipeline truncation damage does and does not show up. **What
+would test it:** repeat at a stronger generator, where finer distinctions become resolvable.
+
+**Regime-scoping note for whoever trains further.** D-25 gates E1/E2 on R-Precision specifically
+*because* it does not need covariance and survives small n — correct in this project's own
+low-quality regime. `LANDSCAPE.md` §1.3 found R-Precision saturated at the published frontier
+(StableMoFusion 0.841, MoMask 0.807, both exceeding the paper's own Real row, 0.797) and
+recommended FID there instead. **If this project ever trains toward that frontier (D-27 makes a
+full-budget run affordable), R-Precision will stop discriminating exactly where it would matter
+most, and the gate must revisit FID per D-25's own regime note before trusting any generation-
+quality claim from a converged model.**
+
+**Decision: E1 is CLOSED at n=128. No new arms, no new seeds, no E1C, regardless of MPS
+affordability.** A first pass proposed running n=384 x 2 arms x 2 seeds (~2-3 MPS-hours) to
+tighten the bound to 0.101σ/0.067σ — the power arithmetic for that proposal was independently
+verified correct, but the proposal was retracted (review SUP-20260906-79's own retraction) before
+being run, on different grounds: **E1 answers a forensics question about a dead project's
+specific bug** (does truncation measurably hurt generation), and a tighter bound on that question
+is not worth further compute right now, regardless of how cheap the compute has become. Nothing
+was launched under the retracted proposal.
+
+**What this actually validates, stated plainly.** A real, working, already-downloaded model sits
+on this machine: MDM's own released checkpoint, already scored by this project (E0b v2) at
+R-Precision-top3 = 0.7578 generated against 0.8125 ground truth on this project's own 128-sample
+subset — a real text-to-motion model, not a toy. The night's MPS work was spent validating
+infrastructure (two real bugs found and fixed) and re-deriving statistics for a 3,000-step
+toy comparison, while a working model sat unused. That imbalance, not the MPS work itself, is
+the actual finding worth acting on next.
+
+**Would reverse if:** a future stage needs a properly-powered propagation estimate specifically
+(not merely "would be nice") — at that point, n~400-1,600/arm on MPS is cheap and the design
+above (2 seeds/arm, matching this project's own demonstrated seed sensitivity) is ready to run
+un-retracted.

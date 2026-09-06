@@ -143,3 +143,70 @@ a caption-side story the seed spread already forecloses. Also recorded in
 decomposition control 0.3125), `artifacts/e1/e1b_train_record.json` (r_precision 0.34375, fid
 8.3402) — all matched to four significant figures before being treated as fact rather than taken
 from the message as given.
+
+### SUP-20260906-76 — D-24 (MPS unusable) is wrong; MPS runs at ~10x CPU for training
+**Disposition:** ACCEPTED
+**What changed:** Independently reproduced before applying: bit-identity of the cast-before-
+transfer patch (`th.equal` true, max abs diff 0.0, both CPU-vs-CPU and MPS-vs-CPU) and the
+original's exact failure mode on MPS. Applied the one-line patch to
+`third_party/motion-diffusion-model/diffusion/gaussian_diffusion.py::_extract_into_tensor`.
+Also patched `third_party/motion-diffusion-model/utils/dist_util.py::dev()` — a gap SUP-76 did
+not mention: this function only ever returned `cuda` or `cpu`, never `mps`, so nothing could
+actually reach the patched code path without this second fix. Re-ran `e0_evaluator_sanity_check`
+on MPS per the required gate: matched CPU to ~1e-8 (`docs/DECISIONS.md` D-28). Recorded as D-28,
+not appended to D-27, since D-27 already existed by the time this response was written.
+**Verification:** all of the above run directly, not taken on faith; results matched the
+message's own numbers to available precision.
+
+### SUP-20260906-77 — D-26 powered for its own noise blip; n=128 is a bounded null, not unresolvable
+**Disposition:** ACCEPTED
+**What changed:** Independently re-derived the entire n/MDE table from the standard two-
+proportion sample-size formula (`n = z^2 * 2p(1-p) / delta^2`, p=0.32) before accepting it —
+matched to within rounding (159/187/287/392/1781 vs the message's 159/186/286/392/1781; MDE
+0.1749 vs stated 0.175 at 3σ, 0.1166 vs stated 0.117 at 2σ). Reframed `docs/DECISIONS.md` D-26 as
+D-28 (new entry, not an edit — D-26 stays as the historical record of what was decided when) and
+appended a matching block to `docs/EXPERIMENT_LOG.md`'s E1B entry, in my own words: bounded null,
+effects >=0.175 excluded at 3σ / >=0.117 at 2σ, all three caveats carried, mechanistic reading
+offered as interpretation not fact.
+**Correction applied within this response, not propagated:** the mechanistic reading's comparison
+number (0.30-0.34 "against a published 0.797") was wrong per the message's own follow-up
+(SUP-79) — 0.797 is the ground-truth/Real row; MDM's own published *generated* score is
+0.611±.007 (`LANDSCAPE.md` line 47, verified by grep before writing). Written correctly in both
+`docs/DECISIONS.md` and `docs/EXPERIMENT_LOG.md` from the start; the wrong number was never
+committed anywhere.
+**Verification:** grepped both target files for "0.611" and "0.797" in context before writing, to
+confirm which number belongs in which comparison.
+
+### SUP-20260906-78 — the 9.95x CPU baseline used only 6 of 18 threads
+**Disposition:** ACCEPTED (noted, not acted on further)
+**What changed:** Verified directly: `torch.get_num_threads()` returns 6 on this machine
+(`sysctl hw.physicalcpu` = 18). `docs/DECISIONS.md` D-28 now states both the training (~9.9x) and
+generation (5.47x) ratios as "against CPU as this project has actually run it," per the message's
+own preferred wording, rather than an unqualified "MPS is Nx CPU."
+**Declined (for now):** running a thread-raised CPU arm specifically. The message itself says
+this changes an adjective, not a decision, and D-26/D-28's actual decision (E1 is closed, no
+further runs) does not depend on the exact ratio — recorded as a known, minor, non-blocking gap
+rather than spending more compute on it.
+
+### SUP-20260906-79 — MPS work verified; generation is 5.47x not 9.95x; recommend n=384 x 2 arms x 2 seeds (later retracted, see below)
+**Disposition:** ACCEPTED, then the run recommendation was itself retracted by the same reviewer
+before anything was launched
+**What changed:** Independently recomputed the entire CPU/MPS hour table (n=128/186/1780,
+full D-26 target) before accepting — matched exactly. Independently verified the n=384 MDE
+(0.101 at 3σ, 0.067 at 2σ) via the same formula used above — correct. Staged (but per the
+retraction, never launched) `/tmp/run_e1_n384_batch.sh` for 2 arms x 2 seeds at n=384. When the
+retraction arrived, confirmed via `ps aux` that no such process was running before treating the
+retraction as moot, and left the script unlaunched.
+**A finding this validation step surfaced that SUP-79 itself did not anticipate:** the in-flight
+MPS end-to-end validation run (a byproduct of due diligence, explicitly downgraded by SUP-79 to
+"a weaker test... not device validation, the E0a check already did that job properly") crashed —
+a second, real MPS float64 bug in `EvaluatorMDMWrapper` (used by every E1A/E1B run), not caught
+by the E0a gate because the E0a check exercises a *different* evaluator class
+(`EvaluatorModelWrapper`) whose specific call site happens to receive float32 tensors already.
+The same `.to(device).float()` anti-pattern is present in that class too (confirmed by grep) but
+was never triggered — passing one evaluator's MPS gate did not, in fact, license trusting a
+different evaluator class's MPS behavior, contrary to SUP-79's assessment. Fixed both (see
+`docs/DECISIONS.md` D-28), unit-tested (`th.equal` true), then re-ran the crashed validation once
+more to confirm the fix end-to-end rather than trusting the unit test alone.
+**Retraction honored:** no n=384 run was launched, before or after the retraction message
+arrived. E1 closed at n=128 per D-28.
