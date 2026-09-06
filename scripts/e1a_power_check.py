@@ -9,6 +9,13 @@ Not the E1 result itself -- a cheap (~1.9h training + ~0.65h generation/eval) ch
 this training budget gives E1's A-vs-B comparison any power at all, before spending the full
 matrix's wall-clock (review SUP-20260906-33).
 
+Trains on the materialized TRAIN split, evaluates on the materialized TEST split (review
+SUP-20260906-37): an earlier version of this script trained and evaluated on the same subset,
+which lets an above-chance R-Precision result reflect memorisation of the training pairs rather
+than generalisable text conditioning -- disabling for a check whose only job is detecting real
+learning, not a milder version of the same signal. Requires the train split to already be
+materialized via `materialize_humanml3d_test_subset.py --split train`.
+
 Reuses vendored MDM machinery throughout (train_args() parser, create_model_and_diffusion,
 ClassifierFreeSampleModel, get_mdm_loader, EvaluatorMDMWrapper, eval_humanml.evaluation) --
 the same pattern as scripts/e0b_mdm_reproduction.py and scripts/e1_training_feasibility_probe.py.
@@ -36,6 +43,8 @@ def main():
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--num-samples-limit", type=int, default=128)
     ap.add_argument("--seed", type=int, default=10)
+    ap.add_argument("--train-split", type=str, default="train")
+    ap.add_argument("--eval-split", type=str, default="test")
     ap.add_argument("--out-json", required=True)
     ap.add_argument("--log-every", type=int, default=200)
     my_args = ap.parse_args()
@@ -78,10 +87,9 @@ def main():
     device = dist_util.dev()
     print(f"device: {device}")
 
-    print("loading training data (split=test, only split materialized on disk -- caveat "
-          "recorded in docs/EXPERIMENT_LOG.md's E1A-power entry)...")
+    print(f"loading training data (split={my_args.train_split})...")
     train_data = get_dataset_loader(name="humanml", batch_size=my_args.batch_size,
-                                     num_frames=None, split="test", hml_mode="train")
+                                     num_frames=None, split=my_args.train_split, hml_mode="train")
     print(f"train dataset size: {len(train_data.dataset)} sequences")
 
     print("creating model and diffusion...")
@@ -137,9 +145,9 @@ def main():
     sample_model.to(device)
 
     gt_loader = get_dataset_loader(name=args.dataset, batch_size=32, num_frames=None,
-                                    split="test", hml_mode="gt")
+                                    split=my_args.eval_split, hml_mode="gt")
     gen_loader = get_dataset_loader(name=args.dataset, batch_size=32, num_frames=None,
-                                     split="test", hml_mode="eval")
+                                     split=my_args.eval_split, hml_mode="eval")
 
     t_gen_start = time.perf_counter()
     motion_loader, mm_motion_loader = get_mdm_loader(
@@ -180,6 +188,8 @@ def main():
                        "docs/EXPERIMENT_LOG.md's E1A-power entry.",
         "num_training_steps": my_args.num_steps,
         "seed": my_args.seed,
+        "train_split": my_args.train_split,
+        "eval_split": my_args.eval_split,
         "batch_size": my_args.batch_size,
         "num_samples_limit": my_args.num_samples_limit,
         "n_params_millions": n_params / 1e6,
@@ -192,8 +202,10 @@ def main():
         "r_precision_top3_ground_truth": r_prec_gt[2] if r_prec_gt is not None else None,
         "fid_e1a_vs_ground_truth": fid_e1a,
         "gate_result": "above_chance" if above_chance else "at_or_near_chance",
-        "note": "training and evaluation used the same materialized subset (test split) -- "
-                "see docs/EXPERIMENT_LOG.md E1A-power entry's Does-NOT-establish line.",
+        "note": f"trained on split={my_args.train_split}, evaluated on split={my_args.eval_split} "
+                "(disjoint materialized subsets, per review SUP-20260906-37) -- an above-chance "
+                "result here reflects held-out generalisation, not memorisation of the training "
+                "captions/motions.",
     }
     with open(my_args.out_json, "w") as f:
         json.dump(result, f, indent=2)

@@ -451,9 +451,26 @@ to report the exhausted-leads status first. Still open, lower priority: fix the
 ## E1A-power — pilot power check, PRE-REGISTERED before running (review SUP-20260906-33)
 
 **Ran by:** `../scripts/e1a_power_check.py`   **Date:** 2026-09-06   **Seeds:** 10 (MDM default, single seed — this is a power check, not the E1A result itself)
-**Data:** HumanML3D test-split materialized subset (`third_party/motion-diffusion-model/dataset/HumanML3D/`, 4648 sequences — the only split materialized on disk right now; training and evaluating on the same subset is a real limitation, stated in "Does NOT establish" below, not hidden)
+**Data:** HumanML3D train-split materialized subset for training, test-split materialized subset
+for evaluation (`third_party/motion-diffusion-model/dataset/HumanML3D/`) — **corrected before
+running (review SUP-20260906-37)**, see note below.
 **Record:** `../artifacts/e1/e1a_power_check_record.json` (to be written by the run)
 **Status:** PRE-REGISTERED, not yet run
+
+**CORRECTION, before any run happened (review SUP-20260906-37, 2026-09-06):** this entry
+originally specified training and evaluating on the same materialized subset (test — the only
+split on disk at the time), with the limitation stated in "Does NOT establish" below as
+"necessary but weaker" than held-out generalization. **That framing was wrong, not just weaker:**
+a model can score above the 0.09375 chance threshold purely by memorising which of ~4,648
+training captions pairs with which training motion, which is exactly what evaluating on the same
+split would measure — the gate could pass for a reason unrelated to the question it exists to
+answer (does this budget teach generalisable text conditioning), disabling the check rather than
+weakening it. Fixed by materializing a real, disjoint HumanML3D train subset
+(`materialize_humanml3d_test_subset.py --split train`, train ids prefixed `train_sample######`
+so they cannot collide with the existing test files) and rewiring `e1a_power_check.py` to train
+on `split=train`, evaluate on `split=test`. **The hypothesis and the 0.09375 success criterion
+below are unchanged** — only the split wiring was wrong, not the gate itself. Original text below
+left as originally written, per the append-only/correction convention, with this note governing.
 
 **Why this run exists, before any A-vs-B comparison:** the director (review pass, SUP-20260906-33)
 pointed out that E1's proposed budget (3,000 training steps) is 0.63% of MDM's published

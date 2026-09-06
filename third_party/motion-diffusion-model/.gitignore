@@ -144,3 +144,4 @@ slurm**/
 # the upstream repo's own convention of not committing dataset/HumanML3D/ contents.
 dataset/HumanML3D/
 dataset/t2m_test.npy
+dataset/t2m_train.npy

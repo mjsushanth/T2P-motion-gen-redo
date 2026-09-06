@@ -1056,3 +1056,43 @@ Now 10:50Z; SOFT 13:55Z, HARD 14:40Z (~3h50m).
     *actually* truncated is roughly **0.26 — about sixteen times noise**. That is a clean,
     defensible answer to one half of what went wrong, obtained without the ten-hour experiment
     originally planned to get it.
+
+## [2026-09-06T10:58Z] Supervisor pass 25 — SUP-42: loss reference is a floor detector, and F6 is why
+
+**Build pass landed all three fast checks (e8ee6f0):** E1-pilot (reviewed, Review 7), the
+converged-loss reference, and the train-on-test kill + materializer extension.
+
+**Converged-loss reference measured:** MDM's 475k-step checkpoint scores **mean 0.0563 / median
+0.0522** on the same `training_losses` call, same batch distribution, same seeding. Untrained init
+~1.1-1.4. **~21x range, ~3.06 nats.** That is what SUP-35 asked for and it is well done.
+
+**SUP-42 (P1): it must not substitute for the R-Precision gate, and the reason is F6.** The original
+project's model drove loss down smoothly under an objective that placed **no requirement on using
+text at all**. A diffusion model reduces loss substantially by learning the *unconditional* motion
+distribution while ignoring conditioning. **Loss falling is evidence of training, not of text
+conditioning.** The two instruments answer different questions and both are required. **A model at
+3,000 steps could show a healthy loss drop and still sit at chance on R-Precision — that is not
+pathological, it is exactly F6's regime**, and if it happens the gate correctly fails.
+
+Gave a log-space reporting formula so the trace is interpretable rather than eyeballed:
+`log(L_init/L_obs)/log(L_init/L_conv)`. Loss 1.0 -> 6%, 0.8 -> 13%, 0.5 -> 29%, 0.3 -> 45%,
+0.15 -> 68%, 0.08 -> 89%. Caveated that loss is not linear in sample quality and the fraction bounds
+"still at init" only.
+
+Also flagged the **4,000-sample train subset** (17% of HumanML3D's train split, ~24 epochs at 3,000
+steps) as a small-data-regime limitation for "Does NOT establish"; and noted train-on-train /
+eval-on-test now disposes of SUP-37's memorisation concern outright.
+
+**The build pass's own account of the SUP-37 miss is the best line produced today, either side:**
+*"that's the gap between naming a limitation and checking whether the limitation disables the
+check."* Asked for it in `LANDMINES.md` as a standalone entry — every existing entry there is a
+domain trap; **this is a review-discipline trap**, and the repository has now produced a documented
+instance. The subtlety worth preserving: it had flagged the issue *in writing*, which is what made
+both of us read the flag as the handling. A disclosed limitation is not a handled one, and
+disclosure can manufacture false comfort precisely because it looks like rigour.
+
+**Still open, both minutes:** SUP-39 re-slice (conditional effect ~0.26, 16x noise) and SUP-38
+length-matched control. Both cheaper than the train-split stream already in flight.
+
+**Next:** those two, then the real power check once train materialisation completes.
+Now 10:58Z; SOFT 13:55Z, HARD 14:40Z (~3h40m).

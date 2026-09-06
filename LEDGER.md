@@ -1098,3 +1098,37 @@ code change still needed, not just a flag flip), then run the real power check w
 pre-registration itself does not need to change, only the train/eval split wiring inside the
 script that was supposed to implement it).
 
+## [2026-09-06T10:58:00 UTC] Item 22 — Train split materialized (4,000 sequences); real E1A power check launched, train-on-train/eval-on-test
+**Status:** in progress (real run launched, background, ~2.5-3h expected, not yet complete)
+**Acceptance criteria:** per Item 21/SUP-37, materialize a real HumanML3D train subset disjoint
+from the existing test subset, rewire `e1a_power_check.py` to train on it and evaluate on the
+existing test subset, then run the actual pre-registered 0.09375 gate for real.
+**Files changed:** `scripts/materialize_humanml3d_test_subset.py` (ran with `--split train
+--n-samples 4000`). `scripts/e1a_power_check.py` (added `--train-split`/`--eval-split` args,
+defaulting to `train`/`test`; removed the stale "only split materialized" caveat text; result
+JSON now records which split was used for which role). `docs/EXPERIMENT_LOG.md` (E1A-power
+entry: added a correction note, original pre-registration text left in place per the append-only
+convention, since the hypothesis/criterion did not change — only the split wiring that was
+supposed to implement them was wrong).
+**Environment changes:** materialized 4,000 new HumanML3D train sequences to
+`third_party/motion-diffusion-model/dataset/HumanML3D/{new_joint_vecs,texts}/train_sample*`
+and `dataset/HumanML3D/train.txt`, streamed from HF `TeoGchx/HumanML3D` train split (not
+bulk-downloaded). Confirmed on disk directly (`ls | grep -c train_` = 4000, `wc -l train.txt`
+= 4000) rather than trusting the script's own exit status alone — the streaming process hung
+after finishing all writes (likely the HF streaming iterator/prefetch not tearing down
+promptly once the target count was reached) and had to be killed once the on-disk state was
+independently confirmed complete.
+**Verification performed:** counted materialized files directly before killing the hung process,
+so the kill was based on observed on-disk completeness, not assumed.
+**Now running:** `scripts/e1a_power_check.py --num-steps 3000 --train-split train --eval-split
+test`, launched 10:58 UTC via the harness's own background-task tracking (not a detached nohup —
+an earlier attempt was killed and relaunched this way specifically so its completion generates a
+proper notification rather than requiring manual polling). Output streaming to
+`artifacts/e1/e1a_power_check_run.log`; the script's own JSON record will land at
+`artifacts/e1/e1a_power_check_record.json` on completion. Expected wall-clock ~2.5-3h (1.877h
+training + ~0.65h generation/eval + evaluator overhead), within the director's stated ~14:40Z
+stop window (started 10:58Z).
+**Next:** report the real gate result (above chance / at-or-near chance) honestly in
+`docs/EXPERIMENT_LOG.md`'s E1A-power entry and to the director the moment it lands; do not start
+any further E1 scaffolding or the full A/B matrix until this result is in and reviewed.
+

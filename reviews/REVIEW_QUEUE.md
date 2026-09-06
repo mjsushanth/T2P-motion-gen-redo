@@ -1032,3 +1032,70 @@ fallback-vs-conjunction branch split. And stating up front that a *larger* or op
 result "would be the more informative outcome and should be flagged rather than absorbed quietly" —
 that is pre-registering how to react to a surprise, which is rarer than pre-registering the
 prediction itself.
+
+---
+
+# SUP-20260906-42 · P1 · The converged-loss reference is a floor detector, not a quality predictor — and F6 is exactly why
+
+**The reference itself is good and I accept it.** MDM's 475k-step checkpoint scores mean 0.0563 /
+median 0.0522 on the same `training_losses` call and batch distribution, same seeding; untrained
+init sits ~1.1-1.4. That is a ~21x range and it gives E1A's trace something to be read against,
+which is what SUP-35 asked for.
+
+**But it must not be allowed to substitute for the R-Precision gate, and the reason is this
+project's own central finding.**
+
+**F6 established that the original project's model could drive its training loss down smoothly
+while the objective placed no requirement on using the text at all.** A diffusion model reduces
+loss substantially by learning the *unconditional* motion distribution — how bodies move in
+general — and can do that while ignoring conditioning entirely. **Loss falling is evidence of
+training. It is not evidence of text conditioning.**
+
+So the two instruments answer different questions and both are needed:
+
+| instrument | answers | fails to answer |
+|---|---|---|
+| converged-loss reference | **did it train at all?** is the model still at init? | whether any of that learning is *text-conditioned* |
+| R-Precision vs 0.09375 | **did it learn to use the caption?** | how far from convergence it is |
+
+**A model at 3,000 steps could plausibly show a large loss drop and still sit at chance on
+R-Precision** — that is not a pathological case, it is precisely the regime F6 documented. If that
+happens, the honest reading is "the model learned motion but not text conditioning at this budget,"
+and the power gate correctly fails. **Do not let a healthy-looking loss curve override it.**
+
+## How to report the loss comparison
+
+Raw loss values are hard to interpret across two orders of magnitude. **Report progress as a
+log-space fraction toward the converged reference:** `log(L_init / L_observed) / log(L_init /
+L_converged)`. Against init 1.2 and converged 0.0563 that gives roughly:
+
+| observed loss | ~% of the way to MDM's converged loss |
+|---|---|
+| 1.0 | 6% |
+| 0.8 | 13% |
+| 0.5 | 29% |
+| 0.3 | 45% |
+| 0.15 | 68% |
+| 0.08 | 89% |
+
+That converts "3,000 steps is a judgment call" into a stated fraction — which is what SUP-35 was
+for. **State alongside it that loss is not linear in sample quality**, and that this fraction
+bounds "are we still at initialisation," nothing more.
+
+## Two smaller notes
+
+- **The 4,000-sample train subset is a real limitation and belongs in "Does NOT establish."**
+  HumanML3D's train split is ~23k; 3,000 steps at batch 32 is ~24 epochs over 4,000 sequences.
+  Training on a 17% subset is defensible under the compute constraint, but the result is about a
+  small-data regime and should say so.
+- **Train-on-train / eval-on-test is now correct**, and it also disposes of the memorisation
+  concern from SUP-37 — memorising the train split does not raise test R-Precision. Good.
+
+## Commended, and worth quoting into the record
+
+Your own account of the SUP-37 miss: *"that's the gap between naming a limitation and checking
+whether the limitation disables the check."* **That sentence is the most transferable thing either
+of us has written today.** It generalises well past this project — a disclosed limitation is not a
+handled one, and the disclosure can create false comfort precisely because it looks like rigour.
+Consider it for `LANDMINES.md` as a standalone entry; it is not a domain trap, it is a
+review-discipline trap, and this repository has now produced a documented instance of it.
