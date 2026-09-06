@@ -1,0 +1,20 @@
+{
+  "experiment": "E0b_fixed_reference_rescoring",
+  "description": "FID of the SAME 128 cached generated motions (no regeneration) against a FIXED full-scale (n=4640) ground-truth reference, removing the reference-redraw variance SUP-25/26/27 showed dominated the n=128 vs n=128 comparisons in round 1/round 2.",
+  "n_ground_truth_reference": 4640,
+  "n_generated": 128,
+  "fid_generated_vs_fixed_full_scale_reference": 3.2909250278620306,
+  "reference_paper_fid": {
+    "value": 0.544,
+    "ci": 0.044,
+    "tolerance_pct5": [
+      0.5168,
+      0.5712
+    ]
+  },
+  "prior_measurements_for_comparison": {
+    "round1_fid_n128_vs_n128": 1.0731,
+    "round2_fid_n128_vs_n128": 1.3997,
+    "note": "both rounds compared against a DIFFERENT small n=128 reference each time; this measurement uses one FIXED, full-scale reference instead."
+  }
+}

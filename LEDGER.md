@@ -742,26 +742,78 @@ just harness/evaluator validation. Real new scope; assessing shape before starti
 
 ## OPEN_QUESTIONS (current)
 
-- **The E0b generation anomaly, per D-22 — a live open question, not dropped.** Generated
-  motions from MDM's own released checkpoint, under this project's harness, score R-Precision-top3
-  ~3.5σ **above** the published/reference value (0.7578-0.7578 across two runs vs. reference
-  0.611) while FID scores ~2x **above** (worse) the published value (1.07-1.40 vs. 0.544). Every
-  cheap explanation has been checked and eliminated: guidance scale (2.5, matches exactly),
-  diffusion steps (1000, no respacing), sampler (`p_sample_loop`, not DDIM), CFG wrapping (once,
-  not doubled), batch size (32, correctly overriding the checkpoint's own 64), generated motion
-  length distribution (matches ground truth closely), caption uniqueness (128/128 unique),
-  caption-to-motion scoring pairing (verified correct by code inspection), subset-composition/
-  easier-retrieval-task (refuted — would inflate ground-truth R-Precision too, and it doesn't:
-  0.06σ off reference), single-replication noise (refuted — pattern reproduces across two
-  independent runs, and the author's own 20-replication spread doesn't reach either of our
-  FID values). **Cost to close: ~5 CPU-hours at n~1000 (full protocol scale).** Deliberately not
-  spent, per D-22 — the ground-truth reproduction already establishes this project's harness is
-  correct, which is the property internal comparisons (E1 onward) actually depend on; closing
-  this question would buy comparability to the published ladder specifically, judged not worth
-  the cost against E1's value. Revisit if a cheap explanation surfaces later, or if the project
-  ever needs to claim comparability to MDM's published numbers specifically.
+- **The E0b generation anomaly, per D-22 — a live open question, not dropped. CORRECTED
+  2026-09-06 (Item 16): the FID and R-Precision halves of this question are NOT the same
+  strength of finding — split below, do not re-merge them.**
+  - **R-Precision: real, unexplained.** Generated motions score R-Precision-top3 = 0.7578,
+    ~9x the observed ground-truth-batching noise floor (measured directly: GT R-Prec moved by
+    only 2/128 ~= 0.016 between two runs with generation held fixed) above the published/
+    reference value of 0.611. Every cheap explanation checked and eliminated: guidance scale
+    (2.5, matches exactly), diffusion steps (1000, no respacing), sampler (`p_sample_loop`, not
+    DDIM), CFG wrapping (once, not doubled), batch size (32, correctly overriding the
+    checkpoint's own 64), generated motion length distribution (matches ground truth closely),
+    caption uniqueness (128/128 unique), caption-to-motion scoring pairing (verified correct by
+    code inspection), subset-composition/easier-retrieval-task (refuted — would inflate
+    ground-truth R-Precision too, and it doesn't: 0.06σ off reference).
+  - **FID: no conclusion available, in either direction.** Two rounds' FID (1.0731, 1.3997)
+    were wrongly read as "reproducing across independent runs" — they don't; MDM's default seed
+    makes generation deterministic, so both rounds scored the *same* generated motions, and only
+    the ground-truth reference redrew between them. That redraw alone swung FID 30%. A
+    fixed-reference rescoring (full n=4640 reference, same cached generated motions, zero
+    regeneration) gave FID=3.2909 — higher still, not lower, showing the *generated* side's own
+    n=128 covariance is independently unstable regardless of reference quality. **FID cannot be
+    judged pass/fail at any sample size this hardware has produced so far.**
+  - **Cost to fully close (both halves, with proper power): ~5 CPU-hours at n~1000.**
+    Deliberately not spent, per D-22 — the ground-truth reproduction already establishes this
+    project's harness is correct, which is the property internal comparisons (E1 onward) actually
+    depend on. Revisit the R-Precision anomaly specifically if a cheap explanation surfaces
+    later; revisit FID only if the project ever needs to claim comparability to MDM's published
+    numbers specifically, since no amount of reference-fixing alone will resolve it — the
+    generated sample count itself would need to grow.
 - **D-03 status, restated plainly for whoever reads this next:** UNRESOLVED, not satisfied, not
   going to be resolved further within this stage per D-22. **Every number from E1 onward is
   internally-comparable-only** — this must be stated loudly in `RESULTS.md` when it exists and
   in every relevant `EXPERIMENT_LOG.md` entry, not left as an implicit footnote.
+
+## [2026-09-06T12:20:00] Item 16 — Round 2's "reproduced across runs" claim retracted; FID/R-Precision split; fixed-reference rescoring
+**Status:** complete
+**Acceptance criteria:** review (SUP-20260906-25..29) identified that round 2 did not sample
+generation variance — MDM's default seed makes generation deterministic, so round 1 and round
+2's identical vald R-Precision (0.7578, 97/128, both times) is the *same* generated motions
+scored twice, not independent draws; only ground-truth batching varied. That accidental design
+still produced something useful: holding generation fixed and varying only the reference showed
+FID swings 30% (1.0731->1.3997) on a same-generation re-reference alone — retracting the earlier
+"FID gap is real, ~1.7x unrescued by sample size" claim (my own SUP-16-adjacent framing, echoed
+into `docs/DECISIONS.md` D-22) — while R-Precision's same design shows the generated excess is
+~9x the observed ground-truth batching noise, *strengthening* that anomaly's claim to being real.
+Requested follow-up (SUP-28, the one further E0b action authorised): build a fixed, full-scale
+ground-truth reference (no generation needed) and re-score the already-cached 128 generated
+motions against it, removing reference-redraw variance from any future FID in this project.
+**Files changed:** `scripts/e0b_fixed_reference_rescoring.py` (new — builds and saves a fixed
+`(mu, cov)` reference from the full 4198/4640-sequence test split, re-scores the cached
+generated motions against it, zero regeneration). `artifacts/e0/fixed_gt_reference/` (new —
+reusable reference asset for future FID work). `artifacts/e0/e0b_fixed_reference_rescoring_record.json`
+(new). `docs/EXPERIMENT_LOG.md` (E0b entry: retraction of the "reproduced across independent
+runs" claim; the FID-vs-R-Precision split stated as two separately-resolved questions; Round 3's
+fixed-reference result and its own honest, unexpected interpretation). `docs/DECISIONS.md` (D-22:
+corrected the FID characterization, left the original text visible with the correction rather
+than silently rewriting).
+**Environment changes:** none.
+**Self-critique defects found:** my own round-2 write-up claimed the qualitative pattern
+"reproduced across two independent runs, ruling out single-run noise" — wrong, caught by review,
+not by me. I had the deterministic-seed fact available (I'd printed `fixseed(args.seed)`'s effect
+nowhere, but the seed itself was visible in every args.json dump I'd already made) and didn't
+connect it to what "identical to four significant figures" implied about the two runs not being
+independent. Recorded plainly rather than minimized.
+**Verification performed:** re-derived the noise-floor comparison myself before accepting it —
+ground-truth R-Precision-top3 moved from 102/128 (round 1) to 104/128 (round 2), a swing of
+2/128 ~= 0.016, against a generated excess of 0.7578-0.611=0.147 (~9x) — confirmed this arithmetic
+directly from the two runs' own recorded counts rather than taking the review's ratio on faith.
+Ran the fixed-reference rescoring script (fast, ~1 minute, no diffusion sampling involved) and
+observed FID=3.2909 directly, not a number that was expected or assumed going in — the result
+(higher, not lower, than either small-n comparison) was surprising and is reported as such rather
+than adjusted to match a prior expectation.
+**Next:** E0b is now closed with an honest, split verdict: R-Precision anomaly real and
+unexplained (a genuine open question, per D-22/Item 15); FID at achievable sample sizes on this
+hardware supports no conclusion in either direction. Moving to E1.
 

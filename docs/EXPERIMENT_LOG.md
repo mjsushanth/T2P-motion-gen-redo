@@ -374,20 +374,74 @@ once (n=128, 1 replication, same ~39-minute cost as before):
    **Ruled out.**
 
 This second run's own numbers (GT R-Prec-top3 0.8125, vald R-Prec-top3 0.7578 — top-3 identical
-to round 1's 0.7578; GT FID 0.1428, vald FID 1.3997) **reproduce the same qualitative pattern as
-round 1** despite a different random draw (the added diagnostic code shifted the RNG state before
-`gt_loader`'s own `shuffle=True`, so batch composition differs slightly between the two runs) —
-further evidence this is not single-run noise. Full diagnostic and both runs' numbers in
-`../artifacts/e0/e0b_mdm_reproduction_record_v2.json` and the cached generation itself in
-`../artifacts/e0/e0b_generated_cache/` (available for any future re-analysis at zero
-regeneration cost).
+to round 1's 0.7578; GT FID 0.1428, vald FID 1.3997) reproduce the same qualitative pattern as
+round 1, despite ground truth moving (the added diagnostic code shifted the RNG state before
+`gt_loader`'s own `shuffle=True`, so ground-truth batch composition differs between the two runs).
+Full diagnostic and both runs' numbers in `../artifacts/e0/e0b_mdm_reproduction_record_v2.json`
+and the cached generation itself in `../artifacts/e0/e0b_generated_cache/` (available for any
+future re-analysis at zero regeneration cost).
+
+**CORRECTION (2026-09-06, per review SUP-20260906-25): "further evidence this is not single-run
+noise" above was wrong and is retracted.** `fixseed(args.seed)` with MDM's default `seed=10`
+makes generation itself **deterministic**. Round 1 and round 2's vald R-Prec-top3 were identical
+to four significant figures (0.7578 both times, 97/128 both times) precisely *because* they are
+the same generated motions scored twice, not two independent draws — only the ground-truth
+reference moved between the runs (102/128 correct in round 1's GT batching, 104/128 in round
+2's). Round 2 therefore measured **ground-truth batching variance**, not generation variance, and
+did not test the single-run-noise hypothesis at all.
+
+**But that same accidental design produced a sharper, controlled measurement (SUP-20260906-26/27),
+holding generation fixed and varying only the reference:**
+- **FID moved 1.0731 -> 1.3997 — a +30% swing from redrawing the n=128 reference alone**, with
+  the generated set held bit-for-bit identical. A statistic that moves 30% on a same-generation
+  re-reference cannot be used to decide a 2x gap against a +/-5% tolerance. **FID at n=128 is
+  underpowered — no conclusion is available from it, in either direction.** The earlier framing
+  in this entry's "Round 2" section and in `docs/DECISIONS.md` D-22 (treating the FID gap as
+  "real, ~2x, not rescued by sample size") overstated what a single small-n comparison can
+  support; retracted here, not silently smoothed over.
+- **R-Precision moved only +-2/128 ~= 0.016 between the two runs (pure ground-truth batching
+  noise) — the generated excess (0.7578 - 0.611 = 0.147) is about 9x that noise floor.** This
+  reframes the earlier "~3.5 sigma" estimate (which used the bundled log's cross-replication CI as
+  a proxy for this run's noise) with a direct, within-this-experiment noise measurement instead,
+  and the conclusion strengthens rather than weakens: **the R-Precision anomaly is real and
+  substantially exceeds observed noise, unexplained after every cheap lead checked.**
+
+**The honest split, going forward: FID at n=128 — no conclusion. R-Precision — a real, unexplained
+anomaly, ~9x the observed noise floor.** Treat these as two separately-resolved questions, not
+one combined "the FAIL is confirmed" or "the FAIL is explained" statement.
+
+**Round 3 (2026-09-06), per review SUP-20260906-28 — the one further E0b action authorised: fix a
+reference, not the generation.** D-22 stands: no further diffusion generation. But a full-scale
+ground-truth reference costs nothing to build (no diffusion sampling — only encoding real motions
+through the small evaluator, which is fast) and removes the reference-redraw variance that rounds
+1-2 showed dominates the n=128-vs-n=128 comparison entirely.
+`scripts/e0b_fixed_reference_rescoring.py`: materialized the full test split (4198 sequences,
+matching E0a's scale), built and saved a fixed `(mu, cov)` reference from it
+(`../artifacts/e0/fixed_gt_reference/fixed_gt_reference.npz`, n=4640 after
+`Text2MotionDatasetV2`'s sub-clip splitting — reusable for every future FID in this project), then
+re-scored the **same 128 cached generated motions, zero regeneration**, against this fixed
+reference.
+
+**Result: FID = 3.2909 — higher than either round 1 (1.0731) or round 2 (1.3997), not lower.**
+This was not the expected direction, and it is informative rather than a failure of the method:
+fixing only the *reference* side does not fix FID's small-n instability, because the *generated*
+side is still only n=128 — a 512-dimensional covariance estimated from 128 samples is severely
+rank-deficient (rank <=127) regardless of how well-estimated the other side is. Pairing a
+well-conditioned, full-scale reference covariance against a poorly-conditioned n=128 test
+covariance is its own source of Frechet-distance instability, distinct from (and evidently at
+least as large as) the instability from having both sides small. **FID cannot be stabilized at
+this generated-sample-count by fixing the reference alone; both sides need adequate n.** This is
+consistent with, and sharpens, the "FID at n=128 is underpowered" conclusion above — it is
+underpowered specifically because of the *generated* set's size, not the reference's.
 
 **Next:** D-03 remains UNRESOLVED; downstream numbers are internally-comparable-only until it
-resolves. All of round 2's cheap leads are now exhausted without finding a fixable driver bug.
-The one hypothesis not yet directly tested: this project's 128-sample subset was selected as the
-first rows in HF streaming order that passed the length filter, not a random draw comparable to
-the reference protocol's much larger pool drawn from the full ~4384-sequence test set — testing
-this would need either a properly randomized subset draw at the same n, or accepting the full
+resolves — this is not a resolved-but-unfavourable result, it is genuinely undetermined at the
+sample sizes this hardware can afford. R-Precision is the one number from E0b that stands as a
+real, unexplained finding (not sample-size noise); FID from E0b supports no conclusion at all.
+Per D-22, no further generation is planned to close this. The one hypothesis that remains
+formally untested (not planned, per D-22): whether this project's 128-sample subset (first rows
+in HF streaming order) is representative of the full test set the reference protocol draws from
+— testing this would need either a properly randomized subset draw at the same n, or accepting the full
 n~1000 scale (~5 CPU-hours) to remove the question entirely. Holding before spending either,
 to report the exhausted-leads status first. Still open, lower priority: fix the
 `diversity_times` off-by-one (now free to do without regeneration, since motions are cached).

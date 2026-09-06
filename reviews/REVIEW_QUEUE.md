@@ -517,3 +517,142 @@ Ruling out all three generation leads with actual measurements — length means 
 128/128 unique captions, pairing confirmed by reading `__getitem__` rather than assuming. And
 retracting the "maybe the paper's number is odd" framing in its own entry rather than leaving it
 to stand.
+
+---
+
+# Pre-registered review criteria — E1 and Stage 5
+
+**Date:** 2026-09-06 · **Written before either exists.** Same discipline this queue has enforced
+on the build pass twice (SUP-06 on E2's tolerance, SUP-15 on the D-03 gate): criteria fixed before
+results, so that "did it succeed" cannot be decided by looking at what happened. **These are not
+findings. They are the bar.**
+
+## E1 — what the original task framing actually cost
+
+E1 measures frame-0-static-pose against full-sequence generation on the *same corrected pipeline*.
+It is this project's own contribution: nobody else has measured it, because nobody else made this
+mistake and then instrumented it.
+
+**Will be accepted only if all of these hold:**
+
+1. **The comparison is controlled to one variable.** Same architecture, same data, same training
+   budget, same evaluator, same seeds. If anything else differs, it is not a measurement of task
+   framing — it is a measurement of task framing plus whatever else moved.
+2. **Multiple seeds, spread reported, and the effect exceeds it.** `LANDMINES.md` §7. If the
+   seed spread is a large fraction of the gap, the honest statement is "no effect resolvable at
+   this budget", and that must be written in those words rather than as a directional hint.
+3. **Both arms carry the internally-comparable-only label** (D-03 fallback, D-22). E1 compares two
+   of our own runs, which is exactly what that label permits — say so explicitly rather than
+   leaving a reader to wonder whether comparability was assumed.
+4. **F3's original 1.43x dispersion figure is connected to the result**, either confirmed,
+   refined, or contradicted. E1 exists to convert that ratio into a performance delta; leaving the
+   two unlinked wastes the entire point.
+5. **A "Does NOT establish" section that names the generalisation limit.** One dataset, one
+   architecture, one budget. E1 says what frame-0 framing cost *here*, not what it costs in
+   general.
+6. **The F6/D-02 framing is stated in the terms we landed on** — the defect was documented as
+   intentional design, the code matched the intent, so no reader could have caught it, and only a
+   measurement showing conditioning doing nothing would have. E1 is where that becomes an
+   empirical claim rather than a methodological preference.
+
+**Failure mode I will look for hardest:** E1 producing a large, satisfying number that is really
+measuring training budget or convergence rather than task framing. A frame-0 model and a sequence
+model are not automatically comparable at equal epochs. **State how compute was equalised.**
+
+## Stage 5 — the demonstrator
+
+Not optional (D-20). The author's goal is educational, interview and research value **plus a
+demonstrable outcome**; a metrics table is evidence, not an outcome.
+
+**Will be accepted only if all of these hold:**
+
+1. **Runs from a checkpoint in one command.** No GPU, no retraining, no manual setup steps beyond
+   an environment file.
+2. **A non-specialist understands it in thirty seconds** without narration. Type a sentence, see a
+   human move.
+3. **The baseline is visible in the interface, not just in the report.** A nearest-neighbour
+   retrieval from the training set, side by side. This is the criterion I expect to be softened,
+   and it is the one I will hold hardest: "just look it up in the training set" is what a
+   sceptical viewer is silently thinking, and a demo that does not answer it is asserting value
+   rather than showing it. **If the model does not beat retrieval, the demo must make that
+   visible.**
+4. **Failure cases are reachable from the interface**, not curated away. A demo that only shows
+   its best output is the same epistemic sin as a loss curve with no held-out split — which is the
+   specific failure this whole project exists to correct.
+5. **Real metrics and seed spread are surfaced somewhere in it**, carrying the
+   internally-comparable-only label.
+6. **Someone else can run it** — README section, pinned deps, checkpoint either committed or
+   fetched by script.
+
+**Failure mode I will look for hardest:** a polished interface wrapped around a model whose
+quality has not been established, with the metrics tucked away where the viewer will not look.
+That is the "usable PRODUCT" the author asked for turning into a veneer — the opposite of what
+this project is for. **Demonstration, not product.**
+
+---
+
+# SUP-20260906-30 · P1 · E1 as specified is a tautology. Redesign before building.
+
+**Date:** 2026-09-06 · Raised in response to the build pass asking whether the ladder still
+reflects intent before committing to a model design. **It does not, and catching this before the
+scaffold is worth more than catching it after a multi-hour training run.**
+
+## The problem
+
+`REBUILD_SPEC.md` E1 compares "frame-0-only static pose" against "full-sequence generation" on the
+same pipeline, scored by the Guo evaluator. But that evaluator embeds **motion sequences**. A
+frame-0 arm produces one pose, so to score it at all you must replicate that pose across T frames —
+and a static repeated pose has catastrophic FID against real motion **because it does not move**,
+not because of anything to do with task framing.
+
+**That result is guaranteed before the experiment runs.** "A model that outputs one frame is worse
+at generating motion than a model that outputs motion" is not a finding. It would look like a
+large, satisfying number — exactly the failure mode pre-registered in the E1 criteria above.
+
+## What the original's defect actually was
+
+Not an output-shape choice. **A conditioning mismatch:** a caption describing an action, paired
+with a target that does not depict it (F3 — frame-0 poses are measurably homogeneous regardless of
+caption verb). Two separable errors were made:
+
+1. **Caption truncation** — training on the first action clause only, discarding the rest.
+2. **Frame selection** — pairing that caption with frame 0.
+
+## The redesign: hold the output space fixed, vary only the pairing
+
+All arms generate **full sequences** in the 263-d representation (D-11), so the evaluator applies
+identically and every FID/R-Precision is comparable across arms by construction.
+
+| arm | caption | target | isolates |
+|---|---|---|---|
+| **A (control)** | full caption | full sequence | the corrected pipeline |
+| **B** | first-action clause only | full sequence | caption truncation |
+| **C** | full caption | sequence conditioned as-if from a frame-0-representative pose | frame selection |
+
+Minimum viable E1 is **A vs B** — cheapest, cleanest, and it still converts F3's 1.43x dispersion
+into a measured performance delta. C is a bonus if budget allows. **State which arms ran and why.**
+
+## Feasibility must be measured before committing, not after
+
+`REBUILD_SPEC.md` §7's training estimate was explicitly a placeholder. We now have a hard datum:
+**MDM generation alone cost ~39 minutes for 128 samples on this CPU.** Training is far more
+expensive than sampling, and E1 needs ≥2 arms x multiple seeds (`LANDMINES.md` §7).
+
+**Required before any training run starts:** measure seconds-per-step at the intended model size
+on this hardware, extrapolate to the full E1 matrix, and write the projected wall-clock into the
+ledger. **If the honest projection exceeds what is available, say so and propose the reduced
+design explicitly** — fewer seeds, smaller subset, shorter sequences — rather than silently
+shrinking and reporting it as if it were the planned experiment. A reduced experiment stated as
+reduced is a result; a reduced experiment reported as complete is the original project's mistake.
+
+## Prefer MDM's architecture over a new denoiser
+
+The E0a lesson applies with more force here than anywhere. MDM is vendored, MIT, already runs on
+this machine, already operates on the 263-d representation D-11 selected, and its published numbers
+are reproducible from its own artifacts. **Train MDM's architecture at reduced scale on both arms**
+rather than writing a fresh model. That maximises reuse, keeps the evaluator exactly applicable,
+removes an entire class of from-scratch bug, and makes the *only* difference between arms the thing
+E1 is trying to measure. Writing a novel denoiser adds a variable and buys nothing E1 needs.
+
+`src/t2p/` still gets built — configs, seeding, data pairing, the ablation driver, the record
+writers — but wrapping vendored machinery rather than reimplementing it.

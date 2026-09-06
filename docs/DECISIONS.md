@@ -331,10 +331,18 @@ the rest by reading the driver against MDM's own `eval_humanml.py`.
 against a 20-replication reference of 0.7977 — 0.06 sigma. **That is the property internal
 comparisons actually depend on.**
 
-**What is not:** generated motions score ~3.5 sigma high on R-Precision and ~2x high on FID.
-Real, not noise, and not explained. Subset composition is refuted by the ground-truth number
-(same distractor pool, same batching — an easier subset would inflate both, and ground truth is
-not inflated).
+**What is not, corrected 2026-09-06 (review SUP-20260906-25/26/27 — this paragraph originally
+treated the FID gap the same way as the R-Precision gap; they turned out to need splitting):**
+round 2's rerun accidentally held generation fixed (deterministic under MDM's default seed) while
+only the ground-truth reference redrew — and FID moved 1.0731 -> 1.3997, a +30% swing from the
+reference redraw alone. **FID at this generated-sample-count (n=128) is underpowered and supports
+no conclusion, in either direction** — not confirmed-real, not explained-by-noise, genuinely
+undetermined without a larger generated sample. **R-Precision is different:** the same
+fixed-generation design showed ground-truth batching noise of only +-2/128 (~0.016), while the
+generated excess (0.147) is ~9x that — this anomaly **is** real and substantially exceeds
+observed noise, and remains unexplained after every cheap lead. Subset composition is refuted for
+the R-Precision anomaly specifically (same distractor pool, same batching — an easier subset
+would inflate ground truth too, and it does not, at 0.06 sigma off reference).
 
 **The decision.** Closing this would cost roughly 5 CPU-hours at n~1000, and it buys *comparability
 to the published ladder* — not correctness of our own measurements, which the ground-truth

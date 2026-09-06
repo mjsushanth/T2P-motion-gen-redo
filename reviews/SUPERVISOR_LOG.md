@@ -702,3 +702,90 @@ measurements are deciding, not the seniority.
 
 **Next:** SUP-28's free re-score, then E1. Monitors b6bbwpaim and bfovb8dqn both exited; re-arm.
 Run window: SOFT 13:55Z / HARD 14:40Z. Now ~11:10Z, ~2h45m to soft stop.
+
+## [2026-09-06T11:35Z] Supervisor pass 16 — D-22 accepted; E1/Stage 5 criteria pre-registered
+
+**Build pass accepted D-22** (commit d545825: "stop chasing E0b, take D-03's fallback, record open
+question, move to E1"). E0b closes as UNRESOLVED with its evidence recorded, not buried. Sent a
+short unambiguous directive answering its "randomized redraw or n~1000?" question — **neither**,
+do SUP-28's free re-score, then E1 — plus the SUP-25 correction it had repeated a third time
+(the two runs were not independent in generation; 97/128 both times).
+
+**Independent work this pass: pre-registered the review criteria for E1 and Stage 5, before either
+exists.** Same discipline this queue enforced on the build pass twice (SUP-06 on E2's tolerance,
+SUP-15 on the D-03 gate) — now applied to my own judging, so "did it succeed" cannot be decided
+after seeing what happened.
+
+**E1's bar:** controlled to one variable; multi-seed with the effect exceeding the spread, or the
+words "no effect resolvable at this budget"; both arms labelled internally-comparable-only; F3's
+1.43x dispersion figure explicitly connected to the resulting delta; a generalisation-limit
+section; and the F6/D-02 framing stated empirically. **The failure mode I will look for hardest:
+a large satisfying number that is really measuring training budget rather than task framing — a
+frame-0 model and a sequence model are not automatically comparable at equal epochs.**
+
+**Stage 5's bar:** one command from a checkpoint, no GPU; comprehensible in thirty seconds without
+narration; **the retrieval baseline visible in the interface, not just the report** (the criterion
+I expect to be softened and will hold hardest — "just look it up in the training set" is what a
+sceptic is silently thinking); failure cases reachable, not curated away; metrics and seed spread
+surfaced with the comparability label; reproducible by someone else. **Failure mode: a polished
+interface around unestablished quality, metrics tucked out of sight — the author's "usable
+PRODUCT" becoming a veneer, which is the opposite of the point.**
+
+**Next:** E1. Re-arm monitor.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~11:35Z, ~2h20m to soft stop.
+
+## [2026-09-06T11:55Z] Supervisor pass 17 — E1 as specified was a tautology. Redesigned before the scaffold.
+
+The build pass asked, before committing to a model design, whether the ladder still reflected
+intent. **It did not, and the flaw was mine.**
+
+**SUP-30 (P1).** `REBUILD_SPEC.md`'s E1 compares frame-0 static pose against full-sequence
+generation, scored by the Guo evaluator — which embeds **motion sequences**. Scoring a frame-0 arm
+requires replicating one pose across T frames, and a static repeated pose has catastrophic FID
+against real motion **because it does not move**. The result is guaranteed before the run. *"A
+model that outputs one frame is worse at generating motion than a model that outputs motion"* is
+not a finding.
+
+Note the irony worth recording: this is exactly the E1 failure mode I pre-registered one pass
+earlier — "a large satisfying number that is really measuring something other than task framing" —
+arriving from a direction I had not anticipated when I wrote it. **The pre-registration caught my
+own error, not the build pass's.**
+
+**The redesign: hold output space fixed, vary only the pairing.** The original's defect was a
+*conditioning mismatch*, not an output-shape choice, and it decomposes into two separable errors —
+caption truncation, and frame selection. All arms generate full sequences in 263-d so the evaluator
+applies identically:
+- **A (control):** full caption -> full sequence
+- **B:** first-action clause only -> full sequence — isolates caption truncation
+- **C:** full caption -> frame-0-representative conditioning — isolates frame selection
+
+**A vs B is the minimum viable E1** and still converts F3's 1.43x dispersion into a measured delta.
+
+**Two hard preconditions set before any training starts:**
+1. **Measure feasibility, then commit.** §7's estimate was a placeholder; the real datum is that
+   MDM *generation* cost ~39 min for 128 samples on this CPU, and training costs far more.
+   Seconds-per-step measured, full matrix extrapolated, projection written to the ledger before
+   starting. **A reduced experiment stated as reduced is a result; a reduced experiment reported as
+   complete is the original project's mistake.**
+2. **Use MDM's architecture, not a new denoiser.** Vendored, MIT, runs here, already on the 263-d
+   representation D-11 selected, published numbers reproducible. Makes the only difference between
+   arms the thing E1 measures. A novel denoiser adds a variable and buys E1 nothing. `src/t2p/`
+   wraps rather than reimplements — also the shape most likely to leave Stage 5 reachable.
+
+Asked the build pass to update the ladder to A/B/C before scaffolding and to record in DECISIONS
+that E1's original specification was mine and was wrong.
+
+**Next:** E1 redesign + feasibility projection. Monitor b2dwtq9f7 armed.
+Run window: SOFT 13:55Z / HARD 14:40Z. Now ~11:55Z, ~2h to soft stop.
+
+---
+
+## FOR JOEL (running)
+
+14. **The headline experiment was designed wrong, and it was my error.** As written, comparing
+    "single pose" against "full motion" would have produced a huge, impressive-looking number that
+    meant nothing — a model that outputs one frame is obviously worse at generating motion, and
+    that has nothing to do with the bug we wanted to measure. Redesigned so every arm generates
+    motion and only the *caption-to-target pairing* changes, which is what your original project
+    actually got wrong. Caught before any training happened, by criteria I had written down an hour
+    earlier for judging someone else's work.
