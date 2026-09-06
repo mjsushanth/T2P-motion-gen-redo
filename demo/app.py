@@ -161,17 +161,35 @@ def run_retrieval(caption: str):
         f"**Full caption retrieved:** \"{full_caption_match}\" (motion id: `{full_id}`)\n\n"
         f"**Truncated caption retrieved:** \"{trunc_caption_match}\" (motion id: `{trunc_id}`)"
     )
-    return full_video, trunc_video, truncation_summary, match_summary, truncated_caption
+    return full_video, trunc_video, truncation_summary, match_summary
 
 
-def run_generation(caption: str, truncated_caption: str, seed: int):
+def run_generation(caption: str, seed: int):
+    """Computes its own truncated caption (SUP-20260906-80): this button used to take
+    truncated_caption from a gr.State that only run_retrieval ever populated, so clicking
+    "Also generate" without first clicking "Show what gets retrieved" silently generated the
+    SAME caption for both panels -- two identical videos under contrasting labels, the opposite
+    of the finding this demo exists to show, with nothing on screen signalling it. Computing
+    truncation here, the same way run_retrieval does, makes the two buttons unable to disagree
+    and removes the click-order dependency entirely."""
     caption = (caption or "").strip()
     if not caption:
-        raise gr.Error("Run retrieval first (type a caption above).")
+        raise gr.Error("Type a caption first.")
+    truncated_caption, _ = truncate_first_action_clause(caption)
     work_dir = tempfile.mkdtemp(prefix="t2p_demo_gen_")
     full_video = generate_video(caption, os.path.join(work_dir, "full"), seed=seed)
-    trunc_video = generate_video(truncated_caption or caption, os.path.join(work_dir, "truncated"), seed=seed)
-    return full_video, trunc_video
+    if truncated_caption == caption:
+        # Truncation is a real no-op for some captions (no conjunction, nothing to cut) -- say so
+        # loudly rather than silently rendering two panels that look like a contrast but aren't.
+        trunc_video = full_video
+        note = (
+            "**Truncation was a no-op for this caption** (no conjunction found to cut) — both "
+            "panels below show the identical generation, on purpose, not a bug."
+        )
+    else:
+        trunc_video = generate_video(truncated_caption, os.path.join(work_dir, "truncated"), seed=seed)
+        note = f"**Generated from:** full = \"{caption}\" · truncated = \"{truncated_caption}\""
+    return full_video, trunc_video, note
 
 
 with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") as demo:
@@ -182,7 +200,6 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
     )
     retrieve_btn = gr.Button("Show what gets retrieved (instant)", variant="primary")
 
-    truncated_caption_state = gr.State("")
     truncation_md = gr.Markdown()
     with gr.Row():
         with gr.Column():
@@ -197,7 +214,7 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
     retrieve_btn.click(
         fn=run_retrieval,
         inputs=[caption_box],
-        outputs=[full_retrieval_out, trunc_retrieval_out, truncation_md, match_md, truncated_caption_state],
+        outputs=[full_retrieval_out, trunc_retrieval_out, truncation_md, match_md],
     )
 
     gr.Markdown("---")
@@ -205,6 +222,7 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
     with gr.Row():
         seed_box = gr.Number(label="Seed", value=10, precision=0, scale=1)
         generate_btn = gr.Button("Also generate (several minutes)", scale=1)
+    generation_note_md = gr.Markdown()
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Full caption → generated")
@@ -215,8 +233,8 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
 
     generate_btn.click(
         fn=run_generation,
-        inputs=[caption_box, truncated_caption_state, seed_box],
-        outputs=[full_gen_out, trunc_gen_out],
+        inputs=[caption_box, seed_box],
+        outputs=[full_gen_out, trunc_gen_out, generation_note_md],
     )
 
 if __name__ == "__main__":

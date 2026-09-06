@@ -2,11 +2,15 @@
 reimplementing generation+rendering, per this project's standing rule (wrap vendored machinery,
 do not reimplement it). Produces one rendered .mp4 per call, using MDM's released checkpoint
 (MIT-licensed, already verified in E0b) -- generation quality is real because the model is real;
-this demo is about conditioning, not about our own (severely undertrained, per D-24) model.
+this demo is about conditioning, not about our own (severely undertrained, 0.63% of MDM's
+training budget) model.
 
-CPU-only, full 1000 diffusion timesteps (no respacing) -- consistent with every other generation
-call this project has made (E0b, E1A, E1B), not a novel, unverified speedup path. Each call takes
-several minutes on this hardware; the demo UI must say so plainly rather than imply it is fast.
+Device: whatever `dist_util.dev()` resolves to -- CPU or MPS, not chosen here (SUP-20260906-80).
+D-24 ("MPS is unusable") is REVERSED by D-27/D-28: the same `_extract_into_tensor` and
+`evaluator_wrapper.py` patches that make E1A/E1B trustworthy on MPS apply here unchanged, since
+this wrapper calls the same vendored generation code. Full 1000 diffusion timesteps (no
+respacing), consistent with every other generation call this project has made (E0b, E1A, E1B) --
+not a novel, unverified speedup path, just the same call on whichever device `dist_util` picks.
 """
 import os
 import sys

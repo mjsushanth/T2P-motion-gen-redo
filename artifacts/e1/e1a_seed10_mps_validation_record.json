@@ -1,0 +1,130 @@
+{
+  "experiment": "E1A",
+  "arm": "a",
+  "description": "Control: full caption -> full sequence throughout.",
+  "num_training_steps": 3000,
+  "seed": 10,
+  "train_split": "train",
+  "eval_split": "test",
+  "batch_size": 32,
+  "num_samples_limit": 128,
+  "n_params_millions": 17.880327,
+  "n_train_captions_truncated": 0,
+  "n_gen_captions_truncated": 0,
+  "training_wall_clock_seconds": 684.4923994170094,
+  "generation_wall_clock_seconds": 402.0799581669853,
+  "loss_log": [
+    {
+      "step": 0,
+      "loss": 1.3652093410491943,
+      "elapsed_s": 0.7700116249907296
+    },
+    {
+      "step": 200,
+      "loss": 0.41023069620132446,
+      "elapsed_s": 46.933210416988004
+    },
+    {
+      "step": 400,
+      "loss": 0.5273714661598206,
+      "elapsed_s": 92.15638266698807
+    },
+    {
+      "step": 600,
+      "loss": 0.48894333839416504,
+      "elapsed_s": 137.17961495899362
+    },
+    {
+      "step": 800,
+      "loss": 0.3075104355812073,
+      "elapsed_s": 183.50425645901123
+    },
+    {
+      "step": 1000,
+      "loss": 0.29460078477859497,
+      "elapsed_s": 230.09019541699672
+    },
+    {
+      "step": 1200,
+      "loss": 0.21198998391628265,
+      "elapsed_s": 275.84880075001274
+    },
+    {
+      "step": 1400,
+      "loss": 0.21827898919582367,
+      "elapsed_s": 321.3902941250126
+    },
+    {
+      "step": 1600,
+      "loss": 0.1918794810771942,
+      "elapsed_s": 366.7245834170026
+    },
+    {
+      "step": 1800,
+      "loss": 0.13920791447162628,
+      "elapsed_s": 411.8944841249904
+    },
+    {
+      "step": 2000,
+      "loss": 0.15026704967021942,
+      "elapsed_s": 457.087866249989
+    },
+    {
+      "step": 2200,
+      "loss": 0.17483845353126526,
+      "elapsed_s": 503.29503104201285
+    },
+    {
+      "step": 2400,
+      "loss": 0.20353102684020996,
+      "elapsed_s": 549.2616529589868
+    },
+    {
+      "step": 2600,
+      "loss": 0.1917668879032135,
+      "elapsed_s": 594.4839365840016
+    },
+    {
+      "step": 2800,
+      "loss": 0.19134414196014404,
+      "elapsed_s": 639.5497206670116
+    },
+    {
+      "step": 2999,
+      "loss": 0.21475306153297424,
+      "elapsed_s": 684.492325750005
+    }
+  ],
+  "mean_dict": {
+    "Matching Score_ground truth": 2.949683322577641,
+    "Matching Score_e1a": 5.8382391929626465,
+    "R_precision_ground truth": [
+      0.5209051724137931,
+      0.7127155172413793,
+      0.803448275862069
+    ],
+    "R_precision_e1a": [
+      0.09375,
+      0.21875,
+      0.328125
+    ],
+    "FID_ground truth": 0.00170492461784022,
+    "FID_e1a": 9.29314860265437,
+    "Diversity_ground truth": 9.467612266540527,
+    "Diversity_e1a": 6.900073051452637
+  },
+  "e1a_truncated_rescore_control": {
+    "matching_score": 6.017967939376831,
+    "r_precision": [
+      0.109375,
+      0.1953125,
+      0.28125
+    ],
+    "r_precision_top3": 0.28125
+  },
+  "chance_level_r_precision_top3": 0.09375,
+  "r_precision_top3_e1a": 0.328125,
+  "r_precision_top3_ground_truth": 0.803448275862069,
+  "fid_e1a_vs_ground_truth": 9.29314860265437,
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37)."
+}

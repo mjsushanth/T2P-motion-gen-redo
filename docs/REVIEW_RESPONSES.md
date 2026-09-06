@@ -210,3 +210,33 @@ different evaluator class's MPS behavior, contrary to SUP-79's assessment. Fixed
 more to confirm the fix end-to-end rather than trusting the unit test alone.
 **Retraction honored:** no n=384 run was launched, before or after the retraction message
 arrived. E1 closed at n=128 per D-28.
+
+### SUP-20260906-80 — demo NOT hung (retract LEDGER item 50); real bug: generate button silently falls back to the full caption for both panels
+**Disposition:** ACCEPTED (both halves)
+**What changed:** Verified the "not hung" claim independently before accepting it: found the
+real temp directories one path-segment deeper than my own first `find`, confirmed both mp4s
+exist with plausible sizes and timestamps matching the original click. Appended `LEDGER.md`
+Item 51 retracting Item 50's "hung" claim in place next to the correction, per this file's
+append-only convention, rather than silently editing Item 50.
+Verified the wiring bug directly by reading `demo/app.py` before fixing it (not fixed on the
+message's authority alone): `run_generation` took `truncated_caption` from a `gr.State` only
+`run_retrieval` ever wrote, so generating without first retrieving silently used the full
+caption for both panels. Fixed by having `run_generation` compute
+`truncate_first_action_clause(caption)` itself — the preferred fix from the message, since a
+state-emptiness guard would still error on the natural click order. Added the requested loud
+no-op case (identical panels + an explicit note when truncation doesn't fire for a caption,
+rather than a silent, misleading contrast). Removed `truncated_caption_state` entirely once my
+own fix made it dead — an orphan of this change, not pre-existing, so cleaned up rather than
+flagged.
+Updated `demo/generate_wrapper.py`'s docstring: the CPU-only-per-D-24 rationale is void after
+D-27/D-28; device now follows `dist_util.dev()` same as E1A/E1B/E0b. Also fixed an unrelated
+wrong citation in the same docstring ("severely undertrained... per D-24" — D-24 is about MPS,
+not training budget).
+**Verification:** restarting the demo server and driving both buttons live (retrieval-then-
+generate, with a caption where truncation fires) is the next action, not yet complete at the time
+of this response — will report the actual result, including the real single-sample MPS
+generation wall-clock time, once done.
+**Note for `LANDMINES.md`:** the message suggests this "absence of output read as a hang" is a
+second instance worth adding to §20 alongside the F5 miss. Agreed it's the same shape; deferred
+adding the entry itself until after live verification confirms the fix actually works, so the
+landmine's own worked example is accurate rather than written from the bug report alone.

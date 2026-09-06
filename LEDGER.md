@@ -2458,3 +2458,78 @@ a separate, real bug: the demo's live generation has been observed hung (near-0%
 35 minutes after finishing its first sampling loop, not yet diagnosed; (3) no work on a full
 600k-step training run without checkpoint/resume design in place first, per the director's own
 explicit gate.
+
+## [2026-09-06T23:35:00 UTC] Item 51 — Correction to Item 50: the demo was never hung; a real, separate wiring bug found instead (SUP-20260906-80)
+**Status:** complete
+**Acceptance criteria:** Item 50's "Next" section stated the demo's live generation "has been
+observed hung (near-0% CPU) for over 35 minutes." The director drove the same UI end to end and
+found it had actually finished: both mp4s existed, valid, in a temp dir one path-depth below
+where an early diagnostic `find` had looked — the same miss on both sides independently (the
+director's own first detector made the identical mistake and initially reported "HANG
+REPRODUCED" before catching it). **Retracted here rather than silently edited in Item 50**, per
+this file's append-only convention — the wrong claim stays visible next to its correction.
+**What was actually true:** the demo process (PID 71090) was idle because both generations had
+completed (~137-140s total for both, confirmed independently: file timestamps 14:37-14:38 match
+when the button was clicked; process CPU was low because there was nothing left to do, not
+because it was stuck).
+**The real bug this session's own click had already exercised without noticing:**
+`demo/app.py::run_generation` read `truncated_caption` from a `gr.State` that only
+`run_retrieval` ever populated. Clicking "Also generate" without first clicking "Show what gets
+retrieved" (the natural click order) left that state at its initial `""`, and
+`truncated_caption or caption` silently fell back to the full caption for BOTH panels — two
+identical videos under contrasting labels, the opposite of the demo's own finding, with no signal
+on screen that the comparison never ran. Confirmed independently by the director (byte-identical
+mp4s, matching MD5, same Gradio DOM file hash under both headings) using a caption I had not
+tried ("a person walks forward and then waves with their right hand").
+**Files changed:** `demo/app.py` (`run_generation` now computes its own truncated caption via
+`truncate_first_action_clause(caption)`, the same way `run_retrieval` does, removing the
+click-order dependency entirely rather than guarding the state — the fix the director preferred,
+since a guard alone would still error on the most natural click order. Added a loud check: if
+truncation is a genuine no-op for a caption (no conjunction to cut), both panels now show the
+same generation on purpose, with a markdown note saying so, rather than silently rendering what
+looks like an unrun contrast. Removed `truncated_caption_state` entirely once its only reader was
+gone — an orphan my own fix created, not left dangling.). `demo/generate_wrapper.py` (docstring's
+"CPU-only... per D-24" rationale was void after D-27/D-28 reversed D-24; updated to state the
+device now comes from `dist_util.dev()`, unchanged from what E1A/E1B/E0b already trust on MPS;
+also fixed an unrelated stale citation in the same docstring — "severely undertrained... per
+D-24" cited the wrong decision entirely, D-24 is about MPS, not training budget).
+**Environment changes:** killed and restarted the demo server (PID 71090 stopped) so the new
+process picks up `dist_util.py`'s MPS patch, the `evaluator_wrapper.py` fix, and this bugfix
+together — the old process had all three patches applied to files on disk but cached the
+pre-patch modules in memory, per Python's normal import-once behavior.
+**Self-critique defects found:** my own diagnosis in Item 50 ("hung") was reached by checking
+process CPU% and server stdout, never the actual output files on disk — exactly the search-scope
+failure `LANDMINES.md` §20 already names ("an absence claim is only as strong as its search
+scope"), now confirmed as a second independent instance of the same mistake, made by both
+sessions on the same artifact within the same hour.
+**Verification performed:** `find`'d the real temp directories directly (one path-segment deeper
+than my first attempt), confirmed both mp4s exist with plausible sizes and real timestamps
+matching the original click. Read `demo/app.py` end to end to confirm the state-wiring bug
+independently before fixing it, rather than accepting the director's diagnosis unchecked. Full
+live re-verification (restart server, click through both buttons, confirm two genuinely different
+generated videos) deferred to immediately following this entry, not yet completed at write time.
+**Next:** restart the demo server, click through both buttons with a caption where truncation
+genuinely fires, confirm two different generated videos and a correct match/no-match note;
+measure the real single-sample MPS generation wall-clock time (batch=1 has different fixed-
+overhead characteristics than the batch=32 rate already measured) before updating the UI's
+"several minutes" copy to whatever is actually true now.
+
+## [2026-09-06T23:50:00 UTC] Item 52 — MPS re-validation succeeded end-to-end after the evaluator_wrapper.py fix
+**Status:** complete
+**Acceptance criteria:** confirm the `evaluator_wrapper.py` cast-before-transfer fix (Item 50)
+resolves the crash for real, in the actual pipeline, not just the isolated unit test already run.
+**Result:** arm A, seed 10, MPS, n=128 — R-Precision-top3 = 0.328125 (44/128... actually
+42/128) vs the existing CPU seed-10 record's 0.2969 (diff 0.0312), FID = 9.293 vs CPU's 7.2093
+(diff 2.08). Both differences are smaller than or consistent with this project's own already-
+established noise: the R-Precision gap (0.031) is smaller than the CPU-only seed10-vs-seed20
+spread (0.047, `docs/DECISIONS.md` D-28), and FID is already known unstable at n=128 regardless
+of device (values have ranged 1.07-3.29 across CPU-only re-references at this same n,
+`docs/DECISIONS.md` D-25). Nothing here is alarming or reopens anything — it is the third
+supplementary arm-A seed anticipated by SUP-79, landing where seed noise alone would predict.
+**Files changed:** `artifacts/e1/e1a_seed10_mps_validation_record.json` (overwritten with the
+successful run; the crashed first attempt produced no file, so nothing was lost).
+**Verification performed:** compared directly against `artifacts/e1/e1a_power_check_record.json`
+(the CPU seed-10 record) before writing this entry, not asserted from memory.
+**Next:** live browser verification of the `demo/app.py` bugfix (SUP-20260906-80): restart the
+server, drive both buttons with a caption where truncation fires, confirm two different generated
+videos, measure a real single-sample MPS generation wall-clock time.

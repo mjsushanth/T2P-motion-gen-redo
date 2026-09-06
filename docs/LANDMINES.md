@@ -779,6 +779,25 @@ counterexample.
 
 ---
 
+**Second instance (2026-09-06), and this one cost two sessions.** The Stage 5 demo's live
+generation was recorded in the worker's ledger as "hung (near-0% CPU) for over 35 minutes after
+finishing its first sampling loop." The reviewing session then built its own detector to reproduce
+the hang — `find /var/folders -maxdepth 4 ... -name "*.mp4"` — watched CPU fall below 5% for 90
+seconds with no file found, and duly reported `HANG REPRODUCED`.
+
+Nothing was hung. Both generations had completed and both `.mp4` files had been written, valid and
+decodable. The real path was `.../t2p_demo_gen_*/full/samples_00_to_00.mp4` — **one directory
+deeper than `-maxdepth 4` reaches.** The process was idle because it was finished.
+
+Two independent sessions concluded "hung" from an absence of output that was really an absence of
+looking, and the second one *confirmed* the first by repeating its mistake in a different form.
+A reproduction is only corroboration if the two attempts could have failed independently; here both
+inferred a negative from a search neither had validated could find a positive. **Before trusting a
+detector that reports absence, feed it a case you know is present.** Had the detector been run once
+against the already-completed output sitting on disk from the earlier invocation, it would have
+reported nothing then too — and the flaw would have surfaced in seconds.
+
+
 ## 21. A redaction cannot be documented by quotation
 
 **Status: VERIFIED in this repository, 2026-09-06 (the git-history identifier scrub, review
@@ -912,3 +931,45 @@ about fifteen minutes against a hundred projected hours.
 the author asking the obvious naive question ("MPS doesn't run here? what's going on?") that the
 people deep in the work had stopped asking, because for them it had already been settled. Settled
 is precisely the state in which a premise stops being examined.
+
+---
+
+## 23. A reviewer's assurance that a check is redundant is a claim, not a clearance
+
+**How it presented here.** After the MPS float32 patch landed, the reviewing session wrote in
+SUP-20260906-79 that the end-to-end validation run the worker had queued was *"a weaker test than
+the E0a check you already passed — a full training run confounds device difference with seed
+variance... The E0a check already did that job properly."* The reasoning was sound on its face:
+E0a had passed on MPS with a device delta of 4e-8 against a seed delta of 2.7e-3, and a single
+training run genuinely cannot separate device from seed.
+
+**The worker ran it anyway, and it caught a second MPS bug.** `evaluator_wrapper.py`'s
+`get_co_embeddings` / `get_motion_embeddings` carried the *same* cast-after-transfer defect as
+`_extract_into_tensor`. The E0a gate had not covered it, because **the E0a check and the E1
+pipeline instantiate two different vendored evaluator classes.** Passing one class's MPS gate
+licensed nothing about the other's. Had the worker deferred, the bug would have surfaced later as
+corrupted numbers in an experiment rather than as a crash in a validation run.
+
+There was a third gap in the same area that neither the finding nor the decision record mentioned:
+`dist_util.dev()` only ever returned `cuda` or `cpu`. Without an MPS branch, nothing could reach
+the patched diffusion code at all. **The prescription named one fix; three were needed.** A patch
+verified correct in isolation is not a patch verified sufficient in situ.
+
+**Why the reviewer's error was structurally predictable.** SUP-79 generalised from *one* validated
+path to a *different* path on the strength of the first one's clean result — which is landmine §22
+("a reproduced error is a fact about a configuration, not a property of the hardware") with its
+sign flipped. §22 is over-generalising a failure; this is over-generalising a success. Both come
+from treating a measured fact about one configuration as a property of the system. The clean E0a
+numbers made the reviewer *more* confident, not less, that further checking was waste — and
+confidence is precisely what removes the impulse to check.
+
+**Practice, for both roles.** For the producer: a reviewer's "this is redundant" carries no more
+authority than any other unverified claim, and costs nothing to disregard when the check is cheap
+and already queued. Run it and report the result — if the reviewer was right you have lost
+minutes; if wrong you have caught something no one was looking for. For the reviewer: **downgrade
+a test only when you can name what covers the gap it leaves.** SUP-79 asserted E0a "did that job
+properly" without checking whether the two paths shared an evaluator class. Naming the covering
+test is the discipline that would have exposed the gap before the advice was given, and it is the
+same discipline §16 demands of a blocker claim.
+
+**Cheap tests do not need a justification to run. They need one to skip.**
