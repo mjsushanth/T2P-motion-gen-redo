@@ -1,0 +1,82 @@
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/diffusion/nn.py:150: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  @th.cuda.amp.custom_fwd
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/diffusion/nn.py:160: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  @th.cuda.amp.custom_bwd
+/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/model/mdm.py:83: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.self_attn.batch_first was not True(use batch_first for better inference performance)
+  self.seqTransEncoder = nn.TransformerEncoder(seqTransEncoderLayer,
+device: cpu
+loading training data (split=train)...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_train.npy]...
+Pointer Pointing at 0
+train dataset size: 4435 sequences
+creating model and diffusion...
+TRANS_ENC init
+EMBED TEXT
+Loading CLIP...
+total trainable params (excluding CLIP): 17.88M
+training 3000 steps...
+  step 0/3000: loss=1.36502, elapsed=2.4s
+  step 200/3000: loss=0.47032, elapsed=483.3s
+  step 400/3000: loss=0.38029, elapsed=959.2s
+  step 600/3000: loss=0.45722, elapsed=1436.9s
+  step 800/3000: loss=0.33211, elapsed=1915.8s
+  step 1000/3000: loss=0.26428, elapsed=2368.0s
+  step 1200/3000: loss=0.25075, elapsed=2817.5s
+  step 1400/3000: loss=0.24530, elapsed=3269.5s
+  step 1600/3000: loss=0.18466, elapsed=3718.4s
+  step 1800/3000: loss=0.15623, elapsed=4171.1s
+  step 2000/3000: loss=0.22349, elapsed=4622.8s
+  step 2200/3000: loss=0.17770, elapsed=5073.3s
+  step 2400/3000: loss=0.11433, elapsed=5527.3s
+  step 2600/3000: loss=0.20128, elapsed=5977.5s
+  step 2800/3000: loss=0.15652, elapsed=6429.6s
+  step 2999/3000: loss=0.19136, elapsed=6877.9s
+training done: 6877.9s (1.911h)
+generating + evaluating (E0b pattern, same trained model, no checkpoint round-trip)...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+Generating test ...
+real_num_batches 5
+mm_idxs []
+0it [00:00, ?it/s]1it [10:56, 656.68s/it]2it [22:00, 661.02s/it]3it [32:56, 658.62s/it]4it [43:46, 655.34s/it]4it [43:46, 656.71s/it]
+Generated Dataset Loading Completed!!!
+generation done: 2626.9s (0.730h)
+Loading Evaluation Model Wrapper (Epoch 28) Completed!!
+==================== Replication 0 ====================
+Time: 2026-09-06 06:36:59.804364
+========== Evaluating Matching Score ==========
+---> [ground truth] Matching Score: 2.9789
+---> [ground truth] R_precision: (top 1): 0.5179 (top 2): 0.7037 (top 3): 0.7950 
+---> [e1a] Matching Score: 5.9119
+---> [e1a] R_precision: (top 1): 0.1406 (top 2): 0.2109 (top 3): 0.2969 
+Time: 2026-09-06 06:37:18.561736
+========== Evaluating FID ==========
+---> [ground truth] FID: 0.0015
+---> [e1a] FID: 7.2093
+Time: 2026-09-06 06:37:35.601457
+========== Evaluating Diversity ==========
+---> [ground truth] Diversity: 9.5520
+Traceback (most recent call last):
+  File "/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/../../scripts/e1a_power_check.py", line 217, in <module>
+    main()
+  File "/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/../../scripts/e1a_power_check.py", line 167, in main
+    mean_dict = eh.evaluation(
+                ^^^^^^^^^^^^^^
+  File "/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/eval/eval_humanml.py", line 168, in evaluation
+    div_score_dict = evaluate_diversity(acti_dict, f, diversity_times)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/eval/eval_humanml.py", line 103, in evaluate_diversity
+    diversity = calculate_diversity(motion_embeddings, diversity_times)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/joel/MJS_ROOT/MJS_STUDY/T2P-Reboot/third_party/motion-diffusion-model/data_loaders/humanml/utils/metrics.py", line 75, in calculate_diversity
+    assert activation.shape[0] > diversity_times
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

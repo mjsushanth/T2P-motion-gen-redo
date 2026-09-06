@@ -1,0 +1,68 @@
+{
+  "experiment": "E1A-power",
+  "description": "Pre-registered power check: does E1A (full caption -> full sequence) trained for num_steps learn text conditioning at all, per docs/EXPERIMENT_LOG.md's E1A-power entry.",
+  "hand_assembled_note": "The script's own JSON write was never reached -- eh.evaluation() crashed inside evaluate_diversity on the 'e1a' arm (assert activation.shape[0] > diversity_times, diversity_times=min(300,num_samples_limit)=128, generated set size 128 -- the SAME diversity_times off-by-one already documented as a known, non-decisive bug in E0b's own run). R-Precision, Matching Score, and FID for both arms printed successfully BEFORE the crash and are transcribed here directly from artifacts/e1/e1a_power_check_run.log, the same hand-assembly precedent used for artifacts/e0/e0b_mdm_reproduction_record.json.",
+  "num_training_steps": 3000,
+  "seed": 10,
+  "train_split": "train",
+  "eval_split": "test",
+  "batch_size": 32,
+  "num_samples_limit": 128,
+  "n_params_millions": 17.88,
+  "train_dataset_size": 4435,
+  "training_wall_clock_seconds": 6877.9,
+  "training_wall_clock_hours": 1.911,
+  "generation_wall_clock_seconds": 2626.9,
+  "generation_wall_clock_hours": 0.730,
+  "loss_log": [
+    {"step": 0, "loss": 1.36502},
+    {"step": 200, "loss": 0.47032},
+    {"step": 400, "loss": 0.38029},
+    {"step": 600, "loss": 0.45722},
+    {"step": 800, "loss": 0.33211},
+    {"step": 1000, "loss": 0.26428},
+    {"step": 1200, "loss": 0.25075},
+    {"step": 1400, "loss": 0.24530},
+    {"step": 1600, "loss": 0.18466},
+    {"step": 1800, "loss": 0.15623},
+    {"step": 2000, "loss": 0.22349},
+    {"step": 2200, "loss": 0.17770},
+    {"step": 2400, "loss": 0.11433},
+    {"step": 2600, "loss": 0.20128},
+    {"step": 2800, "loss": 0.15652},
+    {"step": 2999, "loss": 0.19136}
+  ],
+  "matching_score": {
+    "ground_truth": 2.9789,
+    "e1a": 5.9119
+  },
+  "r_precision": {
+    "ground_truth": [0.5179, 0.7037, 0.7950],
+    "e1a": [0.1406, 0.2109, 0.2969]
+  },
+  "fid": {
+    "ground_truth": 0.0015,
+    "e1a": 7.2093
+  },
+  "diversity": {
+    "ground_truth": 9.5520,
+    "e1a": "CRASHED -- diversity_times off-by-one (assert activation.shape[0] > diversity_times, 128 > 128 is False), same known bug as E0b, not rerun, not decisive for this check"
+  },
+  "chance_level_r_precision_top3": 0.09375,
+  "r_precision_top3_e1a": 0.2969,
+  "r_precision_top3_ground_truth": 0.7950,
+  "fid_e1a_vs_ground_truth": 7.2093,
+  "gate_result": "above_chance",
+  "gate_margin": "0.2969 / 0.09375 = 3.17x chance level, ~18x the ~0.016 R-Precision batching noise floor established in E0b -- decisive, not a close call",
+  "log_space_convergence_fraction": {
+    "formula": "log(L_init/L_obs) / log(L_init/L_conv)",
+    "L_init": 1.36502,
+    "L_obs_final_logged_step": 0.19136,
+    "L_obs_avg_last_4_logged_points": 0.16587,
+    "L_conv_reference_mean": 0.0563,
+    "fraction_using_final_step": 0.616,
+    "fraction_using_avg_last_4": 0.661,
+    "note": "per SUP-20260906-42: this is a floor-detector (did training happen at all), not a quality predictor -- the R-Precision gate above is what decides this check, this number is context only"
+  },
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37) -- an above-chance result here reflects held-out generalisation, not memorisation of the training captions/motions."
+}

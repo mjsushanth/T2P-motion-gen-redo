@@ -1386,3 +1386,47 @@ arithmetic myself.
 **Next:** E1-pilot is fully closed. Still waiting on the E1A power check (background,
 ~13:30-14:00Z expected) before any E1B-scope decision — nothing else queued.
 
+## [2026-09-06T12:55:00 UTC] Item 29 — E1A power check GATE PASSES: R-Precision-top3 0.2969 vs. 0.09375 chance, decisively above, train-on-train/eval-on-test
+**Status:** complete
+**Acceptance criteria:** the pre-registered `docs/EXPERIMENT_LOG.md` E1A-power gate — R-Precision-
+top3 clearly above chance (0.09375) by more than the ~0.016 noise floor, trained on the
+disjoint materialized train split, evaluated on the materialized test split, exactly as
+corrected per SUP-20260906-37.
+**Files changed:** `artifacts/e1/e1a_power_check_record.json` (new — hand-assembled from
+`artifacts/e1/e1a_power_check_run.log` after the script crashed on the known `diversity_times`
+off-by-one bug during `evaluate_diversity`, the same failure mode already documented and
+non-decisive in E0b; R-Precision, Matching Score, and FID for both arms had already printed
+before the crash, so nothing about the decisive numbers was lost). `docs/EXPERIMENT_LOG.md`
+(E1A-power entry: status updated from PRE-REGISTERED to VERIFIED, result table and
+Result/Establishes/Does-NOT-establish filled in; the stale "Does NOT establish... same
+materialized subset" line — left over from before the SUP-37 fix — removed since train/test are
+now genuinely disjoint).
+**Environment changes:** none (the run itself consumed ~2.64h CPU wall-clock: 1.911h training +
+0.730h generation, both close to the feasibility probe's 1.877h/0.65h projections).
+**Result:** **R-Precision-top3 = 0.2969** against the pre-registered chance threshold of
+**0.09375** — 3.17x chance, ~18x the established noise floor, not a close call. Ground-truth
+R-Precision-top3 = 0.7950 (consistent with every prior measurement of this same quantity: 0.7969,
+0.7977, 0.8013, 0.8036 — the evaluator keeps reproducing itself). FID (secondary, not decisive
+per D-25) = 7.2093, poor as expected at this severely undertrained budget. Log-space convergence
+fraction (context only, per SUP-42): ~0.62, roughly two-thirds of the way from random-init loss to
+the converged reference in log-space — the loss trend and the R-Precision gate agree here, no
+conflict to adjudicate.
+**Self-critique:** none new — the hand-assembly-after-crash pattern was already established by
+E0b, so this was executing a known playbook, not improvising one. Worth naming anyway: this is
+the SECOND time this exact `diversity_times=min(300, num_samples_limit)` off-by-one has crashed a
+run at n=128 (E0b, now E1A-power) — it is cheap to fix (e.g. `diversity_times=min(300,
+num_samples_limit - 1)` or generating one extra sample) and has never actually been fixed,
+because it has never blocked a decisive result. Flagging it as a real, low-priority landmine
+candidate rather than fixing it reflexively now, since diversity was never this check's decisive
+metric either time.
+**Verification performed:** read the actual run log line by line rather than trusting the crash
+traceback alone to locate where real numbers ended and the crash began; confirmed the printed
+R-Precision/FID/Matching-Score lines appear before the traceback, so hand-transcribing them is
+transcription of a completed sub-computation, not reconstruction of something that never
+finished.
+**Next:** report the decisive gate-passes result to the director. Per the pre-registered rule,
+E1 has power at this budget — E1B (and any additional seeds) may now proceed, pending the
+director's SUP-40 scope decision (already informed by the E1-pilot's finding that testing the
+original's specific truncation rule is less interesting than testing caption-length effects in
+general). No E1B run started yet — this item only closes the power-check gate.
+

@@ -1,0 +1,11 @@
+==================== Replication 0 ====================
+Time: 2026-09-06 06:36:59.804381
+---> [ground truth] Matching Score: 2.9789
+---> [ground truth] R_precision: (top 1): 0.5179 (top 2): 0.7037 (top 3): 0.7950 
+---> [e1a] Matching Score: 5.9119
+---> [e1a] R_precision: (top 1): 0.1406 (top 2): 0.2109 (top 3): 0.2969 
+Time: 2026-09-06 06:37:18.561752
+---> [ground truth] FID: 0.0015
+---> [e1a] FID: 7.2093
+Time: 2026-09-06 06:37:35.601474
+---> [ground truth] Diversity: 9.5520

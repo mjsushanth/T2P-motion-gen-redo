@@ -454,8 +454,8 @@ to report the exhausted-leads status first. Still open, lower priority: fix the
 **Data:** HumanML3D train-split materialized subset for training, test-split materialized subset
 for evaluation (`third_party/motion-diffusion-model/dataset/HumanML3D/`) — **corrected before
 running (review SUP-20260906-37)**, see note below.
-**Record:** `../artifacts/e1/e1a_power_check_record.json` (to be written by the run)
-**Status:** PRE-REGISTERED, not yet run
+**Record:** `../artifacts/e1/e1a_power_check_record.json` (hand-assembled after a crash, see Result below)
+**Status:** VERIFIED — gate passes (R-Precision-top3 0.2969 vs. 0.09375 chance, see Result below)
 
 **CORRECTION, before any run happened (review SUP-20260906-37, 2026-09-06):** this entry
 originally specified training and evaluating on the same materialized subset (test — the only
@@ -501,20 +501,38 @@ is **3/32 = 0.09375**.
 
 | metric | value | seed spread |
 |---|---|---|
-| R-Precision-top3 (generated, n=128) | *(to be filled in)* | n=1, no spread — single-seed pilot only |
-| R-Precision-top3 (ground truth, n=128, same batches) | *(to be filled in)* | reference point, not a comparison target |
-| FID (generated vs. fixed reference) | *(to be filled in, secondary only per D-25 — not used to decide this check)* | n=1 |
+| R-Precision-top3 (generated, n=128, held-out test captions) | **0.2969** | n=1, no spread — single-seed pilot only |
+| R-Precision-top3 (ground truth, n=128, same batches) | **0.7950** | reference point, matches prior ground-truth measurements (0.7969-0.8036) to within noise |
+| FID (generated vs. ground truth) | **7.2093** (secondary only per D-25 — not used to decide this check; expected to be poor at this budget) | n=1 |
 
-**Result:** *(to be filled in after the run — this entry is written before training starts,
-per the pre-registration discipline used for E0b and E2)*
-**Establishes:** *(to be filled in)*
-**Does NOT establish:** Trained and evaluated on the same materialized subset (HumanML3D's real
-train split is not yet materialized on disk) — a positive result here shows the architecture *can*
-exploit text at this budget when the eval captions were also seen in training, which is a
-necessary but weaker condition than generalizing to held-out captions. This check answers "is
-there enough training signal for E1's comparison to have any power at all," not "does this model
-generalize." Single seed — no seed-to-seed spread is measured by this pilot; E1's own seed
-handling comes at the next stage if this gate passes.
+**Result: GATE PASSES, decisively.** R-Precision-top3 = 0.2969 against the pre-registered
+chance threshold of 0.09375 — **3.17x chance, ~18x the ~0.016 batching noise floor established
+in E0b.** Not a close call. Trained on the disjoint 4,435-sequence materialized train split,
+evaluated on the materialized test split's held-out captions — an above-chance result here
+cannot be memorisation (per the SUP-20260906-37 fix), since the model never saw these
+caption-motion pairs during training. Training took 6,877.9s (1.911h) for 3,000 steps; generation
+took 2,626.9s (0.730h) for 128 samples — both close to the feasibility probe's projections
+(1.877h / 0.65h). **The script crashed on the known `diversity_times` off-by-one bug (same as
+E0b, `assert activation.shape[0] > diversity_times` with `diversity_times=128=num_samples_limit`)
+after R-Precision/FID/Matching-Score had already printed** — record hand-assembled from the run
+log (`artifacts/e1/e1a_power_check_record.json`), same precedent as E0b's own crash-recovery.
+Log-space convergence fraction (SUP-20260906-42, context only, not decisive): using the final
+logged step's loss (0.19136) against the converged reference (0.0563) and the untrained-init loss
+(1.36502), `log(L_init/L_obs)/log(L_init/L_conv) ≈ 0.62` — roughly two-thirds of the way from
+init to convergence in log-space. Consistent with, not contradicting, the R-Precision gate: both
+signals agree the model learned real structure at this budget, and per SUP-42's own caveat this
+loss number is reported as context, not as what decided the gate.
+**Establishes:** at 3,000 training steps on ~4,400 disjoint train sequences, MDM's real
+architecture learns genuine, generalisable text-motion conditioning — not memorisation, not zero.
+**E1 has power at this budget.** Per the pre-registered decision rule, E1B (and any additional
+seeds) may proceed.
+**Does NOT establish:** Generation *quality* — FID=7.2093 and the visibly poor loss trajectory
+confirm the model is, as expected, far from a usable generator at this budget (D-24's point that
+3,000 steps is 0.63% of MDM's published training length). This check only establishes that text
+conditioning is being learned at all, which is the minimum condition for E1B's A-vs-B comparison
+to mean anything — it does not establish that E1B's eventual result will be clean or large.
+Single seed — no seed-to-seed spread measured here; E1's own multi-seed handling is a separate,
+still-open design question for whichever arms actually run.
 
 ---
 
