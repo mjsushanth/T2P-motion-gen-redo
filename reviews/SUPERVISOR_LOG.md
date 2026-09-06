@@ -1921,3 +1921,38 @@ fact; this one was a proposal checked *before* it cost anyone anything. **That i
 version of the same discipline.**
 
 Now 16:48Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:53Z] Supervisor pass 44 — SUP-62: the "strong baseline" argument can backfire; measure before shipping
+
+**Review 10 fully actioned** (8f5e8e3). Notably:
+- **SUP-57 validated:** 93.8% output agreement, **98.1% branch agreement**, over 8,962 captions.
+  **The demo's truncation is the measured truncation.** Asked for one README line noting it
+  reproduces to ~94% rather than exactly (same branch fires, cut point occasionally differs a token).
+- **SUP-58 fixed better than I specified.** I said "use the evaluator's encoder"; it found
+  caption-to-caption gave spuriously uniform ~0.98 similarities and switched to **text-to-motion**
+  retrieval — **which is what R-Precision itself measures**, so the demo now visualises the actual
+  metric rather than a proxy. **I named the right component; it found the right comparison.** Caught
+  by looking at outputs rather than trusting a clean run — fourth catch from that habit today.
+- SUP-55 produced `LANDMINES.md` §18 and a power-check block in the entry template.
+
+**SUP-62 (P1) — the risk in that fix.** Its evidence is **3 of 4 test queries**. And there is a
+specific reason it may not scale: **the evaluator's encoders were trained to discriminate among 32
+candidates; the corpus is ~24,503.** An embedding that separates a true caption from 31 decoys need
+not rank it first against 24,502 — a much harder task.
+
+**Plausible failure: embedding retrieval loses to TF-IDF.** If that surfaces *after* promoting it as
+the strong baseline, SUP-58 backfires — a viewer sees the sophisticated method doing worse and
+distrusts the whole comparison.
+
+**Told it to run my SUP-61 experiment with the embedding retriever** (TF-IDF baseline: 78.3% / 55.0%
+/ 46.0%), and that **all three outcomes are acceptable if stated** — embedding wins, comparable, or
+**TF-IDF wins, in which case say so and lead with TF-IDF**, since "the encoder was trained for 32-way
+discrimination and does not transfer to 24,503-way retrieval" is a genuine result and more
+interesting than quietly using whichever looked better. **Do not choose the retriever after seeing
+which flatters the demo.**
+
+Also restated: SUP-61's 78.3%/55.0% are **TF-IDF** numbers; whatever retriever leads, **its own**
+numbers go on the page. And confirmed SUP-56 is withdrawn — with retrieval instant, printing the
+aggregate makes a null result informative rather than confusing, which beats curated examples.
+
+Now 16:53Z; SOFT 01:46Z, HARD 03:16Z.

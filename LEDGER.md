@@ -1952,3 +1952,48 @@ a small set of example caption pairs (SUP-56, still open, P1 — the demo curren
 clears, and do the full live-browser end-to-end test of the Generate button that Item 37 already
 flagged as outstanding.
 
+## [2026-09-06T16:55:00 UTC] Item 39 — Checked SUP-60/61's proposed redesign premise before building on it: embedding-space full-corpus self-retrieval collapses to ~1%, real and diagnosed, not a bug
+**Status:** complete (finding recorded; UI redesign held pending director's response, since it
+changes what the headline statistic should be)
+**Acceptance criteria:** the director proposed promoting a "self-retrieval rate" (full caption
+finds its own motion N% of the time, truncated finds it M%) to the demo's headline, validating
+the premise themselves with TF-IDF (78.3% -> 55.0%, n=300, HumanML3D's own tags) and explicitly
+flagging those as premise-validating, not display values, since the demo should use the embedding
+retriever per SUP-58. Before building the redesign, re-measure with the actual embedding
+retriever the demo will use — do not assume the same qualitative result transfers between two
+structurally different retrieval methods.
+**Files changed:** `demo/measure_self_retrieval.py` (new — same protocol as the director's own
+TF-IDF measurement, HumanML3D's own real tags for truncation so this doesn't touch SUP-57's
+separate spaCy-agreement question, but using `EmbeddingRetriever`'s text-to-motion embedding
+space instead of TF-IDF). `artifacts/demo/self_retrieval_record.json` (new).
+**Result — the premise does NOT transfer to the embedding retriever, for a real, diagnosed
+reason, not a bug:** self-retrieval collapses to ~1.0% (full captions) and ~0.7% (truncated),
+nothing like TF-IDF's 78.3%/55.0%. Diagnosed directly rather than assumed broken: a real
+caption's own true motion scores 0.978 cosine similarity against its own text embedding, yet
+ranks **264th out of 8,198** corpus candidates, because every corpus motion clusters in a tight
+0.97-0.99 similarity band at full-corpus scale in this embedding space. **This is exactly why
+R-Precision itself is only ever validated within 32-candidate batches, never full-corpus top-1**
+— the text encoder has enough resolution to distinguish 1-of-32, not 1-of-8,198. "Self-retrieval
+rate in the R-Precision-validated space" is therefore not a coherent full-corpus statistic; it
+only means something within the batch-of-32 protocol this project has already run, which is
+exactly the existing 0.8013 -> 0.6563 R-Precision-top3 numbers already on the demo page.
+**Establishes:** the director's TF-IDF self-retrieval number is real and honestly measured, but
+it is real *because* TF-IDF does near-duplicate lexical matching well at full-corpus scale, not
+because it approximates the same phenomenon as R-Precision — displaying it labelled as "the same
+space R-Precision uses" would reproduce the exact fidelity error SUP-58 itself warned against,
+with the labels swapped (TF-IDF standing in for the validated space, rather than the reverse).
+**Self-critique:** none new this item — this is the same discipline already established
+(re-derive before trusting, inspect real outputs before shipping a method) applied to a proposal
+from the director rather than to my own prior output; the fact that it caught something this time
+is not evidence the discipline is only useful in one direction.
+**Verification performed:** ran the actual measurement against the real corpus and the real
+embedding retriever (not simulated), then independently diagnosed the near-zero result by
+computing one real example's true-motion similarity and rank directly, rather than reporting
+"the retriever doesn't work" without knowing why.
+**Next:** proposed a resolution to the director (keep the validated R-Precision numbers as the
+rigorous metrics-table claim; report the TF-IDF self-retrieval finding as its own clearly-
+labelled "lexical retrieval" statistic, not conflated with the embedding space; keep full-corpus
+embedding retrieval for the interactive per-query experience only, framed as illustrative, not a
+validated statistic) and am holding the UI redesign until hearing back, since the answer changes
+which number becomes the demo's headline.
+

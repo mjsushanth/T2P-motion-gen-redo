@@ -2031,3 +2031,65 @@ stated, and every sample is honest including the negative ones.
    and print *those* numbers, not mine. Mine establish the premise, not the display values.
 2. **I used HumanML3D's own tags, not spaCy.** So this does not touch SUP-57's open question of
    whether the demo's spaCy path reproduces the measured rule. That check is still needed.
+
+---
+
+# SUP-20260906-62 · P1 · Measure both retrievers' self-retrieval before shipping. The "strong baseline" argument can backfire.
+
+**First: your SUP-58 fix is better than what I asked for, and the reason matters.** I said "use the
+evaluator's encoder." You found that caption-to-caption embedding gave spuriously uniform ~0.98
+similarities, and switched to **text-to-motion** retrieval — query caption against corpus *motion*
+embeddings. **That is what R-Precision itself measures**, so the demo now visualises the actual
+metric rather than a text-similarity proxy for it. I asked for the right component and you found the
+right comparison. And you caught it by **looking at the outputs** rather than trusting a clean run —
+the same habit that has now caught four separate things today.
+
+## The risk
+
+**Your evidence is 3 of 4 test queries.** That is four data points, and the demo's credibility rests
+on this retriever. There is a specific reason it might not hold at scale:
+
+**The evaluator's encoders were trained to discriminate among 32 candidates. Your corpus is
+~24,503.** Nothing guarantees an embedding that separates a true caption from 31 decoys also ranks
+it first against 24,502. Those are very different tasks, and the second is much harder.
+
+**So the plausible failure mode is that embedding retrieval underperforms TF-IDF** — a "sophisticated"
+retriever losing to word matching. If that happens after you have promoted it as the *strong*
+baseline, the SUP-58 argument backfires: a viewer sees the fancy method doing worse and reasonably
+concludes the whole comparison is unreliable.
+
+## The measurement, and you already have my TF-IDF baseline to compare against
+
+Run the same experiment I ran for SUP-61, with the embedding retriever:
+
+| | TF-IDF (measured, SUP-61) | embedding (unmeasured) |
+|---|---|---|
+| caption retrieves its **own** motion, full | **78.3%** | ? |
+| caption retrieves its **own** motion, truncated | **55.0%** | ? |
+| shortened captions retrieving a different motion | **46.0%** | ? |
+
+Few hundred captions, minutes. **Three outcomes and all three are fine if stated:**
+
+- **Embedding beats TF-IDF** → use it as the headline, TF-IDF as the labelled floor. SUP-58 as
+  intended.
+- **They are comparable** → show both, note the agreement, and the comparison is robust to the
+  choice — which is itself reassuring.
+- **TF-IDF beats embedding** → **say so plainly and lead with TF-IDF.** That is a genuine finding
+  about the encoder's scale limits — it was trained for 32-way discrimination and does not transfer
+  to 24,503-way retrieval — and it is more interesting than a demo that quietly used the better one.
+
+**Do not pick the retriever after seeing which flatters the demo.** Measure both, state both, choose
+on stated grounds. Same discipline as everything else today.
+
+## And the display numbers still need re-measuring
+
+SUP-61's 78.3% → 55.0% are **TF-IDF numbers**. Whatever retriever the demo leads with, **its own
+numbers go on the page.** Mine established the premise, not the display values — that was stated when
+I filed them and it still holds.
+
+## SUP-57 accepted, with one line for the README
+
+93.8% output agreement and 98.1% branch agreement over 8,962 captions is more than enough — **the
+demo's truncation is the measured truncation.** The ~6% output divergence with 98% branch agreement
+means the same branch fires but the cut point occasionally differs by a token. **Worth one sentence
+in the README** so a reader knows the demo reproduces the measured rule to ~94% rather than exactly.
