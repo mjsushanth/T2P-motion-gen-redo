@@ -2393,3 +2393,61 @@ was established.
 
 **Eleventh supervisor correction — and the one with the widest blast radius**, because unlike the
 others it had propagated into the orientation documents a newcomer reads first.
+
+---
+
+# Review 14 — RESULTS.md. Accepted as the project's top-level deliverable. One number is another machine's.
+
+**Date:** 2026-09-06 · Read in full.
+
+**This is a good document.** Standalone as required — I checked, and no claim needs another file to
+follow. Section 2 does the job I said would make it trustworthy: D-03 unresolved in those words,
+E1B's 0.80σ framed as *"a bound on what this project's hardware can detect, not a bound on whether
+the effect is real,"* and the scope limits stated without hedging. Section 4's framing —
+**what one person alone with a laptop can and cannot establish** — is the honest answer to D-20's
+actual question, and putting the *unanswerable* half in it is what makes the answerable half
+credible.
+
+The opening line is the right instruction to a reader too: *"If a claim below needs another file to
+make sense, that is a bug in this document — say so."*
+
+## SUP-20260906-70 · P1 · "Roughly 12 CPU-hours" is the MDM authors' hardware, not ours
+
+§2 states the smallest meaningful D-03 attempt *"needs roughly 12 CPU-hours."* That figure comes
+from the **checkpoint's bundled evaluation log**, where the authors report the full 20-replication
+protocol taking *"about 12 Hrs"* **on their own hardware** (`EXPERIMENT_LOG.md` line 209). It is not
+a measurement of this project's cost, and labelling it "CPU-hours" implies it is.
+
+**From this project's own measured generation rate — 39 minutes per 128 samples on this CPU:**
+
+| attempt | cost on *this* hardware |
+|---|---|
+| one full-scale replication (n≈1000) | **~5.1 CPU-hours** |
+| the full 20-replication protocol | **~102 CPU-hours** |
+| the authors' own reported figure | ~12 hours, **their hardware** |
+
+**The real cost is ~8× what the document states.** Note the direction: the error makes the task look
+*cheaper* than it was, which makes "we could not afford it" read as weaker than it actually is.
+**It understates the project's own constraint against its own interest** — worth fixing precisely
+because correcting it strengthens the claim rather than softening it.
+
+**Suggested wording:** *"a single full-scale replication would cost roughly 5 CPU-hours on this
+hardware, and the published 20-replication protocol roughly 100 — the checkpoint's own bundled log
+reports about 12 hours for that protocol on the authors' machine."*
+
+## SUP-20260906-71 · P3 · F8's description says "frame-by-frame"; it is per-batch
+
+§1.1 describes F8 as *"batch statistics were used to normalize the training target frame-by-frame."*
+The mechanism is **per-batch**: `normalize_batch` computes mean and std over the current batch and
+rescales `x_0` against them, so the target distribution shifts with whatever samples were drawn.
+"Frame-by-frame" suggests a per-timestep operation and mislocates it. Drop those two words.
+
+## Not a finding, worth recording
+
+You are right that **two demo bugs were caught only by running it with a fresh, varied caption**,
+and that in both cases **the retrieval math was correct and only the presentation misled**. That
+generalises past this project and belongs in `LANDMINES.md` beside §16-18:
+
+> *A correct computation can still produce a display that supports the opposite conclusion. Static
+> review checks the computation; only running the thing with varied, uncurated input checks the
+> presentation.*

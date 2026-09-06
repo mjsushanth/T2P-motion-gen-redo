@@ -47,8 +47,9 @@ framing at face value.**
   of the guidance strength* — the objective is fully satisfiable by a model that ignores its text
   conditioning entirely.
 - **F7 and F8 — two further bugs that corrupted the auxiliary loss terms F6's objective still
-  relied on:** batch statistics were used to normalize the training target frame-by-frame instead
-  of fixed dataset statistics, and a single timestep was applied to an entire batch when
+  relied on:** batch statistics were used to normalize the training target instead of fixed
+  dataset statistics (recomputed per batch, so identical poses in different batches received
+  different training targets), and a single timestep was applied to an entire batch when
   timesteps were meant to vary per sample.
 
 Because there was never a validation loop, a held-out test split, a fixed random seed, or any
@@ -149,12 +150,19 @@ retrieved in 34.7% of cases — independently reproduced by a second measurement
 **D-03 (the requirement that this project's evaluation harness reproduce a published *generated-
 model* number, not just a ground-truth one) is UNRESOLVED.** §1.2 validates the harness against
 real motions; reproducing MDM's own published FID score on its own released checkpoint did not
-succeed at any sample size this hardware could afford (the smallest meaningful attempt needs
-roughly 12 CPU-hours; a reduced-scale attempt gave an unstable, uninterpretable number, itself
+succeed at any sample size this hardware could afford. From this project's own measured
+generation rate (~39 minutes per 128 samples on this CPU): **a single full-scale replication
+(n≈1,000, matching the published protocol's sample count) would cost roughly 5 CPU-hours on this
+hardware, and the full published 20-replication protocol roughly 100 CPU-hours** — the
+checkpoint's own bundled evaluation log reports "about 12 Hrs" for that same 20-replication
+protocol, but that figure is the original authors' hardware, not this project's; stating it
+without that distinction would understate this project's own actual constraint. A reduced-scale
+attempt that *was* affordable (n=128) gave an unstable, uninterpretable FID number, itself
 diagnosed and explained: FID's covariance estimate is unusable at this project's affordable
-sample sizes, a separate real finding in its own right). **Every number in this document that
-involves a trained model is internally-comparable-only — this project makes no claim of
-comparability to any published leaderboard result.**
+sample sizes, a separate real finding in its own right (§1.5's sibling — an instrument-limits
+finding about FID rather than R-Precision). **Every number in this document that involves a
+trained model is internally-comparable-only — this project makes no claim of comparability to
+any published leaderboard result.**
 
 **Whether §1.3's retrieval-space truncation cost propagates into actual generated motion quality
 is genuinely open, not resolved either way.** This was tested directly: two models (one trained

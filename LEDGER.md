@@ -2202,3 +2202,45 @@ else's claims about my own prior work, done the same way this project verifies e
 with this correction), the generation path's live browser test (CPU-deferred), E1A seed-2's
 decomposition whenever it completes.
 
+## [2026-09-06T18:05:00 UTC] Item 45 — RESULTS.md's cost figure understated this project's own constraint by ~8x; F8's mechanism mislabeled; a fourth review-discipline landmine recorded
+**Status:** complete
+**Acceptance criteria:** the director (Review 14) accepted RESULTS.md as the project's top-level
+deliverable, then found two remaining issues before signing off fully: (1) `RESULTS.md` §2 quoted
+"roughly 12 CPU-hours" for the smallest infeasible FID reproduction attempt, sourced from the
+checkpoint's own bundled evaluation log — but that figure is the original MDM authors' hardware,
+not this project's, and re-deriving the real cost from this project's own measured generation
+rate gives a number roughly 8x larger (which makes this project's own affordability constraint
+*stronger*, not weaker, so the error had been understating the very limitation the document
+exists to state honestly); (2) F8's description called the mechanism "frame-by-frame" when
+`LANDMINES.md` §12a's own code (`batch_mean = batch.mean(dim=0)`) is per-batch, not per-frame.
+**Files changed:** `RESULTS.md` (§2's cost paragraph rewritten with the real, re-derived figures
+— ~5 CPU-hours for one full-scale replication, ~100 for the full 20-replication protocol, on
+this project's own hardware, with the authors'-hardware figure named and explicitly
+distinguished rather than silently reused; F8's description corrected from "frame-by-frame" to
+per-batch, matching what the vendored code actually does). `docs/LANDMINES.md` (new §19: "a
+correct computation can still produce a display that supports the opposite conclusion" — the
+fourth review-discipline entry, generalizing both of the demo's own bugs this session found by
+running it with real input rather than reading its code, joining §16/17/18 as more transferable
+than most of the domain findings).
+**Environment changes:** none.
+**Verification performed, independently, before accepting either correction:** re-read
+`docs/EXPERIMENT_LOG.md` line ~209 directly and confirmed the original E0b entry already
+correctly attributes the "12 Hrs" figure to "the author's hardware" — the error was introduced
+specifically in `RESULTS.md`'s own condensed retelling, not inherited from a pre-existing wrong
+source. Recomputed the real cost by hand from this project's own measured rate (39 min / 128
+samples): one full-scale replication (n≈1,000) = 1000 × (39/128) minutes ≈ 304.7 minutes ≈ 5.08
+CPU-hours; the full 20-replication protocol ≈ 20 × 5.08 ≈ 101.6 CPU-hours — both match the
+director's cited figures (~5.1h, ~102h) to within rounding. Confirmed F8's per-batch mechanism by
+re-reading `LANDMINES.md` §12a's actual code directly rather than trusting the director's
+characterization alone.
+**Self-critique:** the cost-figure error is a genuine instance of the same failure pattern named
+in Item 44 (reusing a nearby, plausible-looking number without checking what it actually
+measures or whose resource it was measuring) — three instances of essentially the same mistake
+in one document now, all caught only because each correction was independently re-verified
+rather than folded in on trust. Worth naming plainly rather than treating each as an unrelated,
+one-off slip.
+**Verification performed:** see above.
+**Next:** RESULTS.md is now fully reconciled against Review 14's findings. Still open: the
+generation path's live browser test (CPU-deferred), E1A seed-2's decomposition whenever it
+completes.
+

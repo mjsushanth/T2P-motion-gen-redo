@@ -689,3 +689,53 @@ a surprising result. A hypothesis plus a criterion answers "what would convince 
 calculation answers "can this run possibly convince us at all" — and only the second question
 determines whether spending the compute is worthwhile in the first place.
 
+---
+
+## 19. A correct computation can still produce a display that supports the opposite conclusion
+
+**Status: VERIFIED in this repository, 2026-09-06 (Stage 5 demo work, review SUP-20260906-68) —
+the fourth review-discipline entry in this file, alongside §16-18, and like them more
+transferable than most of the domain findings above.**
+
+**The trap.** Two real bugs were caught in this project's own interactive demonstrator, in the
+same session, both by the same method: running the tool with a fresh, uncurated, real input
+rather than reading its code. In both cases, **the underlying computation was correct.** Only
+what the interface chose to display, and how a viewer would read it, was wrong.
+
+**Instance one:** an embedding-based retriever was measured before shipping (per §18's own
+discipline) and found to collapse at full-corpus scale — caught by looking at real query
+outputs. That catch was itself about a computation being *wrong* at that scale, not this entry's
+concern. **Instance two, this entry's actual example:** a TF-IDF retrieval panel correctly
+computed and displayed cosine similarity for two queries of different length (a full caption and
+its truncated form) side by side. TF-IDF cosine similarity is not comparable across queries of
+different length — a shorter query mechanically scores higher, having fewer terms left unmatched
+in its own vector, independent of whether it found the right answer. On a real, uncurated test
+caption, the truncated query's displayed score was *higher* than the full query's — a viewer
+reading the two numbers side by side would conclude "truncation improved the match," the exact
+opposite of the page's entire argument. **The similarity computation was correct. The bug was
+showing two individually-correct, differently-scaled numbers as if they meant the same thing.**
+
+**Why static review does not catch this.** Reading `retrieval.py`'s cosine-similarity code shows
+correct math. Reading `app.py`'s display code shows two numbers being printed, formatted
+correctly, no type error, no exception. **Nothing about the code, read in isolation, signals
+that the two numbers are being placed in a context where a reader will compare them to each
+other** — that only becomes visible when a real pair of differently-shaped queries produces two
+numbers next to each other and a human looks at what they imply together.
+
+**Do instead.** Before shipping any interface that displays two or more numbers side by side
+inviting comparison, ask specifically: *is this quantity actually comparable across the contexts
+being juxtaposed*, not just *is each number computed correctly on its own*. If the answer is no
+(different query lengths, different sample sizes, different reference distributions), either
+remove the numbers (if the qualitative content — which answer was returned — already carries the
+point, as it did here) or state the incomparability explicitly next to the numbers, not in a
+separate caveat section a reader may not reach. And run the interface with real, varied,
+uncurated input before trusting that a static read of the code caught everything — static review
+checks the computation; only exercising the thing with real input checks what the page as a
+whole invites a reader to conclude.
+
+**Generalisation:** this applies to any interface, report, or dashboard displaying more than one
+number of the same apparent type — accuracy scores at different sample sizes, latencies under
+different loads, similarity scores for queries of different length or specificity. A number can
+be individually correct and still be dangerous once placed next to another number a reader will
+naturally compare it to.
+

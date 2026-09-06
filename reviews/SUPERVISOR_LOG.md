@@ -2196,3 +2196,39 @@ double-check, which killed two of my errors. I then checked its corrections, whi
 
 Now 17:16Z; SOFT 01:46Z, HARD 03:16Z. Open: SUP-68 (drop misleading similarity scores), SUP-69
 (F5/citation fixes), generation live test, seed-2.
+
+## [2026-09-06T17:10Z] Supervisor pass 51 — RESULTS.md read in full and accepted; one number belongs to another machine
+
+**`RESULTS.md` accepted as the project's top-level deliverable.** Read end to end. **Genuinely
+standalone** — checked, no claim requires another file. Section 2 does what I said would make it
+trustworthy: D-03 unresolved *in those words*, E1B's 0.80 sigma framed as *"a bound on what this
+project's hardware can detect, not a bound on whether the effect is real,"* scope limits unhedged.
+**Section 4's framing — what one person alone with a laptop can and cannot establish — is the honest
+answer to D-20's question, and including the unanswerable half is what makes the answerable half
+credible.**
+
+**SUP-70 (P1) — "roughly 12 CPU-hours" is the MDM authors' hardware.** It comes from the bundled
+evaluation log where *the authors* report ~12 Hrs for the full 20-replication protocol **on their
+machine**; labelling it CPU-hours implies it measures ours. From this project's own measured rate
+(39 min / 128 samples on this CPU): **one full-scale replication ~5.1 CPU-hours; the full protocol
+~102.** **The real cost is ~8x what the document states.**
+
+**Direction matters here:** the error makes the task look *cheaper*, so "we could not afford it"
+reads weaker than it actually is. **It understates the project's own constraint against its own
+interest** — worth correcting because the fix *strengthens* the claim rather than softening it.
+
+**SUP-71 (P3):** F8 described as normalizing "frame-by-frame"; the mechanism is **per-batch**.
+Two words to drop.
+
+**Endorsed the build session's own generalisation for `LANDMINES.md`**, since both demo catches —
+its embedding-similarity uniformity and my truncated-scores-higher — are instances of one thing:
+> *A correct computation can still produce a display that supports the opposite conclusion. Static
+> review checks the computation; only running the thing with varied, uncurated input checks the
+> presentation.*
+
+**Fourth review-discipline lesson this project has produced**, after "naming vs handling a
+limitation," "pre-registration needs a minimum detectable effect," and "a redaction cannot be
+documented by quotation." **All four transfer further than any domain finding here.**
+
+SUP-69's three items verified landed, including the eight-findings provenance framing.
+Now 17:10Z; SOFT 01:46Z, HARD 03:16Z. Open: SUP-70/71, generation live test, seed-2.
