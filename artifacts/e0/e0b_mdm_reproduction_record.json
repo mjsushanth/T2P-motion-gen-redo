@@ -1,0 +1,26 @@
+{
+  "experiment": "E0b",
+  "description": "MDM published-FID reproduction, REDUCED SCALE (num_samples_limit=128, replication_times=1) vs. the paper's ~1000 samples / 20 replications -- infeasible at full scale on this hardware (author's own bundled eval log states ~12 Hrs for the full protocol on their hardware; this run took ~39 minutes of CPU-bound generation for 4 batches of 32 alone).",
+  "num_samples_limit": 128,
+  "replication_times": 1,
+  "guidance_param": 2.5,
+  "diffusion_steps": 1000,
+  "status": "PARTIAL -- FID and R-Precision computed successfully; Diversity computation crashed on an off-by-one in this project's own driver script (diversity_times=128 equals the exact sample count, failing metrics.py's `activation.shape[0] > diversity_times` assertion) and was not reached. Not rerun, since FID is this project's decisive metric (per Stage 2 review, R-Precision is saturated at the field's frontier) and rerunning costs another ~40 minutes of CPU-bound generation for a secondary metric.",
+  "ground_truth": {
+    "matching_score": 3.0718,
+    "r_precision_top1_2_3": [0.5156, 0.6953, 0.7969],
+    "fid": 0.1339,
+    "note": "This run's OWN ground-truth-vs-itself FID (0.1339) is far above the paper's ~0.002 at full scale -- direct evidence that 128 samples is too few for a stable FID estimate in this 512-dim embedding space, symmetrically affecting both this row and the 'vald' row below. See EXPERIMENT_LOG.md E0b for the full discussion of what this does and does not license concluding."
+  },
+  "vald": {
+    "matching_score": 3.4602,
+    "r_precision_top1_2_3": [0.5078, 0.6328, 0.7578],
+    "fid": 1.0731
+  },
+  "reference_paper_fid": {
+    "value": 0.544,
+    "ci": 0.044,
+    "tolerance_pct5": [0.5168, 0.5712]
+  },
+  "pre_registered_verdict": "FAIL. Measured vald FID (1.0731) falls outside the pre-registered +/-5% tolerance band [0.5168, 0.5712] around the paper's 0.544. Reported as run, per the pre-registered commitment not to widen the tolerance after seeing the result."
+}

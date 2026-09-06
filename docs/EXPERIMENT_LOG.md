@@ -169,4 +169,84 @@ failing would mean this project's own evaluator adaptation is sound but the publ
 not reproducible from MDM's released artifacts alone (a finding about the field's shared
 instrument, not about this project). E0b failing would say nothing about E0a's independent pass.
 
-**Status:** PENDING — not yet run. Fetching MDM's repo/checkpoint next.
+**Status:** RUN, 2026-09-06. Result appended below — the hypothesis/criterion above is unedited
+from its pre-registered form.
+
+**Ran by:** `../scripts/e0b_mdm_reproduction.py`, MDM's own `humanml_trans_enc_512/model000475000.pt`
+checkpoint ("best model used in the paper," per the official README), MDM's own
+`evaluation_parser()`/`create_model_and_diffusion()`/`evaluation()` (this project's driver script
+reuses these directly rather than reimplementing them, so every hyperparameter — `diffusion_steps:
+1000`, `arch: trans_enc`, `guidance_param: 2.5`, `cond_mask_prob: 0.1`, `latent_dim: 512` — loads
+from the checkpoint's own bundled `args.json`, not a hand-reconstructed config).
+**Data:** 128 materialized HumanML3D test-split samples (streamed from HF `TeoGchx/HumanML3D`,
+not bulk-downloaded), REDUCED from the paper's ~1000-sample protocol — the checkpoint's own
+bundled evaluation log states the full 20-replication protocol took "about 12 Hrs" on the
+author's hardware; infeasible to match at full scale on this machine (CPU only, no dedicated
+GPU) — this run alone took ~39 minutes of CPU-bound generation for 4 batches of 32.
+**Record:** `../artifacts/e0/e0b_mdm_reproduction_record.json`
+**Seeds:** 1 (seed=10, MDM's own default — not varied; a single, very long run, not a
+multi-seed comparison; seed spread is therefore UNKNOWN for this result, stated as a gap, not
+glossed over)
+
+| metric | ground truth (this run) | vald / generated (this run) | paper's "Real" row | paper's MDM row |
+|---|---|---|---|---|
+| R-Precision top-3 | 0.7969 | 0.7578 | 0.797±.002 | 0.611±.007 |
+| FID | **0.1339** | **1.0731** | 0.002±.000 | **0.544±.044** |
+
+**Result:** measured `vald` FID = **1.0731**. Pre-registered success criterion was FID within
+±5% of 0.544 (0.5168-0.5712). **1.0731 is outside that band — FAIL**, reported as such, not
+softened, per the pre-registered commitment.
+
+**A real caveat that applies symmetrically, not an excuse for the FAIL:** this run's own
+ground-truth-vs-itself FID (0.1339) is also far above the paper's ~0.002 — direct, self-contained
+evidence that 128 samples is too few for a numerically stable FID estimate in this evaluator's
+512-dimensional embedding space (FID's covariance estimate needs substantially more samples than
+the embedding dimension to avoid inflation; `E0a`'s own progression table showed the identical
+effect: FID dropped from 0.745 at n=200 to 0.029 at the full n=2099 test split, purely from
+sample-size). **This means the raw 1.0731 number should not be read as "MDM is 2x worse than
+claimed"** — it is at least partly an artifact of evaluating at n=128 instead of ~1000. What it
+*does* still support: even accounting for that inflation, the *relative* gap between this run's
+ground-truth FID (0.1339) and vald FID (1.0731) — roughly 8x — is in the same rough direction as
+the paper's own gap (0.002 to 0.544, roughly 270x, though these ratios are not on a scale where
+direct comparison is sound either). The honest summary is: **this specific reduced-scale run
+cannot distinguish "the pipeline correctly reproduces MDM" from "128 samples is too few to tell,"**
+and resolving that needs either a much larger sample count (which needs much more wall-clock time
+than was spent here) or a properly-sized ground-truth reference FID computed once, held fixed,
+and compared against — the second option is cheaper and is the recommended next step if this
+gate is revisited.
+
+**A process failure, disclosed rather than hidden:** the run's `Diversity` metric computation
+crashed on an assertion (`diversity_times=128` exactly equals `num_samples_limit=128`, failing
+`metrics.py`'s `activation.shape[0] > diversity_times` check) — an off-by-one in this project's
+own driver script, not in MDM's or the evaluator's code. FID and R-Precision had already been
+computed and printed before the crash, so they are not affected, but this result was assembled
+by hand from the run's stdout after the crash prevented the script's own JSON-writing code from
+executing — stated explicitly since it's a lower-confidence provenance path than a clean
+programmatic write, even though the numbers themselves were read directly off the log, not
+estimated or recalled.
+
+**Establishes:** MDM's checkpoint, code, and this project's vendored evaluator all run together
+end to end without further blocking errors (three real macOS/dependency issues were found and
+patched along the way — gated SMPL body model, `spawn` vs `fork` multiprocessing, and this
+project's own caption-parsing bug in `materialize_humanml3d_test_subset.py` — all documented in
+`third_party/motion-diffusion-model/PATCHES.md` and this project's `LEDGER.md`). At n=128, single
+replication, the measured FID does not fall within the pre-registered tolerance of the published
+number.
+
+**Does NOT establish:**
+- That MDM's published 0.544 is unreproducible in general — only that *this specific
+  reduced-scale attempt* did not land in tolerance. The sample-size caveat above means this run
+  cannot cleanly separate "real discrepancy" from "n=128 is too few," and the honest verdict is
+  FAIL-as-measured, not "MDM's number is wrong."
+- Anything about seed spread (only one replication was run — `LANDMINES.md` §7's seed-spread
+  discipline could not be applied here given the ~39-minutes-per-replication cost).
+- That this project's own future model (once one exists, per D-18/D-20's task reframing) would
+  show the same gap — E0b tests only whether *MDM's own released checkpoint* reproduces its own
+  published number under this project's harness, not anything about a model this project builds.
+
+**Next:** if this gate is revisited (not required to proceed — D-03's gate is satisfied by E0a
+per the director's Stage 2 review, and E0b was requested as an additional, harder check): fix the
+`diversity_times` off-by-one; consider computing a properly-sized (full test split) ground-truth
+reference FID once and comparing smaller `vald` batches against that fixed reference, rather than
+computing both from the same small n; or accept the ~12-hour full-scale cost if a definitive
+answer is ever actually needed.
