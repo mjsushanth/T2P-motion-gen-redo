@@ -1,0 +1,35 @@
+{
+  "experiment": "E1-pilot",
+  "description": "Zero-training measurement of caption-truncation information loss, same real test motions, faithful reproduction of the original project's own truncation rule (see script docstring for the quirk found in its regex).",
+  "batch_size": 32,
+  "seed": 10,
+  "truncation_diagnostic": {
+    "n_captions_total": 12542,
+    "n_used_first_sentence_fallback": 5621,
+    "pct_used_fallback": 0.44817413490671343,
+    "n_floored_to_3_words": 266,
+    "mean_words_before": 12.624780736724606,
+    "mean_words_after": 8.01403284962526
+  },
+  "matching_score": {
+    "full_caption": 2.9853234126650054,
+    "truncated_caption": 3.894501409859493
+  },
+  "r_precision": {
+    "full_caption": [
+      0.5058189655172414,
+      0.7053879310344827,
+      0.8012931034482759
+    ],
+    "truncated_caption": [
+      0.3911637931034483,
+      0.561853448275862,
+      0.65625
+    ]
+  },
+  "r_precision_top3_full": 0.8012931034482759,
+  "r_precision_top3_truncated": 0.65625,
+  "r_precision_top3_drop": 0.14504310344827587,
+  "reference_e0b_ground_truth_top3": 0.7969,
+  "note": "This measures text-encoder/retrieval information loss only, not generation quality. Does not replace E1B. See docs/EXPERIMENT_LOG.md E1-pilot entry."
+}

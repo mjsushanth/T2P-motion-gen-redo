@@ -445,3 +445,138 @@ in HF streaming order) is representative of the full test set the reference prot
 n~1000 scale (~5 CPU-hours) to remove the question entirely. Holding before spending either,
 to report the exhausted-leads status first. Still open, lower priority: fix the
 `diversity_times` off-by-one (now free to do without regeneration, since motions are cached).
+
+---
+
+## E1A-power — pilot power check, PRE-REGISTERED before running (review SUP-20260906-33)
+
+**Ran by:** `../scripts/e1a_power_check.py`   **Date:** 2026-09-06   **Seeds:** 10 (MDM default, single seed — this is a power check, not the E1A result itself)
+**Data:** HumanML3D test-split materialized subset (`third_party/motion-diffusion-model/dataset/HumanML3D/`, 4648 sequences — the only split materialized on disk right now; training and evaluating on the same subset is a real limitation, stated in "Does NOT establish" below, not hidden)
+**Record:** `../artifacts/e1/e1a_power_check_record.json` (to be written by the run)
+**Status:** PRE-REGISTERED, not yet run
+
+**Why this run exists, before any A-vs-B comparison:** the director (review pass, SUP-20260906-33)
+pointed out that E1's proposed budget (3,000 training steps) is 0.63% of MDM's published
+475,000-step budget — both E1A and E1B would be severely undertrained. If neither arm has learned
+to use text conditioning at all, they will score identically not because caption truncation is
+harmless, but because neither arm can exploit a caption in the first place — a floor effect that
+would be misread as "no measurable difference" when the real finding is "this budget has no power
+to detect the effect." Running E1A alone first, cheaply, checks for this before spending the full
+matrix's wall-clock on an experiment that cannot conclude either way.
+
+**Hypothesis (pre-registered):** at 3,000 training steps (single seed, real MDM `trans_enc`
+architecture, `docs/DECISIONS.md` D-23/D-24 config), the trained model's generated motions score
+above chance on R-Precision-top3 against their own captions — i.e., the model has learned
+*something* about the text-motion relationship at this budget, not zero.
+
+**Success criterion (pre-registered), decided before the run per `docs/DECISIONS.md` D-25's
+R-Precision-decisive regime:** chance-level R-Precision-top3 over a 32-candidate retrieval pool
+is **3/32 = 0.09375**.
+- **R-Precision-top3 clearly above 0.09375** (a margin larger than the measured ground-truth
+  batching noise floor of ~2/128 ≈ 0.016, per E0b) → the pipeline has learned text conditioning at
+  this budget; E1 has power; proceed to E1B and additional seeds.
+- **R-Precision-top3 at or near 0.09375** → this budget is below the threshold where E1 can
+  resolve anything; **stop** rather than run the full matrix. The correct next step is then a
+  design decision (more steps, a smaller/faster model, or an explicit "E1 is not affordable at a
+  budget that gives it power on this hardware" result — itself a legitimate, honestly-labeled
+  finding about what a laptop-scale rebuild can and cannot establish), not a silent re-run at a
+  bigger budget presented as if it were always the plan.
+
+| metric | value | seed spread |
+|---|---|---|
+| R-Precision-top3 (generated, n=128) | *(to be filled in)* | n=1, no spread — single-seed pilot only |
+| R-Precision-top3 (ground truth, n=128, same batches) | *(to be filled in)* | reference point, not a comparison target |
+| FID (generated vs. fixed reference) | *(to be filled in, secondary only per D-25 — not used to decide this check)* | n=1 |
+
+**Result:** *(to be filled in after the run — this entry is written before training starts,
+per the pre-registration discipline used for E0b and E2)*
+**Establishes:** *(to be filled in)*
+**Does NOT establish:** Trained and evaluated on the same materialized subset (HumanML3D's real
+train split is not yet materialized on disk) — a positive result here shows the architecture *can*
+exploit text at this budget when the eval captions were also seen in training, which is a
+necessary but weaker condition than generalizing to held-out captions. This check answers "is
+there enough training signal for E1's comparison to have any power at all," not "does this model
+generalize." Single seed — no seed-to-seed spread is measured by this pilot; E1's own seed
+handling comes at the next stage if this gate passes.
+
+---
+
+## E1-pilot — zero-training caption-truncation information-loss check, PRE-REGISTERED before running (review SUP-20260906-34)
+
+**Ran by:** `../scripts/e1_pilot_caption_truncation.py`   **Date:** 2026-09-06   **Seeds:** 10 (single seed — no model, no stochastic generation involved, so seed only controls DataLoader shuffling)
+**Data:** HumanML3D test-split materialized subset, real motions and real captions/tokens — no synthetic data
+**Record:** `../artifacts/e1/e1_pilot_caption_truncation_record.json` (to be written by the run)
+**Status:** PRE-REGISTERED, not yet run
+
+**Why this runs before E1B, and before the E1A power check finishes:** the director (review
+SUP-20260906-34) pointed out that E1's already-validated evaluator (ground-truth R-Precision
+reproduced to 0.06σ of a 20-replication reference, per E0b) can measure the caption-truncation
+half of F3's defect directly — same real motions, full captions vs. the original project's own
+truncation rule applied to the same captions, no model, no generation, minutes instead of hours.
+This is an **upper bound on E1B**: a trained model conditioned on truncated captions cannot
+recover information the truncation already destroyed, so whatever drop this measures is at least
+as large as what E1B could ever show, and probably larger (E1B's undertrained model attenuates
+the effect further, per the E1A-power entry above).
+
+**Hypothesis (pre-registered):** replacing full captions with the original project's
+first-action-clause truncation, on the *same* real test motions, measurably lowers R-Precision-top3
+in the validated evaluator's embedding space.
+
+**Success criterion / decision rule (pre-registered):**
+- **Drop is large** (well above the measured ground-truth batching noise floor of ~2/128 ≈ 0.016,
+  per E0b) → caption truncation destroys real, substantial text-motion alignment signal; E1B is
+  worth its ~7.5h training cost, and this number is a pre-registered prediction of roughly what
+  scale of effect E1B should find (attenuated further by undertraining, not amplified).
+- **Drop is near zero** → the truncation rule, as the original project actually implemented it,
+  does not remove meaningfully retrievable text-motion signal in this embedding space; **E1B can
+  be dropped or deprioritized**, and F3's caption-truncation half is answered in minutes rather
+  than hours. This would not mean F3 is wrong (F3's own pose-dispersion evidence stands
+  independently) — it would mean the *caption* side of the conditioning-mismatch story is weaker
+  than the *frame-selection* side, which the same logic cannot cheaply test (see below).
+
+**Scope, stated before running:** this measures information loss in the text encoder / retrieval
+space, on real motions. It does **not** establish that a model trained on truncated captions
+generates worse motion — only that truncation removes (or does not remove) N points of
+retrievable text-motion alignment. It is a predictor of E1B's effect size, not a substitute
+result for E1B itself.
+
+**Asymmetry, stated rather than papered over (per review):** there is no equally clean
+zero-training analogue for E1C (frame-selection). Comparing a frame-0-replicated static motion
+against real motion in the same retrieval space would reintroduce exactly the "static motion is
+unusual to a sequence-trained evaluator" confound that SUP-30 removed from the generation-based
+design. E1C stays a generation-based check only; this pilot does not extend to it.
+
+| metric | value | notes |
+|---|---|---|
+| R-Precision-top3, full caption (same motions) | **0.8013** | vs. E0b's ground-truth 0.7969 — 0.0044 apart, well inside the ~0.016 noise floor; validates this run's pipeline matches E0b's |
+| R-Precision-top3, truncated caption (same motions) | **0.6563** | |
+| Drop | **0.1450** | ~9x the 0.016 noise floor — large, not noise |
+| Matching Score (lower is better) | full 2.985 → truncated 3.895 | same direction, corroborates the R-Precision drop independently |
+| % of captions using the original's "first sentence" fallback vs. its conjunction-tag branch | **44.8% fallback** (5,621 / 12,542), mean words 12.62 → 8.01 | the conjunction-tag branch (CCONJ/SCONJ) did fire for the majority (55.2%) — the suspected-dead `/ADV then\|after\|before` literal-substring sub-branch was not separately instrumented, so this run cannot say whether *that specific* sub-branch ever fired; the CCONJ/SCONJ path alone is sufficient to explain most non-fallback cases |
+
+**Result:** Hypothesis confirmed, decisively. Caption truncation to the original project's own
+first-action-clause rule drops R-Precision-top3 by 0.145 (0.8013 → 0.6563) on the *same* real
+motions, ~9x the measured batching noise floor. This is not a small or marginal effect — it is a
+large, clean signal that the original's truncation rule destroys substantial text-motion
+alignment information, independent of any model, training budget, or generation step. The
+full-caption arm's 0.8013 sits within noise of E0b's independently-measured 0.7969, confirming
+this run's evaluator/pipeline matches the already-validated one rather than measuring something
+different.
+**Establishes:** The caption-truncation half of F3's conditioning-mismatch defect is real and
+large in the evaluator's own embedding space — a genuine information-destruction effect, not an
+artifact of small-n noise (`LANDMINES.md` §13/§14 concerns do not apply here: this is
+R-Precision, stable at this n, and the two arms are compared on identical real motions in the same
+run). **Per the pre-registered decision rule: this is a large drop, so E1B remains worth its
+~7.5h training cost**, and 0.145 is now a pre-registered prediction of the rough scale E1B should
+find — expected to be *attenuated*, not amplified, once the effect is filtered through an
+undertrained generative model (per the E1A-power entry above), so E1B finding a smaller drop than
+0.145 would not be surprising; E1B finding a *larger* drop, or a drop in the opposite direction,
+would be the more informative outcome and should be flagged as such rather than absorbed quietly.
+**Does NOT establish:** Generation quality under truncated conditioning — this is a text-encoder/
+retrieval-space measurement only; E1B (if it proceeds) still measures something this pilot cannot:
+whether a trained generative model's *output* degrades, not just whether the caption itself
+carries less retrievable signal. Anything about the frame-selection (E1C) half of the defect — no
+analogous zero-training check exists for it, per the asymmetry note above. Whether the specific
+`/ADV then|after|before` literal-substring sub-branch of the original's regex ever fires in
+practice (this run only distinguishes "any conjunction/adverb branch matched" from "fell through
+to first-sentence fallback," not which literal alternative matched).

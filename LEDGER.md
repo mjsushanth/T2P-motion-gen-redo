@@ -975,3 +975,126 @@ sign-off (it is their own finding being incorporated, but the numeric table and 
 mine and should be checked); if confirmed, materialize the HumanML3D train split and begin
 `src/t2p/` scaffolding as a thin wrapper around vendored MDM training — still not started.
 
+## [2026-09-06T14:10:00] Item 20 — E1-pilot run: caption truncation destroys real R-Precision signal (0.145 drop, ~9x noise floor); converged-loss reference script authored
+**Status:** complete (E1-pilot, run and result recorded); converged-loss reference script written,
+not yet run (CPU contention with the still-running E1A-power smoke test, see below)
+**Acceptance criteria:** the director (review SUP-20260906-34) proposed a zero-training check —
+reuse the already-validated evaluator to measure caption-truncation's effect directly on real
+motions, no model, no generation — as a cheap, pre-registered predictor of E1B's effect size
+before spending E1B's ~7.5h. Pre-registered in `docs/EXPERIMENT_LOG.md` before running (decision
+rule: large drop -> E1B worth running; near-zero drop -> E1B droppable).
+**Files changed:** `scripts/e1_pilot_caption_truncation.py` (new — faithfully ports the archived
+original project's own `_filter_for_static_poses` truncation logic, read directly from
+`<ARCHIVE>/DL_T2P_IMPL.ipynb` rather than approximated from memory: find the first CCONJ/SCONJ
+POS tag or the literal substring `/ADV then|after|before` in the pos-tagged caption, truncate
+before it, fall back to first-sentence if no match; ported including the original's own quirk
+where the ADV literal-substring sub-branch likely never matches given how tokens are actually
+formatted, not "corrected." Builds two independent `Text2MotionDatasetV2` instances from the same
+test-split cache, mutates one's `data_dict` tokens/captions in place to the truncated form, then
+runs both through the SAME `evaluate_matching_score` call MDM's own eval code uses — same real
+motions in both arms, only caption/token pairing differs, no training, no generation).
+`docs/EXPERIMENT_LOG.md` (E1-pilot entry filled in with the actual result). `artifacts/e1/
+e1_pilot_caption_truncation_record.json` (new). `scripts/e1_converged_loss_reference.py` (new,
+per SUP-20260906-35 — forward-only `training_losses()` on MDM's released 475,000-step checkpoint,
+same loader/batch distribution E1A trains on, fixseed'd identically before the measured loop, to
+give E1A's own loss trace a reference scale instead of an unanchored number; **written, not yet
+run** — see below).
+**Environment changes:** none.
+**Result:** full-caption R-Precision-top3 = **0.8013** (0.0044 from E0b's independently-measured
+ground-truth 0.7969 — well inside the ~0.016 noise floor, confirms this run's pipeline matches
+E0b's rather than measuring something different). Truncated-caption R-Precision-top3 = **0.6563**.
+**Drop = 0.1450, ~9x the noise floor — large, not noise.** Matching Score moved in the same
+direction (2.985 -> 3.895), an independent corroboration from a different statistic computed in
+the same run. Diagnostic: 44.8% of the 12,542 captions in the test split fell through the
+original's own "first sentence" fallback rather than matching a CCONJ/SCONJ tag; mean caption
+length dropped 12.62 -> 8.01 words. **Per the pre-registered decision rule: E1B remains worth its
+~7.5h cost**, and 0.145 is now a pre-registered prediction of the scale E1B should find (expected
+smaller once filtered through an undertrained model, per the E1A-power entry — a larger or
+opposite-direction result from E1B would itself be the more interesting finding, flagged as such
+rather than absorbed quietly).
+**Self-critique:** I did not independently verify whether the `/ADV then|after|before` literal
+substring ever actually matches in this dataset (I flagged it as a likely-dead sub-branch based on
+reading the regex, but the diagnostic only distinguishes "any conjunction/adverb branch matched"
+from "fell through to fallback," not which specific alternative in the regex fired) — stated as an
+open, unresolved detail in the EXPERIMENT_LOG entry rather than claimed as confirmed.
+**Verification performed:** ran the actual script against the real materialized test-split data
+and real evaluator, not a dry run — observed the 0.8013 vs. 0.7969 agreement as an unplanned
+internal consistency check on this run's own pipeline before trusting its truncated-arm number.
+Did not assume the drop would be large going in; the decision rule was written to accept either
+outcome before the number existed.
+**Next (per the director's proposed ordering — E1-pilot, then converged-loss reference, then the
+E1A power check):** run `scripts/e1_converged_loss_reference.py` against
+`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/model000475000.pt` (the released,
+475,000-step checkpoint already on disk from E0b) once the currently-running E1A-power smoke test
+(background, `--num-steps 4 --num-samples-limit 16`, launched to validate the power-check
+pipeline before committing to the real ~2.5h run) finishes — running both at once would contend
+for the same CPU cores and confound both scripts' own timing measurements, so sequencing rather
+than parallelizing here.
+
+## [2026-09-06T14:20:00] Item 21 — Converged-loss reference measured (0.056); E1A-power redesigned train-on-train after director caught a memorisation confound (SUP-37); train split materialization launched
+**Status:** complete (converged-loss reference; smoke-test kill; train-split materialization
+launched in background); E1A power check itself still not run
+**Acceptance criteria:** (1) per review SUP-20260906-35, get a reference loss scale for E1A's
+training trace by running MDM's released 475,000-step checkpoint through the same
+`training_losses()` call on the same loader/batch distribution, forward passes only. (2) per
+review SUP-20260906-37 (arrived while the train-on-test smoke test from Item 19 was still
+running): the E1A power check as designed trains and evaluates on the SAME materialized split
+(test — the only one on disk at the time), which means an above-chance R-Precision result could
+reflect memorisation of ~4,648 caption-motion pairs rather than any generalisable text
+conditioning, silently invalidating the one thing the power check exists to establish. Required
+fix: train on train, evaluate on test, materializing the train split first.
+**Files changed:** `scripts/e1_converged_loss_reference.py` (ran; see result below).
+`scripts/materialize_humanml3d_test_subset.py` (extended, not rewritten — added `--split
+{test,train}`; train ids prefixed `train_sample######` so they cannot collide with the existing
+unprefixed test ids in the shared `new_joint_vecs/`/`texts/` directories; guarded the Mean.npy/
+Std.npy copy with an existence check so re-running for a second split doesn't needlessly
+re-copy). `artifacts/e1/e1_converged_loss_reference_record.json` (new).
+**Environment changes:** none. Launched `materialize_humanml3d_test_subset.py --split train
+--n-samples 4000` in the background (HF streaming over network, filtering ~23k raw train rows
+down to 4000 that pass the length/caption checks — expected to take a while, not yet complete).
+**Result — converged-loss reference:** mean loss **0.0563**, median **0.0522** over 50 batches
+(batch_size 32, same loader construction E1A trains on, fixseed(10) immediately before the
+measured loop). Compare against the *untrained* random-init loss already observed in this
+project's own smoke tests: ~1.1-1.4 (Item 18's feasibility probe, Item 19's power-check smoke
+test, both random init, both very early steps). **That is roughly a 20-25x gap between untrained
+and fully-converged loss on this exact architecture/objective/data** — the reference scale
+SUP-35 asked for. Once E1A's real run exists, its final loss can be read against this 0.052-0.056
+band instead of standing alone with no scale.
+**Result — the train-on-test confound, and what was done about it:** the director is right and
+the flaw is disabling, not just a caveat: a model can score above the 0.09375 chance threshold
+purely by memorising which of the 4,648 training captions goes with which training motion, which
+is exactly what would happen if evaluated on the same split it trained on — the gate would then
+be passing for a reason unrelated to the question it exists to answer (does this budget teach
+generalisable text conditioning), and if the full matrix then ran on the same flawed premise,
+E1B's measured "gap" between arms would likely still appear (truncated captions carry less
+distinguishing information and so memorise worse), but would be **mislabeled** as a generation-
+quality effect when it would actually be a memorisation-capacity effect — the review's own words,
+"the same shape as the defect this whole project exists to correct," is the right frame and is
+recorded as such rather than softened. **Killed the still-running train-on-test smoke test
+(Item 19/20, PID from the earlier background launch) rather than let it finish** — it had already
+validated the train->generate->evaluate pipeline mechanics work end-to-end (confirmed from its
+partial output: 4 real training steps ran, one real 32-sample generation batch completed in
+615.6s, consistent with the ~39min/128-samples rate already established), so no mechanical
+information was lost by stopping it once the design itself needed to change anyway.
+**Self-critique:** I wrote, in Item 18/19's `docs/EXPERIMENT_LOG.md` entry, "trained and evaluated
+on the same materialized subset... a necessary but weaker condition than generalizing to held-out
+captions" — I saw the train-on-test issue and explicitly flagged it, but characterized it as a
+*weaker* result rather than working out that for a gate whose only job is detecting
+generalisable learning, memorisation is not a weaker version of the same signal, it is a
+different mechanism that can produce the identical observable number. Naming a limitation is not
+the same as working out whether that limitation disables the check — the second step is the one
+that actually matters and I skipped it. Recorded plainly rather than reframed as "the director
+just added more rigor."
+**Verification performed:** ran the converged-loss-reference script against the actual on-disk
+checkpoint (`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/model000475000.pt`,
+already verified in E0b), not a placeholder path — first attempt failed cleanly
+(`AssertionError: Arguments json file was not found!`) because a relative `--model-path` doesn't
+resolve against the actual checkpoint directory from this script's cwd; fixed by passing an
+absolute path, re-ran, got a real result rather than silently swallowing the first failure.
+**Next:** once the train-split materialization finishes, extend `e1a_power_check.py` to train on
+`split="train"` and evaluate on `split="test"` (currently both hardcoded to `"test"` — a real
+code change still needed, not just a flag flip), then run the real power check with the
+0.09375 gate exactly as pre-registered in `docs/EXPERIMENT_LOG.md`'s E1A-power entry (the
+pre-registration itself does not need to change, only the train/eval split wiring inside the
+script that was supposed to implement it).
+

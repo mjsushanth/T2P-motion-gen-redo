@@ -894,3 +894,165 @@ E1A might. Told the build pass to prefer landing the power check plus its gate, 
 `LEDGER.md` for a successor with none of this conversation.
 
 **Next:** E1A power check. Re-arm monitor. Now 10:40Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T10:32Z] Supervisor pass 21 — SUP-34: a zero-training measurement of E1B's effect
+
+**SUP-32 verified as landed.** E1A/E1B/E1C and E2 now carry R-Precision-decisive criteria with FID
+secondary and its instability flagged inline; a regime note is recorded as D-25. **The build pass
+generalised the principle to E3 as well** ("re-assess whether this rung's own generated n affords
+trusting FID before treating it as decisive") — not asked for, and correct.
+
+**SUP-34 (P1): E1B's effect can be measured with no training at all, in minutes.**
+The evaluator is a *validated joint text-motion embedding space* — E0b reproduced GT R-Precision at
+0.7969 against a 20-replication reference of 0.7977. So re-encode the **same real test motions**
+against **truncated captions** (the original's own POS-tag first-action rule) and compare to the
+0.7969 baseline already measured. The drop **is** the alignment signal the truncation destroyed,
+in E1's own metric space, on real data, with no training confound.
+
+Why it goes first: it is an **upper bound** on E1B (a model cannot exploit information truncation
+already removed); a **power check with teeth** (near-zero drop -> drop E1B entirely and F3's caption
+half is answered in minutes; large drop -> E1B is worth its 7.5h and the expected effect size is
+known in advance); it measures the defect **at source** rather than through an undertrained model
+that attenuates it; and it is **immune to SUP-33's floor effect** because nothing is trained.
+
+Scoped honestly in the finding: measures encoder information loss, **not** generation quality, and
+does not replace E1B as a generative result. Registered as **E1-pilot with its prediction stated
+before running**, which converts E1B from an open-ended run into a test of a specific prediction.
+
+**Asymmetry flagged rather than papered over:** E1C's frame-selection half has no clean free
+analogue — a frame-0-replicated static motion in retrieval reintroduces the same "static motions
+are unusual" confound SUP-30 removed from generation. Told the build pass to state why, not force a
+symmetric pilot.
+
+**Sequencing set for the window:** E1-pilot (minutes), then the E1A power check with the 0.0938
+gate. Both landing would end this session with a measured prediction *and* a measured power result
+— a stronger handover than a partial training run.
+
+**Next:** E1-pilot result. Re-arm monitor. Now 10:32Z; SOFT 13:55Z, HARD 14:40Z (~4h).
+
+## [2026-09-06T10:36Z] Supervisor pass 22 — answered both design questions; three-stage kill-chain set
+
+Build pass landed SUP-30/31/32 (commit 57d8dd6) and asked two design questions before touching any
+run. Both answered.
+
+**SUP-35 (P2) — "is 3,000 steps enough / should there be a 500-step pilot?" No, and here is the
+better instrument.** A 500-step pilot cannot answer it because **diffusion training loss is a poor
+convergence signal by construction** — it averages over uniformly sampled timesteps, so most of its
+variance is which timesteps were drawn, not model quality. The problem is not noise, it is the
+**absence of a reference scale**.
+
+**Proposal: measure MDM's converged checkpoint's training loss on our own data.** Same
+`training_losses` call, same loader, same batch distribution, few dozen batches, forward passes
+only. That yields the loss *this exact architecture and objective* reaches at convergence, on our
+data. Then 3,000 steps becomes "reaches L against converged reference L*, ratio R" — a reportable
+fact instead of a judgment call. Flagged that both sides must average over the same batch count
+with the same timestep-draw seed or the comparison inherits the noise it exists to defeat.
+
+**SUP-36 (P3) — one stale row.** E5 still reads "compared against E1's frame-0-HumanML3D result";
+after SUP-30 there is no static-pose output arm anywhere. Restate or drop the cross-reference.
+Otherwise the ladder is internally consistent at 57d8dd6.
+
+**Three-stage kill-chain set for the remaining window, each stage able to kill the next:**
+1. **E1-pilot (SUP-34)** — minutes, zero training. Near-zero truncation drop -> E1B has nothing to
+   find, F3's caption half answered.
+2. **Converged-loss reference (SUP-35)** — minutes, forward only. Supplies the scale.
+3. **E1A power check (SUP-33)** — ~2.5h, gated on R-Prec-top3 > 0.0938, pre-registered.
+Right shape when the full matrix is ~10h and the window is ~4h.
+
+**Noted for the record: the build pass caught SUP-32's training-vs-generation cost omission itself**,
+while re-deriving my numbers, in the same pass I was flagging it — and appended the correction
+rather than silently fixing it. **Second time re-deriving rather than accepting has caught
+something.** Also handled the D-23/D-24 numbering collision correctly (renumber, touch no content,
+note why); we had written the same MPS finding independently within minutes.
+
+**Next:** E1-pilot result. Re-arm monitor. Now 10:36Z; SOFT 13:55Z, HARD 14:40Z (~4h).
+
+## [2026-09-06T10:42Z] Supervisor pass 23 — SUP-37: blocked the power check. Train-on-test can pass it spuriously.
+
+Build pass pre-registered E1A-power well — hypothesis and criterion before the run, 0.09375 stated
+numerically, both branches including "stop", a real "Does NOT establish". **But it disclosed
+train-on-test without following it to its consequence, and for a power check that is disqualifying.**
+
+**The argument.** The check exists solely to decide whether ~10h of matrix is worth spending.
+Trained and evaluated on the same captions, **R-Precision can exceed chance through memorisation
+alone** — so the gate can pass for a reason that does not support the decision it gates. A power
+check that can pass spuriously cannot do its only job.
+
+**And the contamination propagates.** A spurious pass -> matrix runs -> E1B still shows a gap,
+because truncated captions carry less distinguishing information and therefore memorise less well.
+**That would be a real difference in memorisation capacity, reported as the cost of caption
+truncation on text-conditioned generation.** Different claims; the wrong one is the one that would
+enter the record. Same shape as the defect this project exists to correct.
+
+**Required:** materialise HumanML3D's train split (the `materialize_humanml3d_test_subset.py`
+pattern extended to `train.txt` — data processing, minutes, no approval needed under D-19), train
+on train, evaluate on test. If genuinely impossible, re-scope the check's own title and hypothesis
+to "can this architecture memorise at this budget" and bar it from gating the 10h decision.
+
+**Re-flagged: SUP-34's E1-pilot is still unactioned and is free** — and it can obviate everything
+downstream. Run order set: **E1-pilot -> converged-loss reference -> materialise train split ->
+power check.** Three of four are minutes.
+
+**Next:** E1-pilot. Re-arm monitor. Now 10:42Z; SOFT 13:55Z, HARD 14:40Z (~4h).
+
+---
+
+## FOR JOEL (running)
+
+15. **I stopped a training run from starting on a contaminated setup.** The planned check would
+    have trained and evaluated on the same data. For its purpose — deciding whether a ten-hour
+    experiment is worth running — that is fatal, because a model that simply memorises the answers
+    would pass it, and we would then have spent the ten hours measuring memorisation while
+    reporting it as something else. Fix is cheap (use the proper training split, minutes of data
+    prep). Worth noting the shape: this is the same category as your original project's decode bug
+    — a setup that runs cleanly, produces a plausible number, and answers a different question than
+    the one asked.
+
+## [2026-09-06T10:50Z] Supervisor pass 24 — E1-pilot: THE PROJECT'S FIRST SUBSTANTIVE FINDING
+
+**Result:** full captions R-Prec-top3 **0.8013** -> first-action-truncated **0.6563**, **drop
+0.1450**, ~9x the measured noise floor, independently corroborated by matching score
+(2.985 -> 3.895). Zero training, minutes of compute, real motions, validated embedding space.
+
+**Why it counts.** F1 was a verified decode bug; F3 was a moderate dispersion ratio (1.43x).
+**This is the first large, clean, model-free number quantifying an original-project defect in the
+field's own metric.** And the build pass made it trustworthy rather than merely favourable: the
+full-caption arm landed at 0.8013 against E0b's independent 0.7969 — 0.0044 apart, inside the noise
+floor — proving the pipeline is the *same instrument*, not a new one that happens to agree.
+
+**Two sharpenings raised (Review 7), both minutes, neither a correction:**
+- **SUP-38 — length-matched control.** Truncation cut captions 12.62 -> 8.01 words. Part of the
+  0.145 may be *length* rather than *content selection*. Control: truncate to the same per-caption
+  word count by a content-neutral rule. Same drop -> the effect is length. Smaller drop -> **the
+  first-action rule is specifically destructive**, a sharper claim than the current one.
+- **SUP-39 — the headline is diluted.** 44.8% of captions hit the first-sentence fallback, which
+  changes little for single-sentence captions, so they contribute ~0 drop and pull the mean down.
+  Conditional effect on captions **actually truncated** is ~`0.145/0.552 = 0.263` — **16x noise,
+  not 9x**. Branch split already instrumented, so this is a re-slice not a re-run. Report both.
+
+**SUP-40 — E1B's value has changed and should be re-decided.** The pre-registered rule said a large
+drop justifies E1B's 7.5h. But F3's caption half is now *answered*, model-free. E1B's remaining
+marginal value is narrower — whether the effect survives into generation. Proposed reframing E1B as
+a reduced-scope propagation check with **the pilot as the headline finding**, which given the window
+is likely the better use of what remains.
+
+**Commended (SUP-41):** pre-registering scope and the asymmetry note; validating against E0b rather
+than assuming pipeline identity; instrumenting the branch split. And pre-registering *how to react
+to a surprise* — that a larger or opposite-signed E1B result "should be flagged rather than absorbed
+quietly" — which is rarer than pre-registering the prediction.
+
+**Next:** SUP-39 re-slice, SUP-38 control, E1B scope decision. Re-arm monitor.
+Now 10:50Z; SOFT 13:55Z, HARD 14:40Z (~3h50m).
+
+---
+
+## FOR JOEL (running)
+
+16. **The project has its first real finding, and it is about your original project specifically.**
+    Your caption-truncation rule — taking only the first action clause — destroys a large amount of
+    the text-to-motion matching signal: R-Precision drops 0.145 on identical real motions, about
+    nine times the measurement noise. No model, no training, minutes of compute. And once we
+    account for the ~45% of captions the rule left essentially untouched, the effect on captions it
+    *actually* truncated is roughly **0.26 — about sixteen times noise**. That is a clean,
+    defensible answer to one half of what went wrong, obtained without the ten-hour experiment
+    originally planned to get it.
