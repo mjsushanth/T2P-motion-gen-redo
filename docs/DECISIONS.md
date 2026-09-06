@@ -89,34 +89,110 @@ Joel's standing rule. Write the env file, print the exact command, stop.
 
 ## Part C — Technical direction
 
-### D-11 — Rotation-space output with differentiable forward kinematics · PENDING, strongly favoured
-Predicting joint positions forces anatomical validity to be a *loss term* that fights the data
-term and still admits invalid poses. Predicting joint rotations over a fixed skeleton makes
-bone lengths exactly correct by construction (`LANDMINES.md` §8). This is what the established
-text-to-motion models do.
-**Rejected (provisionally):** position output plus bone-length loss — the predecessor's design.
-**Decided by:** Stage 2's `REBUILD_SPEC.md`, argued explicitly rather than assumed.
+### D-11 — Redundant-vector baseline, rotation+FK as an ablation · JUDGEMENT (decided 2026-09-06)
+**Argued in full in `REBUILD_SPEC.md` §3.** Predicting joint positions forces anatomical
+validity to be a *loss term* that fights the data term and still admits invalid poses; predicting
+rotations over a fixed skeleton makes bone lengths correct by construction (`LANDMINES.md` §8's
+underlying logic, corrected 2026-09-06). **Correction to this decision's original premise:** §8
+previously claimed rotation+FK "is what MDM and MotionDiffuse do" — checked directly against both
+papers (this session, then independently re-confirmed by the director session against MDM's own
+paper, which states "since foot contact and joint locations are explicitly represented in
+HumanML3D, we don't apply geometric losses in this section") — **that claim was false.** Both
+predict the same redundant vector HumanML3D itself encodes (positions + rotations together), not
+rotation-only. **Decision, argued from first principles instead of false precedent:** the
+redundant vector is the **baseline** (matches the field, matches what D-03's published-number
+target was computed on); rotation+FK (via already-vendored, MIT-licensed
+`primary_source/skeleton.py`) is an **ablation rung (E3)**, testing whether making bone-length
+correctness structural — a real, F1-grounded hypothesis (bone lengths are a *verified dataset
+constant*) — measurably beats the baseline.
+**Rejected:** position output plus bone-length loss (the predecessor's design, dominated either
+way). Rotation-only as the *baseline* (deviates from the reproducible-published-number strategy).
+**Would reverse if:** E3 beats the E2 baseline decisively — promotes to primary, ladder labeling
+inverts. This is what the ladder is designed to surface, not a failure of the plan.
 
-### D-12 — Dataset choice is open between corrected HumanML3D and PoseScript · PENDING
-HumanML3D is a *motion* benchmark being used for *static poses*, which creates the caption/frame
-mismatch in `LANDMINES.md` §3. PoseScript is built for static poses and has published
-benchmarks. Current lean: **PoseScript as the primary, corrected HumanML3D retained as the
-control** so the size of the decode bug is itself measurable.
-**Decided by:** Stage 2, after licence, size and code availability are VERIFIED — not assumed.
+### D-12 — Full-sequence text-to-motion on corrected HumanML3D, not static pose · JUDGEMENT (decided 2026-09-06)
+**Argued in full in `REBUILD_SPEC.md` §0-§2.** Superseded by a broader reframing than originally
+scoped — see D-18. Within that reframing: **corrected HumanML3D, full sequences via
+`recover_from_ric`**, decided over PoseScript, because the Guo et al. evaluator
+(`EricGuo5513/text-to-motion`, VERIFIED MIT) gives a concrete, fetchable D-03 gate target that
+PoseScript's thinner, paper-specific tooling doesn't, and because full-sequence generation
+eliminates F3's caption/frame mismatch by construction rather than needing a mitigation.
+**PoseScript's poses are confirmed SMPL+H G format** (peer review SUP-20260906-03) — both
+HumanML3D-derived and PoseScript-derived data inherit the identical AMASS/SMPL non-commercial
+licence chain (`REBUILD_SPEC.md` §1, `POSITIONING.md` §1), so licence terms do not distinguish
+between them; the evaluator-maturity argument does.
+**Rejected:** PoseScript as primary (weaker D-03 candidate). Frame-0-only static pose (the
+original's framing) — retained as ablation rung E1, not discarded: it converts F3 from a
+dispersion ratio into a measured performance delta.
+**Would reverse if:** the Guo evaluator turns out unreproducible for a reason not yet known
+(E0 fails) — PoseScript's own native metrics become the more pragmatic fallback target.
 
-### D-13 — Text encoder choice is open · PENDING
-CLIP ViT-B/32's pooled embedding is a known-weak signal for laterality and spatial relations
-(`LANDMINES.md` §6). Alternatives: token-level CLIP conditioning, a T5-family encoder, or
-mirror augmentation. Whichever is chosen, a laterality-specific metric is mandatory so the
-failure mode stays visible.
-**Decided by:** Stage 2, with evidence fetched rather than recalled.
+### D-13 — Text encoder: CLIP token-level baseline, DistilBERT ablation, T5 explicitly rejected · JUDGEMENT (decided 2026-09-06)
+**Argued in full in `REBUILD_SPEC.md` §4.** CLIP ViT-B/32's pooled embedding is a known-weak
+signal for laterality/spatial relations — evidenced by real external CLIP literature
+(arXiv:2311.11477, arXiv:2305.14897), **not** by the original project's own claim, which is now
+doubly unverifiable: F6 (CFG folded into the training loss, no conditioning dropout) means the
+original's model was never actually required to use the text at all, so its own left-right
+failure is not evidence CLIP specifically was the cause. **Decision:** CLIP token-level
+(per-token) conditioning as baseline — cheapest fix targeting the specific documented failure
+(the pooled bottleneck); DistilBERT as ablation, following TEMOS's HumanML3D-adjacent precedent;
+**T5 explicitly rejected** — a HumanML3D-scale model that tried it saw no gain, domain-specific
+counter-evidence to Imagen's general T5-over-CLIP finding. Laterality-specific metric (E4) is
+mandatory regardless of choice.
+**Rejected:** unchanged pooled CLIP (the failure mode this fixes). Full T5 swap (argued against
+above). Sentence-transformer embeddings (no source found evaluating spatial/lateral behaviour).
+**Would reverse if:** E4's laterality metric shows token-level CLIP still fails badly — DistilBERT
+promotes to primary, or explicit mirror augmentation gets added regardless of encoder choice.
 
-### D-14 — The three original phases are preserved as reproducible ablation configs · JUDGEMENT
-Phase 1 must remain runnable. Reproducing the original failure *with correct instrumentation*
-is part of the deliverable: it turns "we had a bug" into a measured delta.
-**Rejected:** deleting the broken configuration as dead code.
-**Would reverse if:** forensics refutes F1, in which case there is no delta to measure and the
-phases become historical context only.
+### D-14 — Reproduce the original as ONE reference run; drop the phase-by-phase ablation ladder · JUDGEMENT (revised 2026-09-06, supersedes the original text below)
+**Original text (2026-09-05, superseded, kept for the record):** "Phase 1 must remain runnable.
+Reproducing the original failure with correct instrumentation is part of the deliverable: it
+turns 'we had a bug' into a measured delta. Rejected: deleting the broken configuration as dead
+code. Would reverse if forensics refutes F1, in which case there is no delta to measure and the
+phases become historical context only."
+
+**Why this changed:** the director session's supervisor audit found F6 (CFG folded into the
+training loss — the objective has a zero-loss solution requiring no text dependence at all) and
+F7 (one timestep steps the whole batch, corrupting the anatomy-loss input for ~95/96 samples per
+step). Phase 2's "anatomical breakthrough" enforced a *dataset constant* (F1's corollary) using a
+*mis-stepped estimate* (F7); Phase 3's "text conditioning" was trained under an objective that
+rewarded ignoring text entirely (F6). **The three-phase narrative does not describe what actually
+happened — it describes three independent bugs compounding.** Faithfully reproducing all three
+phases would measure the cost of that compounding, not a clean, interpretable delta.
+**Revised decision (argued in full in `REBUILD_SPEC.md` §0a):** keep exactly **one**
+original-configuration run as a documented historical reference point (provenance, not an
+ablation rung with a success criterion). Drop the phase-by-phase ladder as Stage 3/4's organizing
+structure in favor of the corrected-pipeline ablation ladder (E0-E5, `REBUILD_SPEC.md` §6), which
+isolates the actually useful comparison (E1: task framing, correctly instrumented, free of the
+CFG/timestep/normalisation bugs entirely).
+**Rejected:** faithfully reproducing all three original phases as ablation rungs (the original
+plan) — see reasoning above. Deleting the original configuration as dead code (still kept, as one
+reference run).
+**Would reverse if:** a future stage finds a way to cleanly separate the three phases' bugs from
+each other well enough that a faithful three-phase reproduction would isolate one variable at a
+time — not expected, but not ruled out.
+
+### D-18 — Task reframed: full text-to-motion sequences, not static single-pose · JUDGEMENT (new, 2026-09-06)
+**Argued in full in `REBUILD_SPEC.md` §0.** The original task (text -> one static pose, frame 0
+of a motion sequence) is not inherited as this project's task. **Decision:** the primary research
+task becomes text -> full motion sequence, on corrected HumanML3D. This eliminates F3's
+caption/frame mismatch by construction (a sequence's caption describes the whole sequence, no
+frame-selection problem exists), gives access to a mature, fetchable, MIT-licensed evaluator
+(`EricGuo5513/text-to-motion`) with a clear published-number ladder (MDM FID 0.544 -> MoMask FID
+0.045) to target for D-03, and lets F1's fix transfer directly and cleanly (same representation,
+same decode). F3's finding is not discarded — it becomes ablation rung E1, a controlled
+measurement of exactly how much of a performance gap is attributable to task framing versus
+everything else, which converts a 1.4x dispersion ratio into an actual measured delta nobody else
+can produce, because nobody else made this exact mistake to measure against.
+**Rejected:** continuing the original's static-single-pose framing "corrected" — F1 (the original
+architecture's design was compensation for a decode bug) and F6 (the architecture was never
+meaningfully evaluated at all) together mean there is little reason to inherit the original task
+alongside fixing its bugs; per D-17, this is a redo, not a repair.
+**Would reverse if:** the director session's review of `REBUILD_SPEC.md` disagrees with this
+reframing — the stated fallback is D-12 as originally scoped (PoseScript vs. corrected
+HumanML3D, both static-pose); nothing in the rest of the spec is irreversible either way.
+**Gate status:** ACCEPTED by the director session's Stage 2 gate review, 2026-09-06 — "the
+argument holds... go and flip D-11/D-12/D-13 out of PENDING... and add a D-18."
 
 ---
 

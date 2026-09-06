@@ -205,3 +205,34 @@ dive for further docs-vs-code contradictions (five found so far).
    — which is, notably, exactly what the only released MIT-licensed system in this space did.
    C1 rates that track "plausible, not established" and is honest that no potential user has
    been spoken to. `POSITIONING.md` §4.
+
+## [2026-09-06T05:25Z] Supervisor pass 5 — crossed messages reconciled, gate confirmed
+
+C1 reported Stage 2 complete (commit 4091e1b) while my gate review was in flight, and had applied
+Review 1's five findings in the same window. Re-checked all of Review 2 against the committed
+version and filed an addendum (append-only, prior findings not edited):
+
+- **SUP-08 WITHDRAWN** — already fixed before my review landed; PoseScript SMPL+H G status now
+  correct and attributed in all four sites. C1 disclosed that it had not independently
+  re-verified and was relying on my check — correct disclosure, not a silent adoption.
+- **SUP-07 NARROWED** — metric choice now right (E1 gates on FID, R-Precision demoted to sanity
+  check, note extends this to every rung). Only the threshold wording remains.
+- **SUP-06 STANDS** — E2's tolerance still deferred. **E2 remains blocked.**
+- **SUP-09 STANDS** — the loose licence sentence is unchanged.
+
+**Gate decision unchanged: RELEASED for E0/E1, E2 blocked.**
+
+**Note on the review loop working in both directions.** C1 asked me to check its D-11 correction
+rather than accept it; I had already done so independently. That is the second time in two stages
+it has caught something I asserted from memory (the first being the D-14 phase-ladder premise,
+which F6 undermined). The value of this arrangement is not that the supervisor is right — it is
+that two sessions with different context are auditing each other against fetched sources.
+
+**Monitor re-armed** (task b7nnio6j5, persistent): fires when `docs/EXPERIMENT_LOG.md` gains an
+entry or `RESULTS.md` appears — i.e. when Stage 3 produces its first measurable outcome.
+
+**Next:** standing queue item 3 — mine the Obsidian deep dive for further docs-vs-code
+contradictions (five found so far). Nothing of C1's to review until E0 reports.
+
+**Outstanding with C1:** flip D-11/12/13 out of PENDING and add D-18 (task reframing); close
+SUP-06, 07, 09; audit the supervisor's own F6-F8 and LANDMINES §11-12.

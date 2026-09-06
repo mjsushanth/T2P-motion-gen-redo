@@ -66,6 +66,56 @@ one.
 
 ---
 
+## 0a. D-14 revisited — the three original phases are not a clean delta to reproduce
+
+`docs/DECISIONS.md` D-14 (written before this research) says to preserve the original's three
+training phases as reproducible ablation configs, so that "reproducing the original failure with
+correct instrumentation" turns F1 into a measured delta. **The director session flagged, and I
+agree, that F6 undermines this premise, not just complicates it.** Phase 2's "anatomical
+breakthrough" enforced a dataset constant (F1's corollary) using a mis-stepped batch estimate
+(F7) — it was measuring a corrupted estimate of a known quantity. Phase 3's "text conditioning"
+was trained under an objective with a zero-loss solution that requires *no* text dependence
+(F6) — its lower loss is not evidence the added text conditioning did anything. **The three-phase
+narrative does not describe what actually happened; it describes three independent bugs
+compounding.** Faithfully reproducing all three phases would measure the cost of that
+compounding, which is not a clean, interpretable number.
+
+**Resolution, adopted from the director's proposal:** keep **exactly one** original-configuration
+run as a documented historical reference point (for provenance, not as an ablation rung with a
+success criterion) — drop the phase-by-phase ladder as the *organizing structure* for Stage 3/4
+in favor of the corrected-pipeline ablation ladder in §6, which already contains the actually
+useful comparison (E1: task-framing, correctly instrumented, isolated from the CFG/timestep/
+normalisation bugs entirely). This is a genuine, better resolution than the one this document's
+own drafting started from — see `docs/DECISIONS.md` D-14's updated status.
+
+**Corollary — the original's architecture is genuinely untested, not just its task framing.**
+F1 (wrong 66 dims) plus F6 (CFG folded into the training loss, with no conditioning dropout
+anywhere) together mean the UNet-plus-cross-attention design, the anatomy-loss weighting, the
+guidance-ramp schedule, and the pooled-CLIP-embedding choice were **never evaluated under
+conditions where they could have shown their value.** None of this project's architecture
+decisions are evidence about anything, and none should be ported forward on the assumption they
+solved a real problem (per D-17). The ablation ladder in §6 treats architecture as genuinely open
+for exactly this reason — it does not start from "the original's UNet, corrected."
+
+**A concrete, testable consequence for Stage 3: conditioning dropout is mandatory, and its
+absence must be a tripwire test, not a code-review habit.** The correct training mechanism is:
+
+```python
+mask = torch.rand(batch_size, device=dev) < 0.1
+cond = torch.where(mask[:, None], null_embedding, text_embeddings)
+loss = F.mse_loss(self.model(noisy, t, cond), noise)      # ONE forward pass, no guidance formula
+```
+
+with the classifier-free-guidance formula applied **only** in the sampling loop, never in the
+loss. Per `docs/CODE_MAP.md`'s planned `tests/` emphasis on silent failure modes: Stage 3 must
+include a test that **fails** if any function that computes a training loss also accepts a
+`guidance_scale` parameter greater than 1.0 — i.e. a structural assertion that F6's exact shape
+of bug cannot silently recur. This is the kind of test that would have caught F6 on the first
+commit, and its absence in the original project is precisely what let a mathematically-guaranteed
+zero-loss-without-learning bug run for an entire training phase.
+
+---
+
 ## 1. D-12 — Dataset: corrected HumanML3D, full sequences (not frame 0)
 
 **Recommendation: corrected HumanML3D (train/val/test splits as released), decoded via
@@ -160,6 +210,24 @@ inverts. This is exactly the kind of result the ladder is designed to surface.
 
 ## 4. D-13 — Text encoder: CLIP token-level as baseline, DistilBERT as the validated alternative
 
+**A diagnosis correction, load-bearing for how this section should be read.** The original
+project attributed its left-right/laterality failures to CLIP's weak spatial embeddings
+(`LANDMINES.md` §6, citing an UNVERIFIED 0.03 cosine-distance measurement). **F6 (CFG folded into
+the training loss, no conditioning dropout anywhere) means the original's model was never
+actually required to use the text at all** — the training objective had a zero-loss solution
+requiring no text dependence whatsoever. So the original's own left-right failure is **not
+evidence CLIP was the cause**; CLIP conditioning was never meaningfully exercised in that
+pipeline, full stop. "CLIP is the problem" should not be carried forward as an established
+finding from the original project — it is now doubly UNVERIFIED there (the original 0.03 number
+was already flagged unverified; F6 additionally removes the mechanism by which CLIP's weakness
+could have caused the observed symptom).
+
+**What still stands, independently:** the recommendation below is **not** based on the original's
+broken experiment. It is based on the external CLIP literature fetched in `LANDSCAPE.md` §5.1 —
+real papers evaluating real CLIP-style models on real spatial-relation tasks (arXiv:2311.11477,
+arXiv:2305.14897), which is evidence about CLIP in general, independent of anything the original
+project measured or failed to measure. The recommendation holds on that evidence alone.
+
 **Recommendation:**
 
 - **Baseline: CLIP's per-token (sequence) hidden states via cross-attention, not the pooled
@@ -204,7 +272,7 @@ fix regardless of encoder choice.
 | HumanML3D decode/FK (`paramUtil.py`, `motion_representation.ipynb`, `common/skeleton.py`, `common/quaternion.py`) | **Already vendored**, `primary_source/` | VERIFIED MIT, `primary_source/LICENSE` added |
 | Guo et al. evaluator (`EricGuo5513/text-to-motion`) | **Vendor** — this is D-03's actual gate instrument | VERIFIED MIT (`GET /repos/EricGuo5513/text-to-motion/license`, this session, 2026-09-06) |
 | MDM reference implementation (`GuyTevet/motion-diffusion-model`) | **Reference only** (read for the D-03 checkpoint/eval procedure); do not fork into `src/t2p/` — our denoiser is our own architecture | VERIFIED MIT (same check, this session) |
-| HumanML3D raw motion data (via HF `TeoGchx/HumanML3D` or the original AMASS pipeline) | **Stream, do not bulk-redistribute** | Inherits AMASS/SMPL non-commercial terms (§1) — this project only streams for local computation, does not redistribute the data itself, which is the actual restriction (per HumanML3D's own README, the restriction is on *distributing the data*, not on downstream research use) |
+| HumanML3D raw motion data (via HF `TeoGchx/HumanML3D` or the original AMASS pipeline) | **Stream, do not bulk-redistribute** | Inherits full AMASS/SMPL non-commercial terms (§1): **redistribution is barred, commercial downstream use is separately and explicitly barred** ("training methods/algorithms/neural networks/etc. for commercial use" is prohibited), and **non-commercial research use is permitted** — this project streams for local computation and does not redistribute the data itself, which satisfies the redistribution clause specifically, not the licence as a whole. Corrected per peer review SUP-20260906-09, which flagged the prior phrasing here as reading like "use is unrestricted." |
 | PoseScript (if pursued, §2) | **Not yet** — complete SMPL/SMPL-X registration first, licences stack | VERIFIED CC BY-NC-SA 4.0 (own terms) + VERIFIED SMPL (confirmed by peer review, SUP-20260906-03) |
 | SMPL / SMPL-X / `smplx` package | **Do not adopt** for the primary task — `skeleton.py`'s FK already covers the representation this project uses; only revisit if a future track needs mesh-level output | VERIFIED non-commercial, registration-gated, no redistribution (`LANDSCAPE.md` §4.1/4.2/4.3) |
 | ControlNet + OpenPose SDXL checkpoint (positioning demo only, not the research track) | **Use via `diffusers`, pretrained, no fork** | Not independently re-verified in this pass — check the specific HF checkpoint's licence card before using in `POSITIONING.md`'s demo; flagged as a to-do, not yet done |
@@ -219,10 +287,10 @@ Each rung is a pre-registered hypothesis with the metric that decides it, per
 | rung | hypothesis | success criterion | what it settles |
 |---|---|---|---|
 | **E0 (gate, not a result)** | The vendored Guo et al. evaluator reproduces a published FID to within a stated tolerance on a released checkpoint (e.g. MDM's own) | FID within +/-5% of the paper's reported 0.544 (or the checkpoint actually used) | D-03: is the harness trustworthy at all |
-| **E1 — reproduce the original's failure, correctly instrumented** | The original's exact task framing (frame-0-only static pose, corrected decode) produces measurably worse text-alignment than full-sequence generation, on the *same* corrected pipeline | **FID** measurably worse for frame-0-only vs. full-sequence, holding architecture fixed (decisive); R-Precision-top3 reported alongside as a sanity check only, not decisive — see note below | Converts F3 from "moderate effect, ~1.4x dispersion" into an actual measured performance delta — the single most valuable number this project can produce (per `AUTONOMOUS_RUN_PROMPT.md` Stage 3 item 4) |
-| **E2 — redundant-vector baseline** | A from-scratch diffusion model, predicting the full 263-d vector (matching MDM/MotionDiffuse's actual representation), reaches FID in the neighborhood of MDM's 0.544 on a laptop-MPS budget | FID within a stated multiple of MDM's number (exact tolerance to be set once E0 establishes measurement noise) | First honest baseline number this project has ever had |
+| **E1 — reproduce the original's failure, correctly instrumented** | The original's exact task framing (frame-0-only static pose, corrected decode) produces measurably worse text-alignment than full-sequence generation, on the *same* corrected pipeline | **FID** measurably worse for frame-0-only vs. full-sequence **by more than the seed-to-seed spread** (`LANDMINES.md` §7 — same threshold discipline as E3, per peer review SUP-20260906-07: "measurably worse" alone is not a criterion), holding architecture fixed; R-Precision-top3 reported alongside as a sanity check only, not decisive | Converts F3 from "moderate effect, ~1.4x dispersion" into an actual measured performance delta — the single most valuable number this project can produce (per `AUTONOMOUS_RUN_PROMPT.md` Stage 3 item 4) |
+| **E2 — redundant-vector baseline** | A from-scratch diffusion model, predicting the full 263-d vector (matching MDM/MotionDiffuse's actual representation), reaches FID in the neighborhood of MDM's 0.544 on a laptop-MPS budget | FID within a stated multiple of MDM's number. **Process requirement (peer review SUP-20260906-06): this tolerance must be fixed and written into `docs/EXPERIMENT_LOG.md` as its own dated entry, after E0 completes but strictly before E2 is run** — deferring a threshold until after a measurement exists is how pre-registration dies, however honest the intent. `LEDGER.md` must show this ordering (E0 result recorded, then the E2 tolerance entry dated after it, then E2 itself dated after that) | First honest baseline number this project has ever had |
 | **E3 — rotation+FK ablation** | Predicting rotations-only + root params, decoded via `skeleton.py`'s FK, beats E2 on FID and/or a direct bone-length-error metric | FID or bone-length-error improves over E2 by more than the seed-to-seed spread (`LANDMINES.md` §7) | Tests D-11's structural-correctness argument empirically, not just logically |
-| **E4 — text-encoder ablation** | Token-level CLIP (baseline) vs. DistilBERT (ablation), both measured on a laterality-specific metric in addition to aggregate FID/R-Precision | Laterality metric improves measurably for at least one alternative over pooled-CLIP-equivalent | Tests D-13 empirically; also finally re-measures the original's UNVERIFIED 0.03 cosine-distance laterality claim (`LANDMINES.md` §6) under a real metric |
+| **E4 — text-encoder ablation** | Token-level CLIP (baseline) vs. DistilBERT (ablation), both measured on a laterality-specific metric in addition to aggregate FID/R-Precision | Laterality metric improves measurably for at least one alternative over pooled-CLIP-equivalent | Tests D-13 empirically; also the first time laterality is actually measured under a pipeline where text conditioning is real (F6 means the original never exercised this at all, so this is a fresh measurement, not a re-measurement of the original's UNVERIFIED 0.03 cosine-distance claim, `LANDMINES.md` §6) |
 | **E5 (stretch, not gating) — PoseScript comparison** | If pursued (§2), the same pipeline's static-pose mode, evaluated on PoseScript's own metrics, is compared against E1's frame-0-HumanML3D result | Both numbers reported side by side, explicitly not treated as directly comparable (different eval protocols) | Whether a dataset actually built for static pose changes the picture at all |
 
 **Why FID is the decisive metric and R-Precision is not, across this whole ladder (peer review,
@@ -317,7 +385,7 @@ mamba env create -f environment.yml
 |---|---|---|
 | The Guo et al. evaluator doesn't reproduce any published number within a defensible tolerance (E0 fails) | Everything downstream of D-03 | Per D-03's own stated fallback: downgrade every subsequent number to internally-comparable-only, state this loudly in `RESULTS.md` and `LANDMINES.md`, and do not claim comparability to the published ladder in §6 |
 | MPS non-determinism (`LANDMINES.md` §7) makes seed-to-seed spread comparable to or larger than the effects being measured (E1, E3, E4) | Any claimed ablation result | If seed spread exceeds the claimed effect size, the comparison is declared not a comparison, per `LANDMINES.md` §7 — no exceptions for a result Joel would like to be true |
-| PoseScript's poses turn out to be SMPL parameters (likely) and the licence stack (CC BY-NC-SA 4.0 + SMPL non-commercial/no-redistribution) makes the secondary track legally unusable for anything beyond personal research | E5, and any positioning claim resting on PoseScript | Drop E5 entirely; this does not affect E0-E4, which do not depend on PoseScript |
+| PoseScript's poses are confirmed SMPL parameters (SUP-20260906-03) and the licence stack (CC BY-NC-SA 4.0 + SMPL non-commercial/no-redistribution) makes the secondary track legally unusable for anything beyond personal research | E5, and any positioning claim resting on PoseScript | Drop E5 entirely; this does not affect E0-E4, which do not depend on PoseScript |
 | The redundant-vector baseline (E2) cannot reach FID anywhere near MDM's 0.544 on a laptop-MPS training budget in reasonable time | The "first honest baseline" deliverable | Report the actual number reached, however far from 0.544, as the honest result — this project's entire premise is that an honestly-measured bad number is worth infinitely more than an unmeasured claim of success. Do not quietly lower the bar without saying so. |
 | Time budget for Stage 2/3 research and engineering turns out much larger than planned, given this is a redo not a repair (D-17) — architecture, dataset, and task framing all being reconsidered from scratch is real scope, not a formality | Whole project timeline | No hard kill criterion here — this is Joel's call on how much time to spend, not an engineering gate. Flagging as a genuine open resourcing question, not pretending there's a clean automatic answer. |
 

@@ -335,3 +335,62 @@ PoseScript-SMPL-format claim myself (stated as such in the response); flagged if
 complete pending their review of the updated documents. `docs/DECISIONS.md` D-11/12/13 remain
 PENDING as agreed.
 
+## [2026-09-06T08:50:00] Item 7 — Reciprocal audit of F6/F7/F8; Stage 2 gate review actioned; D-11/12/13/18 decided
+**Status:** complete
+**Acceptance criteria:** the director session asked for a reciprocal audit of their own F6-F8
+findings (BRIEFING.md, LANDMINES.md §11-12) "the way I audited your landscape" — verify the
+algebra and the code-reading independently, don't just take it. Separately, their Stage 2 gate
+review (SUP-20260906-06..10) released the gate for E0/E1, accepted the task reframing, and asked
+for D-11/12/13 to be flipped out of PENDING with a new D-18 recording the reframing, plus several
+concrete REBUILD_SPEC.md fixes.
+**Files changed:** `REBUILD_SPEC.md` (new §0a on D-14; E1 given a seed-spread threshold matching
+E3; E2's tolerance made an explicit pre-registration-ordering requirement; D-13 section prefaced
+with the F6-based correction to the laterality diagnosis; E4's wording corrected from "re-measure
+the original's claim" to "first real measurement"; §5 vendor table's HumanML3D row tightened per
+SUP-09; §9 risk-register row updated for the confirmed PoseScript/SMPL fact; a new explicit
+conditioning-dropout code requirement + mandatory tripwire-test description). `docs/DECISIONS.md`
+(D-11, D-12, D-13 rewritten from PENDING to JUDGEMENT/decided-2026-09-06, each citing
+`REBUILD_SPEC.md`'s argument and stating a reversal condition; D-14 revised in place, original
+text preserved and marked superseded rather than deleted, per the director's own corrected rule
+that both agents may write `docs/` but must append/annotate, never silently rewrite; new D-18
+recording the task reframing).
+**Environment changes:** none.
+**Self-critique defects found:** none new — this entry is the audit and the gate-review response,
+not a self-critique pass. Recording explicitly, though: I did not independently re-verify
+SUP-20260906-03 (PoseScript's SMPL format) myself in the previous item, and still haven't — it is
+taken on the director's fetch, stated as such in `docs/REVIEW_RESPONSES.md`.
+**Revisions made:** see Files changed. `docs/DECISIONS.md`'s original D-14 text was NOT deleted —
+quoted verbatim and marked superseded, consistent with the director's corrected append-only rule.
+**Verification performed — the F6/F7/F8 audit itself, done directly against the read-only source,
+not taken on the director's word:**
+- Read `DL_T2P_IMPL.ipynb` cell 47 directly (the read-only source project, not modified) and
+  located `_compute_loss` in full. **F6 confirmed verbatim:** `predicted_noise = uncond_noise_pred
+  + guidance_scale * (cond_noise_pred - uncond_noise_pred)` followed immediately by
+  `diffusion_loss = F.mse_loss(predicted_noise, noise)` — exactly as quoted. Algebra re-derived
+  independently: with `u=c=eps`, `u + w*(c-u) = u = eps`, so `MSE(eps, eps) = 0` for any `w` —
+  confirmed correct, the objective has a zero-loss solution requiring no text dependence.
+- **F7 confirmed verbatim:** `timestep=t[0].item()` inside the same function, with `t` established
+  elsewhere as a per-sample tensor.
+- **F8 confirmed verbatim:** `normalize_batch` computes `batch.mean(dim=0)`/`batch.std(dim=0)` and
+  rescales `x_0` against them before noising — exactly as quoted.
+- Searched all cells for `guidance_scale=`, the ramp values, and every occurrence of "dropout" —
+  confirmed `guidance_scale=3.0` default, `base_guidance=2.0, max_guidance=7.0,
+  guidance_ramp_epochs=50` (matches the claimed 2.0->7.0 ramp exactly), and **every single
+  "dropout" hit in the notebook is `nn.Dropout` (ordinary layer regularization) — zero hits for
+  conditioning/null-embedding dropout anywhere.** F6's "no conditioning dropout exists anywhere"
+  claim is confirmed by exhaustive absence, not by trusting the claim.
+- **Bonus finding, not in the director's original report:** cell 46's own markdown notes describe
+  this exact (flawed) mechanism as the intentional design — "implementation uses progressive
+  guidance scaling during training (2.0→7.0 over 50, 100 epochs)" and "we use
+  `self._forward_with_text` twice... helping us on CFG formula... loss uses run two parallel..."
+  This means F6 was not a stray bug the author didn't notice — it was the documented, believed-
+  correct approach. Strengthens F6's severity; worth adding to `LANDMINES.md` §11 as corroboration
+  if the director wants it, not added unilaterally since §11 is their entry.
+- **Audit verdict: all three findings (F6, F7, F8) hold. No corrections needed to the director's
+  work.** Reported this back rather than silently accepting.
+**Next:** reply to the director session with the audit result and confirmation of all fixes;
+Stage 3 is now gate-released for E0/E1 per their review. E2 remains blocked on writing its
+tolerance into `docs/EXPERIMENT_LOG.md` as a dated entry after E0 completes, before E2 runs —
+this is now an explicit process requirement in `REBUILD_SPEC.md`, not yet executed since no code
+has been written. Environment (`environment.yml`) still needs Joel's approval before creation.
+

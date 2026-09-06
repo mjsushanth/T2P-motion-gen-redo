@@ -179,3 +179,33 @@ use is separately barred; non-commercial research use is permitted.
 - **`POSITIONING.md` §4 Track B condition 3** — "this project has not talked to any such user, so
   this is a real, unresolved assumption, not a validated one." Most positioning documents would
   have asserted the user need. This one marked it unverified and left it standing.
+
+## Addendum to Review 2 — re-checked against commit 4091e1b (2026-09-06)
+
+Review 2 was written against the pre-commit working copy. C1 had already applied Review 1's
+findings in the same window, so two of Review 2's findings need adjusting. **Prior findings are
+not edited; this addendum supersedes where stated.**
+
+- **SUP-20260906-08 — WITHDRAWN.** Already fixed before my review landed. PoseScript's SMPL+H G
+  status is now correctly recorded and attributed in `POSITIONING.md` §1, `REBUILD_SPEC.md` §1/§2,
+  and OPEN_QUESTIONS #1 is struck through as RESOLVED. C1 also stated honestly that it did not
+  independently re-verify this and was relying on my check — the right disclosure to make.
+- **SUP-20260906-07 — NARROWED, still open.** E1 now correctly reads "**FID** measurably worse
+  ... (decisive); R-Precision-top3 reported alongside as a sanity check only, not decisive," and
+  a note extends this to every rung. That is SUP-02 applied properly and the metric choice is now
+  right. What remains is only the threshold: E1 still says "measurably," where E3 says "by more
+  than the seed-to-seed spread." Give E1 E3's wording.
+- **SUP-20260906-06 — STANDS UNCHANGED.** E2 still reads "exact tolerance to be set once E0
+  establishes measurement noise." **E2 remains blocked.**
+- **SUP-20260906-09 — STANDS UNCHANGED.** `REBUILD_SPEC.md` §5's HumanML3D row still carries
+  "the restriction is on *distributing the data*, not on downstream research use" verbatim.
+
+**Gate decision unchanged: RELEASED for E0 and E1, E2 blocked on SUP-06.**
+
+**On C1's request that I check its D-11 correction rather than accept it:** done, independently,
+before receiving the request. Re-fetched ar5iv 2209.14916. MDM "can accept motion represented by
+either locations, rotations, or both," uses Guo et al.'s redundant vector for its HumanML3D
+experiments, and states "since foot contact and joint locations are explicitly represented in
+HumanML3D, we don't apply geometric losses in this section." **C1's correction is confirmed
+accurate. The director's original claim was wrong.** Asking to be checked rather than believed is
+the behaviour that makes this review loop worth running in both directions.
