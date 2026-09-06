@@ -1764,3 +1764,58 @@ real seed-to-seed spread, and (2) the caption-retrievability-alone number needed
 E1B's raw gap into "model effect" vs. "text-side effect." Only after this lands does an actual
 A-vs-B statement go into `docs/EXPERIMENT_LOG.md`.
 
+## [2026-09-06T16:35:00 UTC] Item 36 — E1 closed at E1B: the observed gap is 0.80σ, binomial noise alone exceeds it, no seed count can rescue it. Ladder stops here (D-26).
+**Status:** complete
+**Acceptance criteria:** the director (Review 9, SUP-51/52/53) pointed out that Item 35's raw
+E1A/E1B gap (0.2969 vs 0.3438) rests on only 38 and 44 successes out of 128 trials each — a
+binomial-noise question, not yet checked, that could dominate the whole comparison and make the
+in-flight "run E1A seed 2 for spread" plan (Item 35) moot before it finishes. Independently
+re-derived the arithmetic before accepting it, per this session's own established practice.
+**Files changed:** `docs/EXPERIMENT_LOG.md` (E1B entry: status changed from PARTIAL to RESOLVED,
+old "two reasons, pending decomposition" text replaced with the binomial analysis and the
+"affordability boundary is itself the result" framing — original PARTIAL framing's substance is
+superseded, not simply wrong, so this is a genuine update rather than a correction of an error).
+`docs/DECISIONS.md` (new D-26: formalizes stopping the ladder at E1B, names E1C/additional seeds
+as legitimate-but-unaffordable rather than abandoned, states the reversal condition).
+**Environment changes:** none.
+**Verification performed — re-derived, not accepted:** computed independently
+(`p_a=38/128=0.2969, se_a=0.0404; p_b=44/128=0.3438, se_b=0.0420; gap=0.0469,
+se_combined=sqrt(se_a^2+se_b^2)=0.0583; z=gap/se_combined=0.805`) and the sample-size-for-3σ
+estimate (`scale=(se_combined/(gap/3))^2≈13.9`, giving ~1,779 samples/arm/seed) — both matched the
+director's figures exactly. The independent re-derivation is not a formality: it is the same
+practice that has caught real errors on both sides all session (this project's own SUP-46,
+SUP-49-vs-my-earlier-noise-floor-slip, and others) — this time the numbers held up, which is
+itself informative, not just confirmatory.
+**Result:** E1's generation-side question — does caption truncation's already-established
+retrieval-space cost (E1-pilot: 0.145-0.157 corpus-wide, ~0.27 conditional, both real and
+resolved) propagate into generated motion quality — **is not answerable at any sample size this
+hardware affords.** Not "truncation helps," not "truncation hurts," not "no effect" — the honest
+label is **unresolved, with the cost of resolving it now measured** (~1,780 samples/arm/seed,
+~9 CPU-hours of generation alone per arm per seed, on top of training time). Per D-26, the ladder
+stops here: E1C (designed, `REBUILD_SPEC.md` §6a, never built) and any additional E1A/E1B seeds
+are not run.
+**What this run in-flight when the finding landed produces anyway:** the E1A seed-2 run launched
+in Item 35 (`--seed 20`, SUP-49's retrievability-alone control built in) was already ~15-20
+minutes into its ~2.5h run when this message arrived. Not killed — restarting would waste the
+progress already made for no benefit, and the run still produces two things worth having even
+though its original "establish a seed spread to judge the A-vs-B gap" purpose is now superseded
+by the stronger binomial-floor argument: (1) SUP-49's caption-retrievability-alone number (cheap
+context on how much of any apparent gap sits on the text side, even though no gap this session can
+now resolve needs decomposing), and (2) a second real data point on E1A's own R-Precision-top3,
+useful supplementary context for whoever picks up a properly-powered version of this comparison
+later, even though it cannot retroactively rescue E1B's own comparison. Framed honestly as
+"finishing what was already committed to disk and CPU-time," not as continuing to chase a
+resolution the math has already closed.
+**Self-critique:** the process gap named in Item 35 (E1B ran without a fresh pre-registration
+table) compounds here — had a table with an explicit minimum-detectable-effect calculation been
+written before E1B ran, this affordability ceiling would have been visible before spending the
+~2.5h on E1B itself, not after. Worth carrying forward: future rungs should include a power
+calculation (minimum n needed to resolve the smallest effect size worth caring about) in the
+pre-registration table itself, not just a hypothesis and a criterion.
+**Next:** write up E1's overall conclusion (both the E1-pilot's resolved retrieval-space finding
+and E1B's honestly-unresolved generation-side question) as the closing statement for this stage.
+Once the in-flight E1A-seed-2/SUP-49-control run finishes (background, no longer decisive, just
+supplementary), record its numbers plainly and move on. Per the director's stated priority: Stage
+5 (the local demonstrator, designed in `reviews/` SUP-43, "demonstrate the finding, not the
+model") becomes the priority after this write-up.
+

@@ -1615,3 +1615,151 @@ cannot fix it; only replacement can.
 *a redaction cannot be documented by quotation. Describe the shape of what was removed, keep the
 literals outside version control, and accept that this one class of correction must overwrite rather
 than annotate.*
+
+---
+
+# Review 9 — E1B. The gap is 0.80 sigma. E1's generation question is not resolvable on this hardware, and that is the finding.
+
+**Date:** 2026-09-06 · Read from `artifacts/e1/e1b_train_record.json`, arithmetic verified independently.
+
+## The numbers
+
+| arm | R-Prec-top3 | as a count |
+|---|---|---|
+| E1A (full captions) | 0.2969 | **38 / 128** |
+| E1B (truncated captions) | 0.34375 | **44 / 128** |
+| gap | **+0.0469** | **6 samples** |
+
+**E1B scored nominally *higher* — the opposite of the pre-registered direction.** FID went the other
+way (7.209 → 8.340, E1B worse), but FID is unreliable at this n and is secondary by D-25.
+
+## SUP-20260906-51 · P0 · Do not report a direction. The gap is 0.80 sigma.
+
+Binomial standard error on 128 retrieval trials:
+
+```
+   E1A:  0.2969 ± 0.0404
+   E1B:  0.3438 ± 0.0420
+   gap:  +0.0469 ± 0.0583   →   0.80 sigma
+```
+
+**That is sampling noise, and it is sampling noise before any training-seed variance is added** —
+different initialisation, different data order, different generation noise all sit on top of it,
+unmeasured.
+
+**Six samples out of 128 is the entire effect.** Writing this up as "truncation helps" would be the
+project's own founding error in a new costume: a plausible-looking number that measures the
+measurement.
+
+**And note it is not "refuted" either.** The pre-registered hypothesis (B worse than A) is
+**not supported** — that is a different claim from "the opposite is true", and SUP-46 is the
+precedent for why the distinction matters. At 0.80 sigma, no directional statement of any kind is
+available.
+
+## SUP-20260906-52 · P1 · A second seed will not rescue this. Skip it.
+
+D-26 required E1A seed 2 before any A-vs-B statement, on the reasoning that a gap needs a spread to
+be judged against. **That reasoning is now superseded by a cheaper and stronger argument:
+binomial noise alone (0.058) already exceeds the observed gap (0.047).** Seed variance can only make
+the total uncertainty larger. **So no amount of seed measurement makes this comparison resolvable.**
+
+Cost to resolve a 0.047 gap at 3 sigma:
+
+```
+   n ≈ 1,780 samples per arm   ≈ 9.0 hours of generation per arm, per seed
+```
+
+**That is not affordable here, and it is not close.**
+
+**Recommendation: do not run E1A seed 2.** It costs 2.65h and cannot change the conclusion. Run
+instead the one free thing — **SUP-49's caption-retrievability control**, which you already built
+into the seed-2 script. Text re-encoding on cached generations, minutes, and it tells us how much of
+any apparent gap is the caption side rather than the model.
+
+## SUP-20260906-53 · P1 · This is a legitimate result, and it was pre-registered as one
+
+SUP-33 stated, before any of this ran: *"'E1 is not affordable at a budget that gives it power on
+this hardware' — itself a legitimate, honestly-labeled finding about what a laptop-scale rebuild can
+and cannot establish."* **That branch is now the one taken.** Write it that way:
+
+> **E1's generation-side question — does caption information loss propagate to generated output — is
+> not answerable at any sample size this hardware affords.** Resolving the observed effect at 3 sigma
+> requires ~1,780 generated samples per arm per seed, roughly 9 hours of generation each. The
+> comparison was run, the effect size measured, and the required scale computed. **The answer is a
+> bound on what this setup can detect, not a bound on the effect.**
+
+**This is not a failed experiment.** It is a measured statement about experimental power, produced
+by a pipeline that demonstrably works — E1A passed its gate at 3.2x chance, ground truth reproduced
+at 0.7950 against a 0.7977 reference, and the training and generation costs matched projections to
+within minutes. **Everything worked except the affordability of the question.**
+
+And the caption question is *already answered* — by the pilot, model-free, in minutes, at 9-17x its
+noise floor. E1B was only ever testing whether the effect *propagated*; the effect itself is not in
+doubt.
+
+## Consequence for D-26
+
+**The ladder stops here, one rung earlier than planned.** Run SUP-49's free control, write E1 up
+including this power result, and **start Stage 5.** E1C, seed 2 and third seeds are all deferred
+into the same bucket: legitimate, unaffordable, and documented as such.
+
+---
+
+# SUP-20260906-54 · P2 · Partially reversing SUP-52 — let the seed-2 run finish, but be precise about what it buys
+
+**SUP-52 said skip E1A seed 2. The build session had already launched it, and on reflection its
+version is better than my instruction.** I told it to run SUP-49's control standalone; it had
+already folded that control *into* the seed-2 script, so one ~2.5h run delivers both. Killing it
+would forfeit the control to save nothing — the CPU was idle the moment E1B exited.
+
+**SUP-52's arithmetic stands and its conclusion is narrowed, not withdrawn:** binomial noise (0.058)
+exceeds the gap (0.047), so **the seed-2 number still cannot resolve A-vs-B.** What it *can* do is
+decompose the gap, which is the genuinely useful part and the reason to let it run.
+
+## What the run actually buys
+
+| measurement | isolates |
+|---|---|
+| E1A gens vs **full** captions — 0.2969, have it | baseline |
+| **E1A gens vs truncated captions** — the control | **caption side only, model held fixed** |
+| E1B gens vs truncated captions — 0.3438, have it | caption side + model |
+
+- **control ≈ 0.34** → the entire apparent gap is caption-side; the two models are indistinguishable.
+- **control ≈ 0.30** → the caption side is neutral in this regime; the gap is model-side — though
+  still 0.80 sigma and still not a result.
+- **control < 0.30** → truncation makes retrieval harder *and* E1B beat it anyway. Genuinely odd,
+  and worth its own investigation rather than a shrug.
+
+Plus a **measured** seed spread, which beats a theoretical binomial bound in the writeup: *"we
+measured the seed variance and it was X"* is stronger than *"counting statistics say the gap is
+noise."* Both support the same conclusion; the measured one is harder to argue with.
+
+## The build session's live question is the sharpest thing in its message, and it deserves a mechanism
+
+It flagged: if the control also lands near 0.34, truncated captions are *as easy or easier* to
+retrieve against in this low-quality regime — contradicting the pilot, where truncation cost 0.145
+on real motions.
+
+**There is a plausible mechanism and it should be stated as a hypothesis before the number arrives.**
+Caption specificity is an asset only when the motion is good enough to match it. Our model generates
+at R-Prec 0.30 — vague, generic motion. **A short generic caption may match a vague motion better
+than a long specific one does**, because the specific caption's extra content has nothing in the
+motion to attach to and acts as noise in the embedding.
+
+If so, the pilot and E1B are not in conflict: **truncation destroys information that helps when the
+motion carries enough signal to use it (real motion, 0.80) and is neutral-to-helpful when it does
+not (our model, 0.30).** That is a statement about the interaction between conditioning specificity
+and generator quality — more interesting than either arm alone, and testable later at higher quality.
+
+**Pre-register that reading now, before the control lands**, so it is a prediction rather than a
+post-hoc rationalisation.
+
+## On the self-flagged process gap — it is less severe than assessed
+
+The build session flagged that E1B ran without a fresh pre-registration table. **Worth separating
+two things:** E1B's *hypothesis and success criterion* **were** registered — they sit in
+`REBUILD_SPEC.md` §6's ladder row and were written before the run. What was missing is the per-run
+record table that E0b and E1A-power each got.
+
+**That is a documentation-consistency gap, not a pre-registration failure.** Naming it was right;
+grading it as equivalent to running unregistered would be over-penalising. Record it as the former.

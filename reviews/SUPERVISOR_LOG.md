@@ -1669,3 +1669,97 @@ merely wrong — the others cost compute or precision; this one re-published the
 protect.
 
 **Monitor re-arming on E1B.** Now 16:12Z; SOFT 01:46Z, HARD 03:16Z.
+
+## [2026-09-06T16:25Z] Supervisor pass 38 — E1B: 0.80 sigma. Ladder stops a rung early. Stage 5 begins.
+
+**E1B landed.** R-Prec-top3 **0.34375 (44/128)** vs E1A's **0.2969 (38/128)** — nominally *higher*,
+the opposite of the pre-registered direction. FID went the other way (7.209 -> 8.340) but is
+secondary and unreliable at this n.
+
+**SUP-51 (P0): the gap is six samples, and it is 0.80 sigma.**
+```
+E1A 0.2969 +/- 0.0404 | E1B 0.3438 +/- 0.0420 | gap +0.0469 +/- 0.0583 -> 0.80 sigma
+```
+Binomial noise **alone**, before training-seed variance. **No directional statement is available.**
+Told the build session plainly: writing this up as "truncation helps" would be this project's
+founding error in a new costume. And it is *not supported*, not *refuted* — SUP-46's distinction,
+applied a second time.
+
+**SUP-52 (P1): a second seed cannot rescue it, so do not spend 2.65h on one.** D-26 required seed 2
+so the gap would have a spread to be judged against; **that is superseded by a cheaper, stronger
+argument — binomial noise (0.058) already exceeds the gap (0.047)**, and seed variance can only
+enlarge it. Cost to resolve at 3 sigma: **~1,780 samples/arm ~ 9.0h of generation per arm per seed.**
+Not affordable. Redirected to SUP-49's free caption-retrievability control instead (already built
+into the seed-2 script, minutes, cached generations).
+
+**SUP-53 (P1): this is a legitimate result and it was pre-registered as one.** SUP-33, before any of
+it ran: *"'E1 is not affordable at a budget that gives it power on this hardware' — itself a
+legitimate, honestly-labeled finding."* **That branch is now taken.** The result is a **bound on what
+this setup can detect, not a bound on the effect.**
+
+**Not a failed experiment.** E1A passed its gate at 3.2x chance; ground truth reproduced 0.7950 vs
+0.7977; costs matched projections to within minutes. **Everything worked except the affordability of
+the question** — and the caption question itself is already answered by the pilot, model-free, at
+9-17x its noise floor. E1B only ever tested propagation.
+
+**D-26 amended: the ladder stops one rung earlier than planned.** SUP-49's free control -> write E1
+up including the power result -> **Stage 5.** E1C, seed 2, third seeds: legitimate, unaffordable,
+documented as such.
+
+**Stage 5 is now the priority with ~9h of window left.** Design SUP-43, criteria already
+pre-registered. Holding hardest on: **the retrieval baseline visible in the interface, not just
+described in the report.**
+
+Now 16:25Z; SOFT 01:46Z, HARD 03:16Z.
+
+---
+
+## FOR JOEL (running)
+
+20. **The generation experiment came back as noise, and that is a real answer.** The two arms
+    differed by six samples out of 128 — 0.8 sigma, statistically indistinguishable. Resolving an
+    effect that small would need about nine hours of generation per arm, which this laptop cannot
+    afford. So the honest finding is a **bound on what this setup can detect**, not a claim about
+    truncation. Worth noting the pipeline itself worked perfectly throughout — the model trained,
+    the gate passed, the costs matched predictions. The only thing that failed was the affordability
+    of the question, and that was pre-registered this morning as a legitimate outcome.
+21. **Which means the ladder stops and the demonstrator starts**, earlier than planned and closer to
+    what you asked for twice. The caption finding was already answered by the cheap experiment; the
+    expensive one was only ever testing whether it propagated.
+
+## [2026-09-06T16:38Z] Supervisor pass 39 — SUP-54: partially reversing SUP-52; a mechanism pre-registered
+
+**Build session launched E1A seed 2 before Review 9 arrived. On reflection its version is better
+than my instruction and I let it stand.** I said run SUP-49's control standalone and skip seed 2; it
+had already folded the control *into* the seed-2 script, so one run delivers both, and the CPU was
+idle the moment E1B exited. Killing it would forfeit the control to save nothing.
+
+**SUP-52's arithmetic stands, its conclusion narrows:** binomial noise (0.058) still exceeds the gap
+(0.047), so seed 2 **cannot resolve A-vs-B** — but it **decomposes** it, which is the useful part:
+- control ~0.34 -> whole gap is caption-side, models indistinguishable
+- control ~0.30 -> caption side neutral, gap is model-side (still 0.80 sigma)
+- control <0.30 -> truncation hurts retrieval *and* E1B beat it anyway -> genuinely odd
+Plus a **measured** seed spread, which beats my theoretical binomial bound in the writeup.
+
+**Pre-registered a mechanism for the build session's own live question, before the number lands.**
+It asked why the control landing near 0.34 would contradict the pilot's 0.145 truncation cost.
+**Proposed resolution: caption specificity is an asset only when the motion is good enough to match
+it.** At R-Prec 0.30 the generated motion is vague; a short generic caption may match a vague motion
+*better* than a long specific one, because the specific caption's extra content has nothing to
+attach to and acts as embedding noise. If so the two results are not in conflict — **truncation
+destroys information that helps at high generator quality (real motion, 0.80) and is
+neutral-to-helpful at low quality (our model, 0.30).** That is a claim about the *interaction between
+conditioning specificity and generator quality*, more interesting than either arm, and testable at
+higher quality later. **Registered as a prediction now so it cannot become a post-hoc story.**
+
+**Corrected the build session's self-assessment downward.** It flagged E1B as having run without
+pre-registration. **Separate two things:** its hypothesis and success criterion *were* registered in
+`REBUILD_SPEC.md` §6, written before the run; what was missing is the per-run record table. **That is
+a documentation-consistency gap, not a pre-registration failure**, and grading it as the latter
+over-penalises. Told it to record which it was.
+
+**Eighth supervisor correction**, and the second of my own instructions overturned by the build
+session having already done something better.
+
+**Next:** decomposition + seed spread (~2.5h), E1 writeup, then Stage 5 with ~10h of window.
+Now 16:38Z; SOFT 01:46Z, HARD 03:16Z.

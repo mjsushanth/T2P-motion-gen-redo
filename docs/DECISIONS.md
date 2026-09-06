@@ -457,3 +457,37 @@ needs (roughly n in the high hundreds to low thousands per arm/seed, per the ran
 argument), at which point FID becomes trustworthy again for that rung specifically and the
 regime note in `REBUILD_SPEC.md` §6 should be updated to say so.
 
+### D-26 — E1 stops at E1B; the generation-side comparison is affordably unresolvable, and that boundary is the result · JUDGEMENT (review pass, 2026-09-06)
+E1B's raw R-Precision-top3 (0.3438) came in higher than E1A's (0.2969) — opposite the
+pre-registered direction. Re-derived independently rather than accepted: the counts behind these
+percentages are 44/128 and 38/128, giving a combined standard error of 0.0583 against a gap of
+0.0469 — **0.80 sigma, not a signal**. Resolving this at 3 sigma needs roughly 1,780 generated
+samples per arm per seed (~9 CPU-hours of generation alone, per arm, per seed) — not affordable
+on this hardware, and no amount of additional training-seed measurement changes that, since
+binomial sampling noise on the generated count alone already exceeds the observed gap before seed
+variance is even added.
+
+**Decision: stop the ladder here.** E1C (frame-selection, designed in `REBUILD_SPEC.md` §6a but
+never built), a second seed of E1A or E1B, and any further seeds are not run. All are
+**legitimate, pre-registered-as-possible outcomes (SUP-20260906-33 named exactly this branch
+before any of E1 ran) that this project cannot afford to resolve, not experiments that failed or
+were abandoned** — documented as such in `docs/EXPERIMENT_LOG.md`'s E1B entry rather than left
+implicit or silently dropped.
+
+**What this does and does not cost the project.** E1's caption-truncation question is already
+answered, model-free, at the retrieval level by the E1-pilot (corpus-wide 0.145-0.157, conditional
+~0.27, both 9-17x their own measured noise floors) — a real, well-supported, if narrower-than-
+originally-scoped finding. What remains genuinely open is whether that retrieval-space effect
+*propagates into generation* — E1B was the only rung testing this, and it is the one question this
+hardware cannot afford to answer at adequate power. That is a real gap in what this project can
+claim, stated as one, not papered over.
+
+**Rejected:** running E1A/E1B additional seeds anyway "to see" (cannot move the binomial floor,
+would only add training-seed variance on top of an already-unresolvable gap — wasted compute, not
+a hedge). Building E1C now regardless of E1A/E1B's outcome (the design in §6a is sound but its own
+cost is comparable to E1B's, and the same affordability ceiling applies).
+
+**Would reverse if:** a rented GPU or substantially larger compute budget enters the picture,
+making ~1,780 samples/arm/seed of CPU generation affordable — at which point E1B could be re-run
+at adequate power, and E1C's design (§6a) becomes worth building.
+

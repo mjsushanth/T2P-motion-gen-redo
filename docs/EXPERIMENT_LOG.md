@@ -863,8 +863,9 @@ Captions truncated via the same faithful first-action-clause rule used throughou
 applied to BOTH training and generation-conditioning captions (design decision recorded in
 `LEDGER.md` Item 30).
 **Record:** `../artifacts/e1/e1b_train_record.json`
-**Status:** PARTIAL — raw numbers are real and verified, but **no A-vs-B conclusion is licensed
-yet**, for two stated reasons below. Process note, stated plainly: this rung was launched on the
+**Status:** RESOLVED — as a power/affordability finding, not a directional one. See the analysis
+below (review SUP-20260906-51/52/53); this supersedes the "PARTIAL, pending E1A seed 2" framing
+this entry originally carried. Process note, stated plainly: this rung was launched on the
 director's direct go-ahead without a fresh, dedicated pre-registration entry in this file first —
 the success criterion it is measured against (`REBUILD_SPEC.md` §6: "R-Precision-top3 measurably
 worse than E1A by more than the seed-to-seed spread") predates the run, but a filled-in table
@@ -880,23 +881,48 @@ than E1A's 7.2093, secondary metric per D-25). Training took 6,819.5s (1.894h), 
 expected E1B *worse* than E1A. E1B's raw R-Precision-top3 is *higher*. Reported exactly as
 measured — no adjustment, no re-running with a different seed to see if it "corrects itself."
 
-**Two reasons this raw comparison cannot be read as "truncation improves generation" yet:**
-1. **The SUP-20260906-49 confound.** E1A is scored against full captions; E1B is scored against
-   truncated captions. The E1-pilot already showed truncated captions are intrinsically harder to
-   retrieve against on real motions at high R-Precision (~0.80 baseline) — but this generative
-   model operates at ~0.30-0.34, much closer to the 0.09375 chance floor, where the same effect
-   may not transfer at the same size or even the same sign. The retrievability-alone control
-   (E1A's own generations rescored against truncated captions, `scripts/e1_train_arm.py`'s
-   `rescore_against_truncated_captions`) is built into the queued E1A seed-2 run and has not
-   landed yet.
-2. **No seed spread exists.** One seed of A, one seed of B. Per the director's explicit
-   instruction (and this project's own seed-to-seed-spread decision rule), a gap of any size or
-   direction is uninterpretable without knowing how much two identical configurations differ from
-   each other by chance alone.
-**Establishes:** nothing yet about whether truncation helps, hurts, or is neutral for generation
-quality — that is exactly what the pending decomposition (E1A seed 2, with the retrievability
-control) exists to settle. What IS established: E1B trained and generated without crashing (the
-`diversity_times` fix held), at timing consistent with E1A's, confirming the arm ran correctly on
-its own terms.
-**Does NOT establish:** any A-vs-B claim. This entry will be revised — not silently, with the
-decomposition and seed-spread numbers added — once E1A seed 2 completes.
+**Why this gap does not license any directional claim — the analysis that closes this rung
+(review SUP-20260906-51, independently re-derived before being accepted, not taken on faith):**
+R-Precision-top3 at n=128 is a proportion of a binomial count, and the raw counts behind these
+percentages are small: E1A = 38/128, E1B = 44/128 — **the entire "effect" is 6 samples.**
+
+```
+p(E1A) = 0.2969, SE = sqrt(0.2969 * 0.7031 / 128) = 0.0404
+p(E1B) = 0.3438, SE = sqrt(0.3438 * 0.6563 / 128) = 0.0420
+gap = 0.0469, combined SE = sqrt(0.0404^2 + 0.0420^2) = 0.0583
+z = 0.0469 / 0.0583 = 0.80 sigma
+```
+0.80 sigma is not a signal by any normal standard (2-3 sigma minimum for any directional claim).
+**This is binomial sampling noise on the generated-sample count alone — before any training-seed
+variance (initialization, data order, generation stochasticity) is added on top, which would only
+widen this further, never narrow it.** This single calculation is why the earlier "run E1A seed 2
+to get a seed spread" plan (`LEDGER.md` Item 35) is superseded, not merely satisfied early: seed
+variance cannot rescue a comparison where the binomial floor alone already exceeds the observed
+gap. Cost to resolve at 3 sigma (proportionally scaling n by the square of the SE-reduction
+needed): **roughly 1,780 generated samples per arm per seed — about 9 CPU-hours of generation
+alone, per arm, per seed**, on top of training time. Not affordable on this hardware, not close.
+**Correct statement, and the distinction matters (per SUP-46's precedent — "not supported" is not
+the same claim as "refuted"):** the pre-registered hypothesis (E1B measurably worse than E1A) is
+**not supported at this sample size** — this is different from "the opposite is true." No
+directional claim of any kind is licensed by this data.
+**Establishes:** **E1's generation-side question is not answerable at any sample size this
+hardware affords, and that boundary is itself now measured, not assumed** — resolving the
+observed 0.047 gap at 3 sigma requires ~1,780 samples/arm/seed, computed directly from this run's
+own binomial statistics. This is a legitimate result, pre-registered as a possible outcome before
+any of E1 ran (`docs/EXPERIMENT_LOG.md`'s E1A-power entry, quoting SUP-20260906-33: "'E1 is not
+affordable at a budget that gives it power on this hardware' — itself a legitimate, honestly-
+labeled finding"). Everything else about this rung worked: E1A's power check passed its gate at
+3.17x chance, ground truth reproduced at 0.7950 against a 0.7977 reference, training/generation
+timing matched projections to within minutes, and the `diversity_times` fix held through a clean
+exit. **Only the affordability of the generation-side comparison failed — and the caption-
+truncation question itself is already answered, model-free, by the E1-pilot at 9-17x its own
+noise floor** (corpus-wide 0.145-0.157, conditional ~0.27, both far above what this generation
+comparison could ever resolve at this scale). E1B was only ever testing whether that already-
+established retrieval-space effect propagates into generation; that propagation question remains
+open, not because the experiment failed, but because answering it costs more than this project's
+hardware affords.
+**Does NOT establish:** any direction for how caption truncation affects generation quality —
+supported or refuted. Whether a larger, unaffordable-here sample size would resolve it one way or
+the other. Per D-26 (director's decision, `docs/DECISIONS.md`), the ladder stops at this rung:
+E1C, a second seed of A or B, and any further seeds are not run, and are documented here as
+"legitimate, unaffordable, and not pursued further" rather than silently dropped.
