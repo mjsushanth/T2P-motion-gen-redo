@@ -64,14 +64,15 @@ objective with a mathematically guaranteed trivial solution.
 The vendored, MIT-licensed evaluator (Guo et al.'s own text-motion retrieval and FID pipeline,
 the same instrument used across this field's published leaderboard) was validated against its
 own published ground-truth reference (R-Precision-top3 = 0.797 ± 0.002, and 0.7977 in the
-authors' own bundled evaluation log) across four independent **full-split** runs of this project,
-on real motions with no model involved: 0.7969, 0.8013, 0.7950, 0.7950 — every value within
-**0.0036** of 0.7977 (the largest single deviation, from the 0.8013 run). A fifth value, 0.8036,
-exists in this project's own records but is a measurement on a *restricted subset* (only the
-captions a later truncation-rule check happened to alter), not a full-split reproduction, and is
-excluded from this claim for exactly that reason — stated here rather than left for a reader to
-find it unexplained and doubt the whole claim. **This harness is trustworthy**, which is the one
-property every downstream comparison in this project actually depends on.
+authors' own bundled evaluation log) across five independent **full-split** runs of this project,
+on real motions with no model involved: 0.7969, 0.8013, 0.7950, 0.7950, 0.7953 — every value
+within **0.0036** of 0.7977 (the largest single deviation, still from the 0.8013 run). A sixth
+value, 0.8036, exists in this project's own records but is a measurement on a *restricted subset*
+(only the captions a later truncation-rule check happened to alter), not a full-split
+reproduction, and is excluded from this claim for exactly that reason — stated here rather than
+left for a reader to find it unexplained and doubt the whole claim. **This harness is
+trustworthy**, which is the one property every downstream comparison in this project actually
+depends on.
 
 ### 1.3 Caption truncation destroys measurable text-motion alignment — a real, resolved finding
 
@@ -168,8 +169,32 @@ any published leaderboard result.**
 is genuinely open, not resolved either way.** This was tested directly: two models (one trained
 on full captions, one on the original's truncated captions, identical architecture and budget)
 were compared, and the observed gap was **0.80 standard errors** — smaller than pure sampling
-noise at this project's affordable generated-sample count (n=128 per arm). Resolving this at a
-conventional significance threshold would need roughly **1,780 generated samples per arm per
+noise at this project's affordable generated-sample count (n=128 per arm).
+
+A second, independent seed of the control arm (E1A) makes this unresolvability observable
+directly, with no distributional assumption required:
+
+| run | R-Precision-top3 | count |
+|---|---|---|
+| E1A, seed 10 | 0.2969 | 38/128 |
+| E1A, seed 20 | 0.34375 | 44/128 |
+| E1B, seed 10 | 0.34375 | 44/128 |
+
+**E1A's second seed lands on E1B's value to four significant figures.** The seed-to-seed spread
+*inside the control arm alone* (0.0469, 6/128) is exactly the same size as the arm-to-arm gap the
+experiment was built to detect (0.0469, 6/128) — no standard-error argument is needed to see this
+one. FID agrees independently: within the same arm, across seeds, 7.209 → 11.044 (a 53% swing),
+with E1B's 8.340 sitting *between* the two E1A seeds.
+
+A decomposition control (the seed-20 arm's own generated motions, rescored against the truncated
+captions instead of the full captions they were actually generated from) isolates the caption
+side alone: 0.3125 (40/128) — a cost of 4/128 relative to the same motions scored against their
+own full captions, smaller than, not larger than, the 6/128 seed spread above. **The
+decomposition confirms rather than complicates the conclusion: nothing measured here is
+separable from seed noise at this sample size.**
+
+Resolving this at a conventional significance threshold would need roughly **1,780 generated
+samples per arm per
 seed — about 9 CPU-hours of generation alone, per arm, per seed**, computed directly from this
 project's own measured statistics, not estimated. **This is a bound on what this project's
 hardware can detect, not a bound on whether the effect is real** — a legitimate result about

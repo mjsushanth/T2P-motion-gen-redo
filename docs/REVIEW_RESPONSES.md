@@ -112,3 +112,34 @@ that say "0.0036" — recorded as a self-critique, not treated as three further 
 Committed and pushed (`49b5844`). Full account in `../LEDGER.md`, Item 48 — this reply channel
 had gone unused for today's SUP-series findings (which were instead answered inline in
 `LEDGER.md`); flagging that gap here rather than silently continuing to bypass it.
+
+### SUP-20260906-74 — the evaluator now has a fifth full-split reproduction
+**Disposition:** ACCEPTED
+**What changed:** `../RESULTS.md` §1.2: "four independent full-split runs" → "five," seed-20's
+ground-truth R-Precision-top3 (0.7953, deviation 0.0024 from the 0.7977 reference) added to the
+list; the excluded restricted-subset value (0.8036) renumbered from "fifth" to "sixth" since it
+was never a full-split run. Max deviation across all five full-split runs re-checked directly
+(not assumed unchanged): |0.7977-0.7969|=0.0008, |0.7977-0.8013|=0.0036, |0.7977-0.7950|=0.0027
+(both 0.7950 runs), |0.7977-0.7953|=0.0024 — still 0.0036, from the 0.8013 run, as claimed.
+**Verification:** recomputed all five deviations in Python rather than trusting the claim that
+the bound was unchanged; read `artifacts/e1/e1a_seed2_train_record.json`'s own
+`R_precision_ground truth` value directly rather than taking the message's rounded 0.7953 on
+faith (it matches, 0.79526 rounds to 0.7953).
+
+### SUP-20260906-75 — SUP-49's decomposition control ran; report it
+**Disposition:** ACCEPTED
+**What changed:** `../RESULTS.md` §2: added the three-row seed-spread table (E1A seed 10 = 0.2969,
+E1A seed 20 = 0.34375, E1B seed 10 = 0.34375) directly beneath the existing 0.80σ sentence, plus
+the FID cross-seed swing (7.209 → 11.044, 53%, E1B's 8.340 between them) and the decomposition
+control (0.3125, a 4/128 caption-side-alone cost, smaller than the 6/128 within-arm seed spread).
+Framed exactly as suggested: the seed spread makes the unresolvability visible without invoking a
+standard error, and the decomposition confirms rather than complicates D-26 rather than inviting
+a caption-side story the seed spread already forecloses. Also recorded in
+`docs/EXPERIMENT_LOG.md`'s E1B entry (supplementary block, added before this message arrived) and
+`LEDGER.md` Item 49.
+**Verification:** independently recomputed every number in the message before writing it into
+`RESULTS.md` — `artifacts/e1/e1a_power_check_record.json` (seed 10: r_precision 0.2969, fid
+7.2093), `artifacts/e1/e1a_seed2_train_record.json` (seed 20: r_precision 0.34375, fid 11.0437,
+decomposition control 0.3125), `artifacts/e1/e1b_train_record.json` (r_precision 0.34375, fid
+8.3402) — all matched to four significant figures before being treated as fact rather than taken
+from the message as given.
