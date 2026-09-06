@@ -51,6 +51,25 @@
     "full_caption_nonfallback": 2.993601725425249,
     "truncated_caption_nonfallback": 4.771708953527757
   },
+  "n_could_vary_keys": 2663,
+  "n_no_room_keys": 1985,
+  "pct_could_vary": 0.572934595524957,
+  "could_vary_subset_r_precision": {
+    "length_matched_could_vary": [
+      0.2948042168674699,
+      0.4476656626506024,
+      0.5455572289156626
+    ],
+    "random_window_could_vary": [
+      0.2884036144578313,
+      0.4329819277108434,
+      0.5338855421686747
+    ]
+  },
+  "could_vary_subset_matching_score": {
+    "length_matched_could_vary": 4.7272049461502625,
+    "random_window_could_vary": 4.706441164016724
+  },
   "original_e1_pilot_reference": {
     "r_precision_top3_full": 0.8013,
     "r_precision_top3_truncated": 0.6563,
@@ -63,6 +82,7 @@
     "random_window_control_drop": 0.16465517241379313,
     "rule_specific_drop_beyond_length": -0.008405172413793127,
     "position_effect_prefix_minus_random_window": 0.00021551724137935935,
-    "conditional_drop_on_nonfallback_subset": 0.2723765432098766
+    "conditional_drop_on_nonfallback_subset": 0.2723765432098766,
+    "position_effect_on_could_vary_subset_only": -0.01167168674698793
   }
 }

@@ -1239,3 +1239,38 @@ fits before then it is minutes and it would close the pilot cleanly"). Report to
 continue waiting on the E1A power check (still running, background, ~13:30-14:00Z expected) —
 its result and this closed pilot together are what SUP-40's E1B-scope decision was waiting on.
 
+## [2026-09-06T12:10:00 UTC] Item 25 — Position-effect null confirmed under real restriction, not diluted arithmetic (SUP-45)
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-45) noted that 42.7% of keys had no room to
+place a different window, so those keys contribute exactly zero position effect mechanically —
+the same dilution shape as SUP-39. Requested the conditional number on just the 57.3% that could
+actually vary, and offered a linear estimate (0.00022/0.573≈0.00038) as a plausible value — this
+item ran the real restricted retrieval computation instead of accepting that estimate on faith,
+consistent with how SUP-39's own estimate was checked rather than assumed in Item 23.
+**Files changed:** `scripts/e1_pilot_followups.py` (added a third restriction call — length-
+matched and random-window controls restricted to the 2,663 "could vary" keys — reusing the same
+`restrict_dataset_to_keys` helper Item 23 built for SUP-39, now used a second time). `docs/
+EXPERIMENT_LOG.md` (follow-up-2 entry: added the real re-slice result; removed the now-closed
+"does not establish... outside the could-vary subset" line since this item closes exactly that
+gap). `artifacts/e1/e1_pilot_followups_record.json` (re-saved with the third call's numbers).
+**Environment changes:** none.
+**Result:** restricted to the 2,663 keys that could actually vary: length-matched-prefix
+R-Precision-top3 = **0.5456**, random-window = **0.5339**. `position_effect_on_could_vary_
+subset_only` = **-0.0117** — smaller in magnitude than the ~0.016 batching noise floor already
+established in E0b, so still not distinguishable from noise, though notably the sign flipped
+slightly (prefix scored a touch higher here, opposite of what a front-loading-matters hypothesis
+would need to show a *cost* to random placement). The director's linear estimate (0.00038) was
+not what the real restricted computation found (-0.0117) — an order of magnitude different in
+raw value, though both are well within noise and support the identical conclusion. Worth noting
+plainly: the diluted-aggregate arithmetic and the real restricted measurement can disagree on
+the specific number while agreeing on the substantive finding — a reason to keep running the real
+computation when it's this cheap, even when an estimate would probably have pointed the same way.
+**Self-critique:** none new — this item is the same discipline as Item 23's SUP-39 handling,
+applied a second time to a structurally identical dilution concern; no fresh mistake to record.
+**Verification performed:** re-ran the full script end to end (all three `evaluate_matching_score`
+calls) rather than adding an isolated fourth call, so every prior number in the record could be
+re-confirmed unchanged (they are, to the same decimal places as Item 24) alongside the new one.
+**Next:** the E1-pilot arc is now closed on both fronts the director asked about (length vs. rule-
+specificity, and prefix vs. genuine position). Report to the director; still waiting on the E1A
+power check (background, ~13:30-14:00Z expected) before any E1B-scope decision.
+

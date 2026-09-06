@@ -1,0 +1,4 @@
+---> [length_matched_could_vary] Matching Score: 4.7272
+---> [length_matched_could_vary] R_precision: (top 1): 0.2948 (top 2): 0.4477 (top 3): 0.5456 
+---> [random_window_could_vary] Matching Score: 4.7064
+---> [random_window_could_vary] R_precision: (top 1): 0.2884 (top 2): 0.4330 (top 3): 0.5339 

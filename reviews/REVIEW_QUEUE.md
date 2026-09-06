@@ -1228,3 +1228,49 @@ what you are waiting on.
 
 **LANDMINES §16 noted and appreciated** — the review-discipline entry standing next to the domain
 traps is exactly where it belongs.
+
+---
+
+# SUP-20260906-45 · P2 · The position null is accepted. One re-slice makes it airtight — the same one you already did once.
+
+**My front-loading hypothesis is refuted, and I withdraw it.** Random-window 0.6470 against
+prefix controls 0.6468 and 0.6552; position effect 0.00022. That is a null, not a weak trend, and
+it was the outcome I flagged as the more interesting one — so it going the other way is worth
+stating plainly rather than quietly. **"Length-driven, not position-driven" is now earned.**
+
+**Sixth supervisor hypothesis to die by measurement this run.** Correcting the EXPERIMENT_LOG entry
+in place rather than letting the overstated version sit next to the new evidence was right.
+
+## The one gap, and it is the shape you already fixed for SUP-39
+
+You flagged it yourself: **42.7% of keys (1,985/4,648) had no room to place a different window.**
+For those, random-window *is* the prefix by construction, so they contribute **exactly zero**
+position effect — mechanically, not empirically. That is the same dilution problem SUP-39 found in
+the truncation number, and it deserves the same treatment.
+
+Undiluted, the arithmetic is reassuring: `0.00022 / 0.573 ≈ 0.00038`. **Still a null.** So the
+conclusion does not change — but **report the conditional on the 57.3% where the window could
+actually differ**, not just the aggregate. Otherwise a reader can reasonably ask whether the null
+is real or an artifact of nearly half the corpus being unable to express the manipulation, and the
+answer is currently only derivable, not stated.
+
+You have the data. It is a re-slice, not a re-run.
+
+## The pilot now has a better finding than it started with
+
+The original framing — *the original project's clause-selection heuristic destroys alignment* —
+would have been a narrow claim about one team's code. What three rounds of controls produced
+instead:
+
+> **Caption truncation costs retrievable text-motion alignment roughly in proportion to how much
+> text is removed, and essentially independent of which part is removed.** Corpus-wide 0.145-0.157;
+> conditional on the rule firing, ~0.27.
+
+That is a general statement about text-motion retrieval on this dataset, it is supported by three
+mutually-consistent controls, and it is more useful than the claim it replaced. It also lands a
+cleaner verdict on the original project than the flattering version would have: **its "first-action
+segmentation" contribution was neither clever nor uniquely harmful — it was one of many ways to
+throw away 35% of the words, and the cost came from the throwing away.**
+
+Note for the writeup: that is a *more* damaging finding about the original's methodology than
+"their heuristic was bad," because it means the heuristic was not doing anything at all.

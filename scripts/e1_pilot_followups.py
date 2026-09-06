@@ -133,6 +133,7 @@ def main():
     _random.seed(my_args.seed)
 
     fallback_keys, nonfallback_keys = [], []
+    could_vary_keys, no_room_keys = [], []
     n_prefix_equals_full = 0
     for key in t2m_full.data_dict:
         caption, tokens = t2m_full.data_dict[key]["text"][0]["caption"], t2m_full.data_dict[key]["text"][0]["tokens"]
@@ -150,8 +151,10 @@ def main():
         if max_start == 0:
             n_prefix_equals_full += 1
             start = 0
+            no_room_keys.append(key)
         else:
             start = _random.randint(0, max_start)
+            could_vary_keys.append(key)
         rw_words = words[start:start + n]
         rw_tokens = tokens[start:start + n]
 
@@ -199,6 +202,24 @@ def main():
         }
         match_score_b, r_prec_b, _ = evaluate_matching_score(eval_wrapper, motion_loaders_b, f)
 
+    # --- Call C: SUP-45's re-slice -- restrict the position controls to the 57.3% of keys
+    # that actually had room to place a different window, so the position-effect null isn't
+    # mechanically diluted by the 42.7% where random_window == length_matched by construction.
+    could_vary_set = set(could_vary_keys)
+    restrict_dataset_to_keys(lm_loader, could_vary_set)
+    restrict_dataset_to_keys(rw_loader, could_vary_set)
+    print(f"restricted (could-vary-only) dataset sizes -- length_matched: "
+          f"{len(lm_loader.dataset)}, random_window: {len(rw_loader.dataset)}")
+
+    log_path_c = Path(my_args.out_json).with_suffix(".could_vary_subset.log")
+    with open(log_path_c, "w") as f:
+        fixseed(my_args.seed)
+        motion_loaders_c = {
+            "length_matched_could_vary": lm_loader,
+            "random_window_could_vary": rw_loader,
+        }
+        match_score_c, r_prec_c, _ = evaluate_matching_score(eval_wrapper, motion_loaders_c, f)
+
     def to_list(v):
         return v.tolist() if hasattr(v, "tolist") else v
 
@@ -225,6 +246,14 @@ def main():
             "truncated_caption_nonfallback": to_list(r_prec_b["truncated_caption_nonfallback"]),
         },
         "nonfallback_subset_matching_score": {k: to_list(v) for k, v in match_score_b.items()},
+        "n_could_vary_keys": len(could_vary_keys),
+        "n_no_room_keys": len(no_room_keys),
+        "pct_could_vary": len(could_vary_keys) / (len(could_vary_keys) + len(no_room_keys)),
+        "could_vary_subset_r_precision": {
+            "length_matched_could_vary": to_list(r_prec_c["length_matched_could_vary"]),
+            "random_window_could_vary": to_list(r_prec_c["random_window_could_vary"]),
+        },
+        "could_vary_subset_matching_score": {k: to_list(v) for k, v in match_score_c.items()},
         "original_e1_pilot_reference": {
             "r_precision_top3_full": 0.8013, "r_precision_top3_truncated": 0.6563, "drop": 0.1450,
             "note": "recomputed here under deterministic single-caption-per-key selection, "
@@ -240,6 +269,7 @@ def main():
         "rule_specific_drop_beyond_length": top3(r_prec_a["length_matched_control"]) - top3(r_prec_a["truncated_caption"]),
         "position_effect_prefix_minus_random_window": top3(r_prec_a["random_window_control"]) - top3(r_prec_a["length_matched_control"]),
         "conditional_drop_on_nonfallback_subset": top3(r_prec_b["full_caption_nonfallback"]) - top3(r_prec_b["truncated_caption_nonfallback"]),
+        "position_effect_on_could_vary_subset_only": top3(r_prec_c["random_window_could_vary"]) - top3(r_prec_c["length_matched_could_vary"]),
     }
 
     with open(my_args.out_json, "w") as f:

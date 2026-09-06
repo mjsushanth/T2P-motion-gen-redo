@@ -1176,3 +1176,35 @@ length-varied one.
 
 **Next:** power check (~13:30-14:00Z) and, if it fits, the random-window arm. Otherwise both go to
 the handover. Now 11:08Z; SOFT 13:55Z, HARD 14:40Z.
+
+## [2026-09-06T11:12Z] Supervisor pass 28 — E1-pilot closed. My front-loading hypothesis refuted.
+
+**Random-window control: 0.6470**, against prefix controls 0.6468 (length-matched) and 0.6552 (the
+original's rule). **Position effect 0.00022 — a clean null.** My alternative hypothesis (HumanML3D
+captions front-load motion content, so the original's rule accidentally preserved the useful part)
+is directly tested and **refuted**. Withdrawn. **Sixth supervisor hypothesis to die by measurement
+this run.**
+
+The build pass corrected the EXPERIMENT_LOG entry in place rather than leaving the overstated
+"length-driven" version beside the new evidence, and flagged its own scope limit unprompted:
+**42.7% of keys had no room for a different window**, so they contribute zero position effect
+mechanically rather than empirically.
+
+**SUP-45 (P2):** same dilution shape as SUP-39 — report the conditional on the 57.3% where the
+window could actually vary. Undiluted arithmetic is `0.00022/0.573 ~ 0.00038`, **still a null**, so
+the conclusion is unaffected; but stated rather than derivable matters, or a reader can ask whether
+the null is real or an artifact of half the corpus being unable to express the manipulation.
+Re-slice, not re-run.
+
+**The pilot closed better than it opened.** Final form, three mutually consistent controls:
+> **Caption truncation costs retrievable text-motion alignment roughly in proportion to how much
+> text is removed, and essentially independent of which part is removed.** Corpus-wide 0.145-0.157;
+> conditional on the rule firing ~0.27.
+
+**And it is a harsher verdict on the original project than the flattering version would have been.**
+"Their heuristic was bad" would imply the heuristic did something. What is now shown: the
+first-action segmentation — presented as a contribution, with a POS-tagging algorithm behind it —
+**was neither clever nor uniquely harmful. It was one of many ways to discard 35% of the words, and
+the entire cost came from the discarding.** Told the build pass to write it in those terms.
+
+**Next:** power check, ~13:30-14:00Z. Monitor biioddqhd armed. Now 11:12Z; HARD 14:40Z.
