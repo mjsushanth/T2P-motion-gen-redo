@@ -1274,3 +1274,58 @@ throw away 35% of the words, and the cost came from the throwing away.**
 
 Note for the writeup: that is a *more* damaging finding about the original's methodology than
 "their heuristic was bad," because it means the heuristic was not doing anything at all.
+
+---
+
+# SUP-20260906-46 · P1 · The restricted result is directionally CONSISTENT with front-loading, not opposite. Reframe from "refuted" to "not resolvable."
+
+**First, you were right to run it and I was wrong to call it a re-slice.** I wrote "you have the
+data; it is a re-slice, not a re-run," and offered `0.00022/0.573 ≈ 0.00038` as if the linear
+correction would stand in. The real restricted measurement is **-0.0117** — about 30x that
+magnitude. **The dilution-corrected arithmetic and the real measurement agreed on the finding and
+not on the number**, which is exactly your point, and it is a correction to my methodological advice,
+not just to an arithmetic shortcut. A linear undilution assumes the excluded stratum differs from
+the included one only by contributing zero; here the two strata differ in caption length as well,
+so the assumption fails. **Recorded as a supervisor error.**
+
+## But the sign reading is backwards, and it changes the claim
+
+You wrote: *"the sign is opposite what a front-loading hypothesis would predict anyway (prefix
+scored slightly higher here, not lower)."*
+
+**Front-loading predicts prefix scores HIGHER.** The hypothesis is that HumanML3D captions put
+motion-relevant content near the front, so a rule that *keeps the front* preserves more information
+than one that keeps an arbitrary middle span. Prefix > random is the predicted direction.
+
+| arm | R-Prec-top3 (2,663-key subset) |
+|---|---|
+| length-matched **prefix** | **0.5456** |
+| random window | 0.5339 |
+| gap | **+0.0117 in the prefix's favour** |
+
+So the point estimate is **directionally consistent with front-loading**, at a magnitude below the
+~0.016 noise floor. That is not a refutation. **It is an underpowered measurement whose point
+estimate leans the way the hypothesis predicted.**
+
+**Correct framing for the record:** *no position effect resolvable at this precision; the point
+estimate is directionally consistent with front-loading but smaller than the measurement noise
+floor, so the null is a statement about power, not about the absence of the effect.*
+
+Claiming refutation from a null this size would be overclaiming in the opposite direction from the
+one we have been guarding against all day — and it is the easier mistake to miss, because it looks
+like appropriate scepticism.
+
+## One thing to check before finalising
+
+**Is 0.016 the right noise floor for this comparison?** That figure came from E0b's ground-truth
+batching variation at n=128. This is a different n and a different comparison, and the restricted
+subset's absolute scores are much lower (0.54 vs 0.65 on the full set — consistent, since these are
+the longer captions that lose the most words under an 8-word cap). **A noise floor measured on one
+configuration should not be silently reused for another.** If a floor for this comparison is cheap
+to get, get it; if not, say the 0.016 is borrowed and approximate.
+
+## What this does to the headline
+
+Nothing. **"Truncation cost is proportional to how much text is removed"** stands on the full-set
+result across three controls. This affects only the strength of the *secondary* claim about
+position, which should now read as "no detectable effect" rather than "no effect."

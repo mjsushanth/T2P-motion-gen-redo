@@ -70,6 +70,18 @@
     "length_matched_could_vary": 4.7272049461502625,
     "random_window_could_vary": 4.706441164016724
   },
+  "could_vary_subset_seed2_r_precision": {
+    "length_matched_could_vary_seed2": [
+      0.29593373493975905,
+      0.44728915662650603,
+      0.5448042168674698
+    ],
+    "random_window_could_vary_seed2": [
+      0.2808734939759036,
+      0.4318524096385542,
+      0.521460843373494
+    ]
+  },
   "original_e1_pilot_reference": {
     "r_precision_top3_full": 0.8013,
     "r_precision_top3_truncated": 0.6563,
@@ -83,6 +95,8 @@
     "rule_specific_drop_beyond_length": -0.008405172413793127,
     "position_effect_prefix_minus_random_window": 0.00021551724137935935,
     "conditional_drop_on_nonfallback_subset": 0.2723765432098766,
-    "position_effect_on_could_vary_subset_only": -0.01167168674698793
+    "position_effect_on_could_vary_subset_only": -0.01167168674698793,
+    "lm_batching_noise_seed1_vs_seed2": -0.0007530120481927804,
+    "rw_batching_noise_seed1_vs_seed2": -0.01242469879518071
   }
 }

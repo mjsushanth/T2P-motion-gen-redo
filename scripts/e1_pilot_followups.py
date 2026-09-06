@@ -220,6 +220,19 @@ def main():
         }
         match_score_c, r_prec_c, _ = evaluate_matching_score(eval_wrapper, motion_loaders_c, f)
 
+    # --- Call D: SUP-20260906-46's noise-floor check -- E0b's ~0.016 floor was measured on a
+    # different n (128) and a different score range (~0.65-0.80); re-shuffling the SAME
+    # restricted (n=2663) datasets with a different seed gives a batching-noise estimate actually
+    # local to this comparison's n and score range, instead of borrowing one from elsewhere.
+    log_path_d = Path(my_args.out_json).with_suffix(".could_vary_subset_seed2.log")
+    with open(log_path_d, "w") as f:
+        fixseed(my_args.seed + 1)
+        motion_loaders_d = {
+            "length_matched_could_vary_seed2": lm_loader,
+            "random_window_could_vary_seed2": rw_loader,
+        }
+        match_score_d, r_prec_d, _ = evaluate_matching_score(eval_wrapper, motion_loaders_d, f)
+
     def to_list(v):
         return v.tolist() if hasattr(v, "tolist") else v
 
@@ -254,6 +267,10 @@ def main():
             "random_window_could_vary": to_list(r_prec_c["random_window_could_vary"]),
         },
         "could_vary_subset_matching_score": {k: to_list(v) for k, v in match_score_c.items()},
+        "could_vary_subset_seed2_r_precision": {
+            "length_matched_could_vary_seed2": to_list(r_prec_d["length_matched_could_vary_seed2"]),
+            "random_window_could_vary_seed2": to_list(r_prec_d["random_window_could_vary_seed2"]),
+        },
         "original_e1_pilot_reference": {
             "r_precision_top3_full": 0.8013, "r_precision_top3_truncated": 0.6563, "drop": 0.1450,
             "note": "recomputed here under deterministic single-caption-per-key selection, "
@@ -270,6 +287,8 @@ def main():
         "position_effect_prefix_minus_random_window": top3(r_prec_a["random_window_control"]) - top3(r_prec_a["length_matched_control"]),
         "conditional_drop_on_nonfallback_subset": top3(r_prec_b["full_caption_nonfallback"]) - top3(r_prec_b["truncated_caption_nonfallback"]),
         "position_effect_on_could_vary_subset_only": top3(r_prec_c["random_window_could_vary"]) - top3(r_prec_c["length_matched_could_vary"]),
+        "lm_batching_noise_seed1_vs_seed2": top3(r_prec_d["length_matched_could_vary_seed2"]) - top3(r_prec_c["length_matched_could_vary"]),
+        "rw_batching_noise_seed1_vs_seed2": top3(r_prec_d["random_window_could_vary_seed2"]) - top3(r_prec_c["random_window_could_vary"]),
     }
 
     with open(my_args.out_json, "w") as f:

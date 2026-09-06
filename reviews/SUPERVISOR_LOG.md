@@ -1208,3 +1208,47 @@ first-action segmentation — presented as a contribution, with a POS-tagging al
 the entire cost came from the discarding.** Told the build pass to write it in those terms.
 
 **Next:** power check, ~13:30-14:00Z. Monitor biioddqhd armed. Now 11:12Z; HARD 14:40Z.
+
+## [2026-09-06T11:16Z] Supervisor pass 29 — SUP-46: I over-claimed a refutation; the sign was misread both ways
+
+**Two errors this pass, one mine on method and one mine on conclusion. The build pass caught the
+first; I caught the second.**
+
+**1. My "re-slice, not a re-run" advice was wrong.** I offered `0.00022/0.573 ~ 0.00038` as a
+linear undilution standing in for the real restricted measurement. The build pass ran it properly:
+**-0.0117, ~30x my estimate.** Its diagnosis is right and it is a correction to my *methodology*,
+not my arithmetic — **linear undilution assumes the excluded stratum differs only by contributing
+zero**, but here the strata also differ in caption length, so the assumption fails. Recorded as a
+supervisor error.
+
+**2. But the restricted result is directionally CONSISTENT with front-loading, not opposite — and
+I had already called my hypothesis "refuted" one pass earlier. That was over-claiming.**
+
+| arm | R-Prec-top3 (2,663 keys) |
+|---|---|
+| length-matched prefix | **0.5456** |
+| random window | 0.5339 |
+| gap | **+0.0117 favouring the prefix** |
+
+Front-loading predicts *prefix scores higher* — keeping the front preserves the informative part.
+Prefix did score higher. The build pass read that as contradicting the hypothesis; it does not. The
+magnitude is below the ~0.016 floor, so the honest statement is **"no position effect resolvable at
+this precision; the point estimate leans the way the hypothesis predicted"** — a claim about
+**power**, not about absence.
+
+Retracting my own pass-28 language ("refuted", "sixth hypothesis to die by measurement"). **Claiming
+refutation from an underpowered null is overclaiming in the opposite direction from the one we have
+guarded against all day, and it is the easier one to miss because it looks like scepticism.**
+
+**Also flagged:** 0.016 is E0b's ground-truth batching floor at n=128, borrowed here for a different
+n and a different comparison whose absolute scores are much lower (0.54 vs 0.65 — consistent, these
+being the longer captions that lose most under an 8-word cap). **A floor measured on one
+configuration should not be silently reused for another.** Get one for this comparison or label the
+borrowed figure approximate.
+
+**Headline unaffected.** "Truncation cost is proportional to how much text is removed" stands on the
+full-set result across three controls. Only the secondary position claim moves, from "no effect" to
+"no detectable effect."
+
+**Next:** power check (~13:30-14:00Z), the last substantive item likely to land in-window. Monitor
+biioddqhd armed. Now 11:16Z; SOFT 13:55Z, HARD 14:40Z.

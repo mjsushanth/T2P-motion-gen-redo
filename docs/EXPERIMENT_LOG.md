@@ -698,19 +698,36 @@ exactly the 2,663 keys that had room to place a different window (an actual re-r
 `evaluate_matching_score` on the restricted subset, not the director's own
 `0.00022/0.573≈0.00038` linear estimate, though that estimate is what a purely-diluted-by-
 construction null would have produced): length-matched-prefix = **0.5456**, random-window =
-**0.5339**. `position_effect_on_could_vary_subset_only` = **-0.0117** — small, and in the
-opposite direction from a front-loading hypothesis (the prefix control scored *higher* here, not
-lower), but this is within the ~0.016 batching noise floor already established in E0b, so it does
-not read as a real effect either. The conclusion is unchanged and now rests on a cleaner
-foundation: even isolated to the subset that could express a position difference, none is
-detectable above noise.
-**Establishes:** "The effect is length-driven, not position-driven" is now a supported claim, not
-an overreach — the director's own alternative hypothesis (HumanML3D captions front-load
-motion-relevant content, so the original's rule was accidentally preserving the useful part) is
-directly tested and not supported by this data. The honest, now fully-earned summary of the whole
-E1-pilot arc: **caption truncation destroys retrievable text-motion alignment signal roughly in
-proportion to how much text is removed, regardless of which part is removed** — a statement about
-information volume in this embedding space, not about the original project's specific heuristic
-or about which part of a HumanML3D caption carries the motion description.
+**0.5339**. `position_effect_on_could_vary_subset_only` = **-0.0117** (computed as
+random-window minus prefix, so the prefix control scored *higher*).
+
+**Sign correction (review SUP-20260906-46, and my own error, not the director's second time
+around): this entry originally called the prefix-scores-higher direction "opposite [of] a
+front-loading hypothesis."** That is backwards. Front-loading predicts exactly this direction —
+if HumanML3D captions put motion-relevant content near the front, a rule that *keeps the front*
+should retain more retrievable signal than one that keeps an arbitrary middle span, i.e. prefix
+should score higher. **The point estimate (+0.0117 favoring the prefix) is directionally
+consistent with front-loading, not a refutation of it — the correct reading is "not enough
+precision to resolve a position effect," not "no position effect."**
+
+**Local noise-floor check (also SUP-20260906-46 — the earlier "within the ~0.016 floor" claim
+borrowed that number from E0b's n=128 ground-truth batching check, a different n and a different
+absolute-score range; this run measures the floor actually local to this comparison instead of
+borrowing one).** Re-shuffled the same restricted (n=2,663) datasets with a second seed:
+length-matched-prefix moved 0.5456 -> 0.5448 (**0.0008** swing), random-window moved
+0.5339 -> 0.5215 (**0.0124** swing) — batching noise at this n/score range is real and, for the
+random-window arm specifically, close in magnitude to the measured "position effect" itself
+(0.0117). **Correct conclusion: no position effect resolvable at this precision; the point
+estimate leans the way front-loading predicts but sits within this comparison's own measured
+noise band, so this is a statement about power, not about the absence of an effect.**
+**Establishes:** the position effect, if any exists, is too small to resolve at this sample size —
+the point estimate favors the prefix (consistent with front-loading) but sits within this
+comparison's own measured batching noise, so the front-loading hypothesis is **not refuted, only
+unresolved** at this precision (corrected from this entry's earlier, wrong claim that the sign
+refuted it). What the whole E1-pilot arc *does* establish without qualification, because it does
+not depend on resolving the position question: **caption truncation destroys retrievable
+text-motion alignment signal roughly in proportion to how much text is removed** — a statement
+about information volume in this embedding space. Whether *which part* is removed also matters is
+now honestly labeled underpowered-to-detect, not settled either way.
 **Does NOT establish:** Whether this generalizes to a different embedding space or a different corpus's
 caption style. Anything about generation — still entirely E1B's open question.

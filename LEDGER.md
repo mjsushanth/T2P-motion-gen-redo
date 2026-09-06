@@ -1274,3 +1274,46 @@ re-confirmed unchanged (they are, to the same decimal places as Item 24) alongsi
 specificity, and prefix vs. genuine position). Report to the director; still waiting on the E1A
 power check (background, ~13:30-14:00Z expected) before any E1B-scope decision.
 
+## [2026-09-06T12:25:00 UTC] Item 26 — Sign error corrected: prefix-scores-higher IS what front-loading predicts; local noise floor measured (not borrowed) confirms the position question is underpowered, not resolved
+**Status:** complete
+**Acceptance criteria:** the director (SUP-20260906-46) caught two things in Item 25's writeup:
+(1) I wrote that the prefix control scoring higher than the random-window control was "opposite"
+a front-loading hypothesis — backwards; front-loading predicts exactly that direction, since
+keeping the front should retain more signal if the front carries more of it. (2) the ~0.016 noise
+floor I compared against was E0b's, measured at a different n (128) and a different absolute
+score range (~0.65-0.80 vs. this comparison's ~0.53-0.55) — borrowed, not measured for this
+configuration. Fix both: correct the sign language, and measure a real local noise floor via a
+second-seed re-shuffle of the same restricted datasets.
+**Files changed:** `scripts/e1_pilot_followups.py` (added a fourth evaluation call — same
+restricted length-matched/random-window loaders, reshuffled with `fixseed(seed+1)`, no new data
+or dataset construction needed). `docs/EXPERIMENT_LOG.md` (follow-up-2 entry: added a
+sign-correction paragraph naming the error plainly, added the local noise-floor result, and
+rewrote the "Establishes" line to stop claiming the front-loading hypothesis was refuted).
+`artifacts/e1/e1_pilot_followups_record.json` (re-saved with the fourth call's numbers).
+**Environment changes:** none.
+**Result:** re-shuffling the same n=2,663 restricted datasets with a second seed: length-matched-
+prefix moved 0.5456 -> 0.5448 (0.0008 swing — small); random-window moved 0.5339 -> 0.5215
+(**0.0124 swing** — substantial, and close in magnitude to the 0.0117 "position effect" itself).
+**The locally-measured noise floor (~0.012, driven by the noisier of the two arms) is almost the
+same size as the effect being tested for.** Correct conclusion, now stated plainly in
+`docs/EXPERIMENT_LOG.md`: no position effect resolvable at this sample size; the point estimate
+leans toward front-loading (prefix scored higher, which is the predicted direction) but is
+smaller than this comparison's own measured noise, so the honest label is "underpowered to
+detect," not "no effect" and not "refuted."
+**Self-critique:** this is a real interpretation error on my part, not a hedge the director is
+being generous about — I looked at "prefix scored higher" and reasoned my way to the wrong
+directional conclusion without pausing to ask "what does the hypothesis I'm testing actually
+predict the sign should be." Writing the number down correctly (-0.0117 as computed) did not
+protect me from describing what it meant incorrectly in the surrounding prose. Also should have
+asked whether a borrowed noise floor applied to a different configuration before leaning on it,
+rather than reaching for the nearest already-computed number (E0b's 0.016) as if noise floors were
+portable across n and score range by default.
+**Verification performed:** the noise-floor re-shuffle used the exact same restricted dataset
+objects (no reconstruction), only a different `fixseed()` call before iteration, so the swing
+measured is genuinely just batching-order variance at this n, not a confound from rebuilding the
+data differently.
+**Next:** the E1-pilot arc's final honest state: corpus-wide and conditional truncation-cost
+numbers stand unqualified; the position/front-loading question is explicitly unresolved rather
+than settled in either direction. Still waiting on the E1A power check (background,
+~13:30-14:00Z expected) before any E1B-scope decision.
+
