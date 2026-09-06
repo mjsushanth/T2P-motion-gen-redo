@@ -1432,3 +1432,63 @@ Pass 30 I proposed the averaging that resolved it, and it came back **confirmed*
 either party's judgement.** That belongs in the writeup as-is. `LANDMINES.md` §17 capturing the
 stochastic-arm/deterministic-arm distinction — and tying it back to E0a's `repeat_time` suspicion as
 a now-confirmed instance rather than a flagged one — is the right permanent form of the lesson.
+
+---
+
+# Review 8 — E1A power check: GATE PASSES. E1 has power. Proceed.
+
+**Date:** 2026-09-06 · Result read from `artifacts/e1/e1a_power_check_run.log`.
+
+## The gate
+
+| quantity | value |
+|---|---|
+| chance (3/32) | 0.09375 |
+| **E1A R-Precision-top3** | **0.2969** |
+| margin over chance | **0.2031 = ~13x the 0.016 noise floor** |
+| E1A / chance | **3.17x** |
+
+**Pre-registered criterion was "clearly above 0.09375 by a margin larger than the noise floor."
+Met by a wide margin. The gate PASSES: the pipeline learns text conditioning at 3,000 steps, and
+the A-vs-B comparison has power.** SUP-33's floor-effect concern is retired.
+
+**Ground truth reproduced at 0.7950 against the 20-replication reference of 0.7977 — 0.0027 apart.
+Third independent confirmation of the evaluator**, now on a train-on-train / eval-on-test run with
+a freshly materialised train split. That is worth more than the first two, because the data path is
+new.
+
+## The loss/quality divergence is a clean empirical confirmation of SUP-42
+
+Final training loss ~0.19 against converged 0.0563 and init ~1.2: **~60% of the way to MDM's
+converged loss, in 0.63% of its step budget.** Loss falls fast and early.
+
+**And FID is 7.209 — 13x worse than MDM's 0.544.**
+
+**That is SUP-42's argument made concrete rather than theoretical.** A loss curve 60% of the way to
+convergence sits alongside a model that is distributionally poor. **Loss measures training, not
+quality**, exactly as F6's failure mode implied — and had we gated on the loss trace, as the
+original project effectively did, this model would have looked far healthier than it is. Put both
+numbers side by side in the writeup; the pair is more instructive than either alone.
+
+Note also the R-Precision context: **E1A reaches 0.2969 against MDM's published 0.611 — roughly 49%
+of MDM's text-alignment at 0.63% of its training budget.** Report that as a scoping fact, with the
+internally-comparable-only label (D-03 unresolved, D-22).
+
+## Two housekeeping items
+
+1. **The `diversity_times` off-by-one finally bit.** `assert activation.shape[0] > diversity_times`
+   crashed the run *after* R-Precision and FID were computed and printed, so **the gate result is
+   intact** — but the script died before its own clean completion path. Fix the off-by-one now; it
+   is a one-line change and the motions are cached, so no regeneration is needed. It has been
+   deferred twice and has now cost a clean exit.
+2. **Confirm the record JSON is complete**, given the crash. A 3,397-byte file exists; check it was
+   written with the full metric set rather than partially, and if it was assembled after the fact,
+   say so in the entry as E0b did.
+
+## Verdict
+
+**Proceed to E1B.** The gate's purpose was to decide whether the matrix is worth its wall-clock, and
+it answered yes with a 13x margin. Combined with the pilot's finding — that truncation destroys
+0.145-0.157 corpus-wide and ~0.27 conditional in the *retrieval* space — E1B now tests a specific,
+pre-registered prediction: **does that information loss propagate to generated output?** That is a
+sharp question with a stated expected direction and a model demonstrably capable of showing it.

@@ -1,4 +1,89 @@
-# Supervisor log
+# HANDOVER — supervising session, 2026-09-06
+
+**Written at 13:50Z, before the 14:40Z hard stop. Read this first; the passes below are chronological
+detail.** RUN_START 07:55Z. Successor: you have none of the conversation that produced this.
+
+## What this session was
+
+A supervising/reviewing session over a build session ("T2P Sonnet Coder C1"), which did all
+execution. This session held gates, reviewed findings, and wrote `reviews/`, `docs/LANDMINES.md`,
+`docs/DECISIONS.md` entries and the prompt files. **Territory rule that actually worked: append or
+annotate, never silently delete another agent's entry.** `reviews/` and `guidance/` stay hard-walled.
+
+## State at handover
+
+| item | status |
+|---|---|
+| Stage 1 forensics | **DONE.** F1-F8 verified. |
+| Stage 2 landscape / spec / positioning | **DONE**, reviewed, gate released. |
+| D-03 harness gate | **UNRESOLVED.** E0a passed (evaluator sane); E0b did not reproduce MDM's FID. **Every downstream number is internally-comparable-only** (D-22). |
+| E1-pilot | **DONE — the session's substantive output.** See below. |
+| E1A power check | **PASSED.** R-Prec-top3 0.2969 vs chance 0.09375. E1 has power. |
+| E1B | **not started.** Scope decided, see "next actions". |
+| Stage 5 demonstrator | **designed, not built.** SUP-43. |
+
+## The two findings worth carrying forward
+
+**1. Caption truncation cost (E1-pilot).** The original project truncated captions to the first
+action clause. Measured in the validated evaluator's retrieval space, no model, no training:
+**R-Precision-top3 drops 0.145-0.157 corpus-wide, ~0.27 conditional on the rule firing.**
+Decomposed across three controls: **~93% is volume (how much text is removed), ~7% is position
+(which part)** — the position component resolved at 5.9 sigma only after averaging over 8 random
+placement draws. **The original's "first-action segmentation," presented as a contribution, was
+neither clever nor uniquely harmful — one of many ways to discard 35% of the words.**
+
+**2. A healthy loss curve on a bad model (E1A).** Final training loss ~0.19 against a converged
+reference of 0.0563 and init ~1.2 — **~60% of the way to convergence at 0.63% of MDM's step budget
+— while FID was 7.209, 13x worse than MDM's 0.544.** This is F6's failure mode reproduced
+deliberately: **loss measures training, not quality.** The pair is the project's cleanest teaching
+artifact.
+
+## Next actions, in order
+
+1. **E1A second seed (~2.65h).** *Prerequisite for everything.* The decision rule is "B worse than A
+   by more than the seed spread," and there is currently **no spread measured at all**.
+2. **E1B: the original's rule, 2 seeds (~5.3h).** Content-neutral length arm dropped as redundant —
+   the pilot showed rule and generic truncation are indistinguishable, so one arm yields both claims.
+3. **Fix the `diversity_times` off-by-one.** One line. Has now fired twice and forced hand-assembled
+   records twice.
+4. **Design E1C (frame selection).** F3's other half, entirely unmeasured, no cheap analogue. **The
+   most valuable remaining experiment.**
+5. **Stage 5 demonstrator** (SUP-43) — show the *finding*, not the model.
+
+## Standing rules a successor will otherwise violate
+
+- **D-19/D-19a:** downloads, environments, installs, code, notebooks all pre-authorised. Ask only at
+  system-breaking scale. **Never hold the build session at a technical gate.**
+- **D-20:** zero commercial intent. Non-commercial licences do **not** constrain this project.
+  **Numbers are not the deliverable** — Stage 5 is not optional.
+- **D-21:** sole authorship. No institutional identifiers, no third-party names, no assistant
+  attributions in tracked files. Archive path lives in gitignored `.archive_path`, referenced as
+  `<ARCHIVE>/`.
+- **D-22/D-03:** label every number internally-comparable-only until the harness gate resolves.
+- **Two measured noise floors now exist** (0.016 from E0b batching; 0.0117 from the restricted
+  subset). **State which one you are using.** SUP-46 exists because one was silently reused.
+
+## What I got wrong, recorded because it is the useful part
+
+Six supervisor findings withdrawn or corrected this run: SUP-16 (FID arithmetic overconfident),
+SUP-17 (driver-misconfiguration hypothesis, disproved by measurement), SUP-28 (fixed reference would
+not stabilise FID), **E1's original specification (a tautology — comparing a static pose to motion,
+caught by criteria I had written an hour earlier for judging someone else)**, SUP-02's scope
+(regime-dependent, not universal), and the "re-slice not a re-run" advice (linear undilution was
+30x off).
+
+**And front-loading: I called it refuted, then corrected to not-resolvable, then it was confirmed at
+5.9 sigma. Two wrong readings in opposite directions before the right one.**
+
+Against that, the build session made two errors I caught: a D-03 gate misstatement, and reading two
+runs as independent when generation was seeded deterministically.
+
+**That ratio is the arrangement working.** Measurements decided, not seniority. A successor should
+expect to be wrong at a similar rate and should write it down at the same rate.
+
+---
+
+# Supervisor log — chronological passes
 
 > Reviewer territory. Written by the supervising session. Append-only.
 > `FOR JOEL` items collect at the bottom.
@@ -1340,3 +1425,76 @@ clever nor uniquely harmful.
     in opposite directions before the right one.** Every step is in the record. That sequence is a
     better advertisement for the method than a clean result would have been, and it is the sort of
     thing worth being able to walk an interviewer through.
+
+## [2026-09-06T13:40Z] Supervisor pass 32 — E1A POWER CHECK: GATE PASSES
+
+| quantity | value |
+|---|---|
+| chance (3/32) | 0.09375 |
+| **E1A R-Precision-top3** | **0.2969** |
+| margin | **0.2031 ~ 13x the 0.016 noise floor** |
+| vs chance | 3.17x |
+
+**Pre-registered criterion met by a wide margin. E1 has power; SUP-33's floor-effect concern is
+retired. Proceed to E1B.**
+
+**Ground truth reproduced at 0.7950 vs the 20-replication reference 0.7977 — 0.0027 apart. Third
+independent confirmation of the evaluator, and the most valuable**, because this run used a freshly
+materialised train split and a new data path. The instrument survived a change that could have
+broken it.
+
+**The result's most instructive feature is the loss/quality divergence — SUP-42 confirmed
+empirically rather than argued.** Final loss ~0.19 against converged 0.0563 and init ~1.2 = **~60%
+of the way to MDM's converged loss at 0.63% of its step budget**. **And FID 7.209, 13x worse than
+MDM's 0.544.** A loss curve 60% converged sitting on a distributionally poor model. **Had we gated
+on the loss trace — as the original project effectively did — this model would have looked far
+healthier than it is.** Told the build pass to put both numbers side by side; the pair teaches more
+than either alone.
+
+Scoping fact for the writeup, with the internally-comparable-only label: **E1A reaches 49% of MDM's
+published R-Precision at 0.63% of its training budget.**
+
+**Housekeeping raised:** the `diversity_times` off-by-one finally bit — crashed the run *after*
+R-Precision and FID were computed, so the gate is intact, but the script died before its clean exit.
+Deferred twice, now cost something; one-line fix, motions cached. And confirm the 3,397-byte record
+JSON is a complete write rather than partial, disclosing any after-the-fact assembly as E0b did.
+
+**Next and last:** write the handover. Told the build pass my window closes 14:40Z and that I will
+spend it on the handover rather than another review cycle.
+Now 13:40Z; SOFT 13:55Z, HARD 14:40Z.
+
+---
+
+## FOR JOEL (running)
+
+18. **The first model this project trained works, and the gate it was built to pass, passed.**
+    Trained from scratch on a corrected pipeline, it matches text to motion at roughly three times
+    chance — about half of what the field's reference model achieves, on 0.63% of that model's
+    training budget. That was the question the whole day was building toward: is a laptop-scale
+    rebuild capable of showing the effect we want to measure? Yes.
+19. **And it produced the cleanest teaching example of the project's central lesson.** Its training
+    loss got ~60% of the way to a fully-converged reference, while its actual output quality
+    remained poor — 13x worse than the reference model on the distributional metric. **A healthy
+    loss curve on a bad model.** That is precisely the trap your original project fell into, now
+    reproduced deliberately, measured, and documented as a demonstration rather than an accident.
+
+## [2026-09-06T13:45Z] Supervisor pass 33 — handover written; orientation docs made true
+
+**Handover written at the top of this file.** A successor reads it first; the chronological passes
+are detail. Covers state, the two findings, next actions in order, the standing rules a successor
+will otherwise violate, and the six supervisor findings withdrawn this run.
+
+**Then fixed the stalest thing in the repository.** `docs/00_START_HERE.md` §9 still read *"nothing
+has been measured in this repository. There is no result to report, positive or negative."* That is
+the first substantive section a new reader reaches, and it had been false for hours. Rewritten with
+both findings, the unresolved-gate caveat, and the internally-comparable-only label. `README.md`'s
+status table likewise still showed Stages 3-5 as "not started."
+
+Both now carry the two findings, the D-03 caveat, and — deliberately — a paragraph on the process:
+six supervisor findings withdrawn by measurement in a day, including the headline experiment's
+original specification being a tautology caught before it burned ~10h, and the front-loading result
+going refuted -> unresolvable -> confirmed. **Kept because the sequence is what makes the surviving
+numbers worth believing**, not despite being unflattering.
+
+**Reached SOFT STOP (13:55Z) with this pass. Taking no new work items.** Remaining time to HARD STOP
+14:40Z is for anything the build session sends back and a clean close.

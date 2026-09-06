@@ -1430,3 +1430,54 @@ director's SUP-40 scope decision (already informed by the E1-pilot's finding tha
 original's specific truncation rule is less interesting than testing caption-length effects in
 general). No E1B run started yet — this item only closes the power-check gate.
 
+## [2026-09-06T13:05:00 UTC] Item 30 — diversity_times fixed; E1B launched (train-on-truncated, eval-on-truncated, per the director's go-ahead)
+**Status:** in progress (E1B training launched, background, ~2.5h expected, not yet complete)
+**Acceptance criteria:** the director (Review 8) confirmed the gate passes decisively and said
+proceed to E1B, with two housekeeping items: fix the `diversity_times` off-by-one now (it has
+crashed the run twice, deferred both times) rather than defer a third time; confirm the
+hand-assembled `e1a_power_check_record.json` is complete given the crash, not a partial write.
+**Files changed:** `scripts/e1a_power_check.py` (one-line fix: `diversity_times=min(300,
+num_samples_limit - 1)` instead of `min(300, num_samples_limit)`, with a comment explaining why —
+`calculate_diversity`'s own assert requires strictly-greater-than, not greater-or-equal).
+`scripts/e1_train_arm.py` (new — generalizes the power-check script to `--arm {a,b}`: arm A is
+the already-completed control, arm B truncates captions via the same faithful
+first-action-clause rule used throughout the E1-pilot, applied to BOTH the training loader's
+captions (what the model learns to condition on) AND the generation loader's captions (what
+conditions sampling and what the retrieval evaluator scores the output against) — mirroring the
+original project's actual end-to-end defect rather than truncating at only one stage. The
+ground-truth reference loader stays full-caption, same as every other arm run in this project.
+Includes the same diversity_times fix from the start).
+**Environment changes:** none yet (E1B's ~2.5h run is in progress, background).
+**Verification of the hand-assembled record (director's ask #2):** confirmed
+`e1a_power_check_record.json` is a complete, valid 3,397-byte JSON with every field the script's
+own successful-exit path would have produced (matching score, R-Precision, FID, diversity for
+both arms, loss log, timing, gate result) — parsed it with `json.load` rather than eyeballing the
+byte count, and the `hand_assembled_note` field already states plainly which parts were
+transcribed from the crash-truncated log versus computed fresh, per the same disclosure
+convention E0b used.
+**Design decision on E1B's evaluation protocol, made explicit since it wasn't fully specified in
+REBUILD_SPEC's original A/B row:** truncating only the TRAINING captions and leaving generation-
+time conditioning full-length would test a different, less faithful question (a model trained on
+short captions asked to generalize to long ones it never saw the shape of) than truncating BOTH
+stages (a model that only ever experiences truncated captions, matching what the original project
+actually did throughout its own pipeline). Chose the latter as the more faithful reproduction of
+the conditioning-mismatch defect E1B exists to measure. This is a real methodological choice, not
+a forced one, and is stated here so it can be checked or challenged rather than discovered later
+by reading the code.
+**Sanity check before committing to the full run:** rather than a full smoke test (expensive here,
+since generation always produces a full 32-sample batch regardless of `--num-samples-limit`, per
+Item 19/20's earlier lesson), ran just the truncation-and-batch-draw path in isolation (seconds,
+no training): confirmed `truncate_all_captions_in_loader` runs without error on the real 4,435-
+sequence train loader (11,920 caption entries mutated), spot-checked one before/after pair, and
+confirmed a real batch still draws correctly afterward. Did not re-verify the generation-loader
+truncation path in isolation before the full launch — a real, if small, gap in verification,
+noted rather than silently accepted.
+**Next:** E1B training launched at 13:05 UTC (`scripts/e1_train_arm.py --arm b --num-steps 3000
+--seed 10 --train-split train --eval-split test`), background, output streaming to
+`artifacts/e1/e1b_train_run.log`, record will land at `artifacts/e1/e1b_train_record.json`.
+Expected wall-clock ~2.5h (matching E1A's 1.911h+0.730h), which will land after the director's
+14:40Z stop — per their own stated precedent (the power check earlier in this session), the
+result carries forward to whoever picks this up if it lands after their handover is written.
+Report the real E1B result the moment it lands, comparing directly against E1A's R-Precision-top3
+of 0.2969 and ground-truth's 0.7950.
+

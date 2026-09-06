@@ -1,34 +1,31 @@
-"""E1A power check -- PRE-REGISTERED in docs/EXPERIMENT_LOG.md before this was run.
+"""E1 arm trainer -- generalizes scripts/e1a_power_check.py to run either E1A (control: full
+caption throughout) or E1B (first-action-clause truncation applied to BOTH training captions and
+generation-conditioning captions, per docs/DECISIONS.md D-23's redesigned A/B/C ladder).
 
-Trains MDM's real architecture from scratch for a small number of steps (E1A: full caption,
-full-sequence target -- the control arm of the redesigned E1 ladder, docs/DECISIONS.md D-23),
-then generates and evaluates R-Precision-top3 against the pre-registered chance threshold
-(3/32 = 0.09375, per docs/DECISIONS.md D-25's R-Precision-decisive regime for E1/E2).
+--arm a: full caption -> full sequence (the control; E1A's power check already produced one real
+         result this way, R-Precision-top3=0.2969 vs 0.7950 ground truth, LEDGER Item 29).
+--arm b: first-action-clause-only caption -> full sequence. Truncation is applied to the TRAIN
+         loader's captions/tokens (what the model learns to condition on) AND to the generation
+         loader's captions/tokens (what conditions sampling and what the retrieval evaluator
+         scores the generated motion against) -- mirroring the original project's actual defect,
+         where truncated captions were used end-to-end, not just at one stage. The ground-truth
+         reference loader (used only as the fixed baseline column in evaluate_matching_score/FID)
+         is left with FULL captions unchanged, same as every other arm run in this project.
 
-Not the E1 result itself -- a cheap (~1.9h training + ~0.65h generation/eval) check for whether
-this training budget gives E1's A-vs-B comparison any power at all, before spending the full
-matrix's wall-clock (review SUP-20260906-33).
+Both arms train on the disjoint materialized TRAIN split and evaluate on the materialized TEST
+split (docs/DECISIONS.md D-25 / review SUP-20260906-37) -- no memorisation confound.
 
-Trains on the materialized TRAIN split, evaluates on the materialized TEST split (review
-SUP-20260906-37): an earlier version of this script trained and evaluated on the same subset,
-which lets an above-chance R-Precision result reflect memorisation of the training pairs rather
-than generalisable text conditioning -- disabling for a check whose only job is detecting real
-learning, not a milder version of the same signal. Requires the train split to already be
-materialized via `materialize_humanml3d_test_subset.py --split train`.
+Includes the diversity_times off-by-one fix (review SUP-20260906-8/E1A-power's own crash,
+LEDGER Item 29): diversity_times must be < the generated set size, not <=.
 
-Reuses vendored MDM machinery throughout (train_args() parser, create_model_and_diffusion,
-ClassifierFreeSampleModel, get_mdm_loader, EvaluatorMDMWrapper, eval_humanml.evaluation) --
-the same pattern as scripts/e0b_mdm_reproduction.py and scripts/e1_training_feasibility_probe.py.
-No new denoiser, no reimplemented training loop beyond the minimal step function already
-validated in the feasibility probe.
-
-Run from third_party/motion-diffusion-model/ (its own relative-import structure requires this):
+Run from third_party/motion-diffusion-model/:
     cd third_party/motion-diffusion-model
-    python3 ../../scripts/e1a_power_check.py --num-steps 3000 --out-json <path>
+    python3 ../../scripts/e1_train_arm.py --arm b --num-steps 3000 --out-json <path>
 """
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -36,9 +33,50 @@ from pathlib import Path
 MDM_ROOT = os.path.join(os.path.dirname(__file__), "..", "third_party", "motion-diffusion-model")
 sys.path.insert(0, os.path.abspath(MDM_ROOT))
 
+CONJUNCTION_RE = re.compile(r"/CCONJ|/SCONJ|/ADV then|/ADV after|/ADV before")
+
+
+def truncate_tokens_first_action_clause(caption, tokens):
+    """Same faithful port of the archived original's truncation rule used throughout the
+    E1-pilot (scripts/e1_pilot_caption_truncation.py, scripts/e1_pilot_followups.py)."""
+    pos_text = " ".join(tokens)
+    words = caption.split()
+    first_match = CONJUNCTION_RE.search(pos_text)
+    if first_match is not None:
+        pos_before_conj = pos_text[: first_match.start()].count(" ")
+        trunc_words = words[:pos_before_conj]
+        trunc_tokens = tokens[:pos_before_conj]
+    else:
+        sentences = re.split(r"[.!?]", caption)
+        first_sentence = sentences[0].strip() if sentences else caption
+        n = len(first_sentence.split())
+        trunc_words = words[:n]
+        trunc_tokens = tokens[:n]
+    if len(trunc_words) < 3:
+        trunc_words, trunc_tokens = words[:3], tokens[:3]
+    return " ".join(trunc_words), trunc_tokens
+
+
+def truncate_all_captions_in_loader(loader):
+    """Mutates every text entry (not just the first) for every key -- unlike the E1-pilot's
+    retrieval-only analysis, training draws via Text2MotionDatasetV2's own random.choice per
+    __getitem__, so every entry in a multi-caption key must be truncated, not just one."""
+    t2m = loader.dataset.t2m_dataset
+    n_captions = 0
+    for key, entry in t2m.data_dict.items():
+        for text_dict in entry["text"]:
+            trunc_caption, trunc_tokens = truncate_tokens_first_action_clause(
+                text_dict["caption"], text_dict["tokens"]
+            )
+            text_dict["caption"] = trunc_caption
+            text_dict["tokens"] = trunc_tokens
+            n_captions += 1
+    return n_captions
+
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--arm", choices=["a", "b"], required=True)
     ap.add_argument("--num-steps", type=int, default=3000)
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--num-samples-limit", type=int, default=128)
@@ -50,8 +88,8 @@ def main():
     my_args = ap.parse_args()
 
     scratch_argv = [
-        "e1a_power_check",
-        "--save_dir", str(Path(my_args.out_json).parent / "e1a_scratch_save_dir"),
+        "e1_train_arm",
+        "--save_dir", str(Path(my_args.out_json).parent / f"e1{my_args.arm}_scratch_save_dir"),
         "--overwrite",
         "--dataset", "humanml",
         "--batch_size", str(my_args.batch_size),
@@ -85,12 +123,18 @@ def main():
     fixseed(my_args.seed)
     dist_util.setup_dist(args.device)
     device = dist_util.dev()
-    print(f"device: {device}")
+    print(f"device: {device}, arm: {my_args.arm}")
 
     print(f"loading training data (split={my_args.train_split})...")
     train_data = get_dataset_loader(name="humanml", batch_size=my_args.batch_size,
                                      num_frames=None, split=my_args.train_split, hml_mode="train")
     print(f"train dataset size: {len(train_data.dataset)} sequences")
+
+    n_train_captions_truncated = 0
+    if my_args.arm == "b":
+        n_train_captions_truncated = truncate_all_captions_in_loader(train_data)
+        print(f"arm B: truncated {n_train_captions_truncated} training caption entries "
+              f"(first-action-clause rule)")
 
     print("creating model and diffusion...")
     model, diffusion = create_model_and_diffusion(args, train_data)
@@ -138,7 +182,7 @@ def main():
     training_wall_clock_s = t_train_end - t_train_start
     print(f"training done: {training_wall_clock_s:.1f}s ({training_wall_clock_s/3600:.3f}h)")
 
-    print("generating + evaluating (E0b pattern, same trained model, no checkpoint round-trip)...")
+    print("generating + evaluating...")
     model.eval()
     guidance_param = 2.5
     sample_model = ClassifierFreeSampleModel(model) if guidance_param != 1 else model
@@ -148,6 +192,15 @@ def main():
                                     split=my_args.eval_split, hml_mode="gt")
     gen_loader = get_dataset_loader(name=args.dataset, batch_size=32, num_frames=None,
                                      split=my_args.eval_split, hml_mode="eval")
+
+    n_gen_captions_truncated = 0
+    if my_args.arm == "b":
+        # Truncate the generation-conditioning/scoring captions too -- mirrors the original
+        # defect end-to-end (truncated captions used for both training and use), and keeps the
+        # R-Precision instrument internally consistent (it conditions generation AND scores the
+        # result from the SAME stored caption/tokens, per eval_humanml.evaluate_matching_score).
+        n_gen_captions_truncated = truncate_all_captions_in_loader(gen_loader)
+        print(f"arm B: truncated {n_gen_captions_truncated} generation-conditioning caption entries")
 
     t_gen_start = time.perf_counter()
     motion_loader, mm_motion_loader = get_mdm_loader(
@@ -160,16 +213,13 @@ def main():
     generation_wall_clock_s = t_gen_end - t_gen_start
     print(f"generation done: {generation_wall_clock_s:.1f}s ({generation_wall_clock_s/3600:.3f}h)")
 
-    eval_motion_loaders = {"e1a": lambda: (motion_loader, mm_motion_loader)}
+    arm_name = f"e1{my_args.arm}"
+    eval_motion_loaders = {arm_name: lambda: (motion_loader, mm_motion_loader)}
     eval_wrapper = EvaluatorMDMWrapper(args.dataset, device)
 
     log_path = Path(my_args.out_json).with_suffix(".log")
     mean_dict = eh.evaluation(
         eval_wrapper, gt_loader, eval_motion_loaders, str(log_path),
-        # diversity_times must be < activation.shape[0] (calculate_diversity's own assert), not
-        # <=, so a value equal to num_samples_limit crashes once the generated set reaches
-        # exactly that size -- the same off-by-one that crashed E0b and this script's own first
-        # real run (LEDGER Item 29). Fixed here rather than deferred a third time.
         replication_times=1, diversity_times=min(300, my_args.num_samples_limit - 1),
         mm_num_times=0, run_mm=False, eval_platform=None,
     )
@@ -177,19 +227,20 @@ def main():
     def to_list(v):
         return v.tolist() if hasattr(v, "tolist") else v
 
-    r_prec_e1a = to_list(mean_dict.get("R_precision_e1a"))
+    r_prec_arm = to_list(mean_dict.get(f"R_precision_{arm_name}"))
     r_prec_gt = to_list(mean_dict.get("R_precision_ground truth"))
-    fid_e1a = to_list(mean_dict.get("FID_e1a"))
+    fid_arm = to_list(mean_dict.get(f"FID_{arm_name}"))
 
     chance_level = 3.0 / 32.0
-    r_prec_top3_e1a = r_prec_e1a[2] if r_prec_e1a is not None else None
-    above_chance = (r_prec_top3_e1a is not None) and (r_prec_top3_e1a > chance_level)
+    r_prec_top3_arm = r_prec_arm[2] if r_prec_arm is not None else None
 
     result = {
-        "experiment": "E1A-power",
-        "description": "Pre-registered power check: does E1A (full caption -> full sequence) "
-                       "trained for num_steps learn text conditioning at all, per "
-                       "docs/EXPERIMENT_LOG.md's E1A-power entry.",
+        "experiment": f"E1{my_args.arm.upper()}",
+        "arm": my_args.arm,
+        "description": ("Control: full caption -> full sequence throughout." if my_args.arm == "a"
+                        else "Truncated (first-action-clause) caption -> full sequence, "
+                             "truncation applied to both training and generation-conditioning, "
+                             "per docs/DECISIONS.md D-23."),
         "num_training_steps": my_args.num_steps,
         "seed": my_args.seed,
         "train_split": my_args.train_split,
@@ -197,19 +248,18 @@ def main():
         "batch_size": my_args.batch_size,
         "num_samples_limit": my_args.num_samples_limit,
         "n_params_millions": n_params / 1e6,
+        "n_train_captions_truncated": n_train_captions_truncated,
+        "n_gen_captions_truncated": n_gen_captions_truncated,
         "training_wall_clock_seconds": training_wall_clock_s,
         "generation_wall_clock_seconds": generation_wall_clock_s,
         "loss_log": loss_log,
         "mean_dict": {k: to_list(v) for k, v in mean_dict.items()},
         "chance_level_r_precision_top3": chance_level,
-        "r_precision_top3_e1a": r_prec_top3_e1a,
+        f"r_precision_top3_{arm_name}": r_prec_top3_arm,
         "r_precision_top3_ground_truth": r_prec_gt[2] if r_prec_gt is not None else None,
-        "fid_e1a_vs_ground_truth": fid_e1a,
-        "gate_result": "above_chance" if above_chance else "at_or_near_chance",
+        f"fid_{arm_name}_vs_ground_truth": fid_arm,
         "note": f"trained on split={my_args.train_split}, evaluated on split={my_args.eval_split} "
-                "(disjoint materialized subsets, per review SUP-20260906-37) -- an above-chance "
-                "result here reflects held-out generalisation, not memorisation of the training "
-                "captions/motions.",
+                "(disjoint materialized subsets, per review SUP-20260906-37).",
     }
     with open(my_args.out_json, "w") as f:
         json.dump(result, f, indent=2)
