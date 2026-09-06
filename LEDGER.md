@@ -1528,3 +1528,40 @@ to judge a gap against. Order: let E1B finish, then launch E1A with a second see
 then compare. The director's session has reached its stop window; reporting continues to Joel and
 whoever picks this up next, per their explicit handover instruction.
 
+## [2026-09-06T13:55:00 UTC] Item 32 — Built the caption-retrievability control into the upcoming E1A seed-2 run (SUP-20260906-49, the director's genuine last finding)
+**Status:** complete (code + verification); the control itself runs as part of E1A seed 2, still
+queued behind E1B's completion
+**Acceptance criteria:** the director caught, in their final message before their session's stop
+window, that E1A is scored against full captions (0.2969) while E1B will be scored against
+truncated captions — so the raw A-vs-B R-Precision gap conflates two things: the model degrading
+(what E1B exists to measure) and truncated captions being intrinsically harder to retrieve
+against at all (a text-side effect the E1-pilot already measured at 0.145 on real motions, but
+not in a generative model's much lower operating range, ~0.30 vs ~0.80, where it will not
+transfer at the same magnitude). Needed: a control that holds the model fixed and varies only the
+scoring caption, to isolate "caption retrievability alone, in this model's actual range."
+**Files changed:** `scripts/e1_train_arm.py` (new `rescore_against_truncated_captions()`
+function — for arm A only, after the normal evaluation, mutates the already-generated
+`CompMDMGeneratedDataset.generated_motion` list in place: unwraps each entry's padded
+`sos/OTHER ... eos/OTHER ... unk/OTHER`-wrapped token list back to its real content tokens using
+the stored `cap_len`, truncates via the same faithful first-action-clause rule used throughout
+the E1-pilot, re-wraps to the original fixed padded length, then re-runs
+`evaluate_matching_score` on the SAME motion tensors — no regeneration, text re-encoding only.
+Result stored under `e1a_truncated_rescore_control` in the run's JSON).
+**Environment changes:** none yet.
+**Self-critique/verification performed before trusting this on a ~2.5h run:** did not wait to
+find out whether the unwrap/re-wrap indexing was correct by way of a failed 2.5-hour run. Wrote
+and ran a standalone synthetic test first (`python3 -c "..."` against a fabricated 22-length
+wrapped token list matching the real generation-time format): confirmed the extracted real tokens
+round-trip correctly against the known input, confirmed the re-wrapped output has the exact same
+total length as the original (`assert len(new_wrapped) == total_len`) and that `eos/OTHER` lands
+exactly at the new `cap_len - 1` index. Passed on the first real attempt at the logic, which is
+itself worth noting rather than assuming correctness because it "looked right" — the test was
+written to fail loudly on an off-by-one, and didn't.
+**Next:** wait for E1B to finish (still training, background, launched ~13:05 UTC, ~2.5h
+expected). Then launch E1A with a second seed (e.g. `--seed 20`), which will now automatically
+produce three things in one ~2.5h run: (1) a second A data point for the seed-to-seed spread the
+director required before any A-vs-B statement, (2) the `e1a_truncated_rescore_control` value —
+this session's answer to "how much of E1B's eventual gap, if any, is just captions being harder
+to score against in this model's range." Only after both E1B and this control exist should
+`docs/EXPERIMENT_LOG.md` receive an E1B entry with an actual A-vs-B claim in it.
+

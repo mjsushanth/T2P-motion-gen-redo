@@ -57,6 +57,44 @@ def truncate_tokens_first_action_clause(caption, tokens):
     return " ".join(trunc_words), trunc_tokens
 
 
+def rescore_against_truncated_captions(motion_loader, eval_wrapper, arm_label):
+    """SUP-20260906-49: E1A is scored against full captions (0.2969) but E1B will be scored
+    against truncated ones, so the raw A-vs-B gap conflates model degradation with "truncated
+    captions are intrinsically harder to retrieve against" -- a text-side effect the E1-pilot
+    already measured on real motions (0.145), but not in this model's much-lower operating range
+    (~0.30 vs ~0.80), where it will not transfer at the same magnitude. This control holds the
+    SAME generated motions fixed and rescopes only the retrieval caption, isolating "caption
+    retrievability alone, in this model's actual operating range" from any model difference.
+
+    generated_motion[i]['tokens'] is the WRAPPED, padded token list (sos/OTHER ... eos/OTHER ...
+    unk/OTHER padding) already used to compute embeddings; must unwrap, truncate the real
+    content, then re-wrap to the same fixed length before rescoring, or the evaluator's
+    w_vectorizer lookup and cap_len bookkeeping break.
+    """
+    from eval.eval_humanml import evaluate_matching_score
+
+    for item in motion_loader.dataset.generated_motion:
+        tokens, cap_len, caption = item["tokens"], item["cap_len"], item["caption"]
+        real_tokens = tokens[1:cap_len - 1]  # strip sos/OTHER ... eos/OTHER wrapper
+        trunc_caption, trunc_tokens = truncate_tokens_first_action_clause(caption, real_tokens)
+        total_len = len(tokens)
+        new_wrapped = ["sos/OTHER"] + trunc_tokens + ["eos/OTHER"]
+        new_cap_len = len(new_wrapped)
+        if new_cap_len < total_len:
+            new_wrapped = new_wrapped + ["unk/OTHER"] * (total_len - new_cap_len)
+        else:
+            new_wrapped = new_wrapped[:total_len]
+            new_cap_len = total_len
+        item["caption"] = trunc_caption
+        item["tokens"] = new_wrapped
+        item["cap_len"] = new_cap_len
+
+    match_score, r_prec, _ = evaluate_matching_score(
+        eval_wrapper, {arm_label: motion_loader}, open(os.devnull, "w")
+    )
+    return match_score[arm_label], r_prec[arm_label]
+
+
 def truncate_all_captions_in_loader(loader):
     """Mutates every text entry (not just the first) for every key -- unlike the E1-pilot's
     retrieval-only analysis, training draws via Text2MotionDatasetV2's own random.choice per
@@ -227,6 +265,24 @@ def main():
     def to_list(v):
         return v.tolist() if hasattr(v, "tolist") else v
 
+    truncated_rescore = None
+    if my_args.arm == "a":
+        # SUP-20260906-49's control: same generated motions, same model, rescored against
+        # truncated captions -- isolates caption-retrievability-alone in this model's operating
+        # range, before any E1B comparison is written up. Cheap: text re-encoding only, the
+        # already-generated motion tensors are reused as-is (no regeneration).
+        print("rescoring E1A's own generations against truncated captions "
+              "(SUP-20260906-49 control)...")
+        rescore_match, rescore_rprec = rescore_against_truncated_captions(
+            motion_loader, eval_wrapper, "e1a_truncated_rescore"
+        )
+        truncated_rescore = {
+            "matching_score": float(rescore_match),
+            "r_precision": to_list(rescore_rprec),
+            "r_precision_top3": float(to_list(rescore_rprec)[2]),
+        }
+        print(f"  e1a_truncated_rescore R-Precision-top3: {truncated_rescore['r_precision_top3']:.4f}")
+
     r_prec_arm = to_list(mean_dict.get(f"R_precision_{arm_name}"))
     r_prec_gt = to_list(mean_dict.get("R_precision_ground truth"))
     fid_arm = to_list(mean_dict.get(f"FID_{arm_name}"))
@@ -254,6 +310,7 @@ def main():
         "generation_wall_clock_seconds": generation_wall_clock_s,
         "loss_log": loss_log,
         "mean_dict": {k: to_list(v) for k, v in mean_dict.items()},
+        "e1a_truncated_rescore_control": truncated_rescore,
         "chance_level_r_precision_top3": chance_level,
         f"r_precision_top3_{arm_name}": r_prec_top3_arm,
         "r_precision_top3_ground_truth": r_prec_gt[2] if r_prec_gt is not None else None,
