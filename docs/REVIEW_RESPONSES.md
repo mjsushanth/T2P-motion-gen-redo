@@ -364,3 +364,29 @@ orders of magnitude apart. Title now states the actual mean CV (0.00007%) direct
 **Verification:** re-executed, then opened the resulting PNG directly and confirmed blue bars are
 now visible for every bone, clearly separated from red by roughly five orders of magnitude — not
 inferred from the code change, checked on the actual image.
+
+### SUP-20260907-88 — Guo R-Precision mismatch (0.352 vs. this project's own 0.7578): mis-tokenised captions, plus a second bug found while chasing the acceptance test
+**Disposition:** ACCEPTED, with one item still open (disclosed, not resolved)
+**What changed:** `notebooks/02_tmr_second_evaluator.ipynb`. Fixed the named bug (real,
+dataset-native lemmatised tokens looked up from `texts/*.txt` instead of spaCy surface forms,
+verified exactly: "walk/VERB" vs "walking/VERB" for the same caption, 128/128 exact matches, zero
+ambiguity). This alone moved R-Precision-top3 0.352 -> 0.4375 — still well short of your ~0.76
+acceptance bar, so per your own instruction ("if it doesn't, something else is wrong too") the
+investigation continued rather than stopping at a partial fix.
+**Second bug, found independently:** motion embeddings are not batch-composition-invariant
+(unlike text, verified batch-invariant to float32 precision). Computing all 128 at once vs. in
+official-protocol batches of 32 gives substantially different embeddings (mean cosine sim 0.85).
+Fixed; R-Precision moved to 0.6641. This also reversed the notebook's own R-Precision comparison
+(Guo now beats TMR at every rank, the opposite of the pre-fix result) — the earlier "TMR ahead"
+finding was an artifact of these two bugs, corrected explicitly in the notebook's closing text,
+not silently replaced.
+**Third finding: your acceptance bar is not yet met, and I am saying so rather than rounding up.**
+Tested whether batch composition explains the remaining gap to 0.7578: 5 additional random
+groupings of the same, now-correct embeddings all land in 0.63-0.68, same as the sequential
+grouping. **None reach 0.76.** The residual ~0.10-0.15 gap is real and its cause is not yet
+identified. Recorded as an explicit open item in the notebook's own closing and limits sections
+(candidates named: sequence-length handling, ground-truth pairing, an undiscovered difference
+from `eval_humanml.py`'s own driver) rather than claimed resolved.
+**Verification:** every claim tested directly in a standalone script before touching the notebook,
+none accepted on your diagnosis alone; notebook re-executed three times, 0 error cells each time,
+actual rendered Markdown read each time.

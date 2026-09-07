@@ -3025,3 +3025,58 @@ all three are now fixed and independently visually re-confirmed, not just re-exe
 **Next:** all three of my assigned notebooks (02/03/04) address every review finding raised
 against them so far, each fix visually re-confirmed by opening the actual rendered image, not
 inferred from a clean execution or from reading plotting code.
+
+## [2026-09-07T05:10:00 UTC] Item 65 — notebooks/02: two real Guo-evaluator bugs found (SUP-20260907-88), a third residual gap found and honestly left open
+**Status:** complete (with a disclosed open item, not a false "resolved")
+**Acceptance criteria:** the director caught an internal inconsistency — this notebook's own Guo
+R-Precision-top3 (0.352) vs. this project's own prior measurement on the identical 128 generated
+motions (`artifacts/e0/e0b_mdm_reproduction_record_v2.json`, 0.7578) — a 2.2x gap between two of
+this project's own numbers. Named cause: cell 8 re-tagged captions with spaCy (`demo/truncate.py`)
+instead of using HumanML3D's own pre-tokenised, lemmatised tokens (`texts/*.txt` field 2), which
+the Guo text encoder was actually trained on. Required: fix, and the acceptance test is Guo top-3
+returning to ~0.76; if it doesn't, the notebook isn't ready.
+**Independently verified before fixing anything:** confirmed the exact tokenisation mismatch
+directly (`"walking/VERB"` from spaCy vs the dataset's own `"walk/VERB"` for the identical
+caption) and confirmed 128/128 of this notebook's captions have an exact, unambiguous match in
+the corpus texts files before trusting a lookup-based fix.
+**First fix (tokenisation) applied, R-Precision moved 0.352 -> 0.4375 — still short of the ~0.76
+target, so the investigation continued per the director's own explicit instruction** ("if it
+doesn't, something else is wrong too").
+**Second bug found independently, not flagged by the director:** motion embeddings are NOT
+batch-composition-invariant, unlike text embeddings (verified: encoding the same caption alone vs.
+inside a batch of 2 gives max abs diff 1.2e-6, cosine sim 1.0 — batch-invariant). The same 128
+generated motions embedded all-at-once (this notebook's original approach) vs. in four batches of
+32 (the official protocol's own batch size) differ substantially: max abs diff 2.06, mean cosine
+similarity only 0.85, one sample as low as 0.22. Fixed by computing Guo motion embeddings in
+batches of 32, matching the official protocol exactly (text embeddings, already proven
+batch-invariant, correctly left as one-at-a-time). R-Precision moved 0.4375 -> 0.6641 — a much
+larger step, and this reversed a real downstream conclusion: **R-Precision now favors Guo over
+TMR at every rank, the opposite of the pre-fix result**, which had TMR ahead — that earlier
+"finding" was an artifact of the two bugs, not a real result, and the notebook's own closing text
+has been corrected to say so explicitly rather than silently updated.
+**Third gap found via direct testing, NOT resolved, reported openly:** tested whether
+batch-composition (which specific 32 samples get grouped together) explains the remaining gap to
+0.7578 by computing R-Precision under 5 additional random batch groupings of the identical,
+now-correctly-computed embeddings. All six groupings (this notebook's sequential one plus five
+random) land in 0.63-0.68 — **none reach 0.76.** This rules out batch-composition as the sole
+explanation. **The residual ~0.10-0.15 gap is real and its cause is not yet identified** —
+candidates named in the notebook's own limits section (sequence-length handling differences,
+ground-truth-pairing differences, an undiscovered difference from the official `eval_humanml.py`
+driver this notebook does not yet fully replicate) but none tested yet. This is reported as an
+open item in the notebook itself, not resolved by omission — the closing section and limits
+section both name it explicitly, and the acceptance test's own stated bar ("if it doesn't [return
+to ~0.76], something else is wrong too, and the notebook isn't ready") is honored by NOT claiming
+readiness on this point.
+**Files changed:** `notebooks/02_tmr_second_evaluator.ipynb` (both fixes applied; a new
+batch-composition-sensitivity check cell; the disagreement table, scatter, and closing sections
+all re-executed with the corrected embeddings and re-written to state the reversed R-Precision
+finding and the still-open residual gap, not silently updated numbers under old prose).
+**Verification performed:** every claim above tested directly in a standalone script before
+touching the notebook (tokenisation mismatch, text batch-invariance, motion batch-sensitivity,
+batch-composition-sensitivity across 6 groupings) — none accepted from the director's diagnosis
+alone. Notebook re-executed three times as the investigation progressed; confirmed 0 error cells
+and correct image count each time; read the actual rendered Markdown output each time, not assumed
+from a clean execution.
+**Next:** report the full investigation back, including the still-open residual gap — this is a
+case where "look further" was the right call per the director's own explicit instruction, and the
+honest result is "substantially fixed, not fully resolved," not "fixed."
