@@ -2842,3 +2842,49 @@ doing. Standing down on notebook 01 entirely going forward.
 **Next:** notebooks 02 (TMR) and 04 (FID covariance rank-deficiency) remain my territory, any
 order. Starting notebook 04 next (263-d/F1 notebook 03 already closed; TMR needs an external
 checkpoint download, a heavier first step, so sequencing 04 first).
+
+## [2026-09-07T03:20:00 UTC] Item 61 — notebooks/04: FID's covariance rank deficiency at n=128, built and executed
+**Status:** complete
+**Acceptance criteria:** same layered visual-intuition format as notebooks 01/03 (director's
+standing requirement); demonstrate why FID is unusable at this project's affordable n=128
+(already established as D-25/LANDMINES §14) rather than restating the prose. Director's specific
+visual requests: toy 2D/3D covariance-collapse demo before the real case; the real 512x512
+eigenvalue spectrum on a log axis; the parameter count (512x513/2=131,328) stated plainly next to
+the toy; a histogram of FID computed repeatedly between disjoint halves of real data.
+**Files changed:** `notebooks/04_fid_covariance_rank_deficiency.ipynb` (new). One-sentence
+question; intuition section (photographing a cloud from too few angles, before any code); setup
+naming the real cached data reused (no new generation, no new download); two toy demos (2D
+ellipse collapsing through n=1/2/5/50, 3D ellipsoid through n=2/3/4/50, both built fresh from
+synthetic Gaussians so the collapse is visually unambiguous before the real case adds any other
+complexity); the real case computed fresh from this project's own cached artifacts (below); plain-
+language meaning; honest limits.
+**Real data reused, not re-synthesized:** the 128 raw generated motions E0b's own FID score was
+computed from (`artifacts/e0/e0b_generated_cache/generated_motions.npz`, cached from that run,
+zero regeneration), embedded fresh through the same `EvaluatorMDMWrapper` this project's FID/
+R-Precision numbers already depend on; 4,640 real ground-truth embeddings already computed and
+cached (`artifacts/e0/fixed_gt_reference/fixed_gt_reference.npz`, from the same E0b follow-up
+work). Both artifacts were sitting on disk from earlier session work, reused rather than
+regenerated, per this project's own affordability discipline.
+**Result:** real eigenvalue spectrum of the 128 cached generated motions' 512-d embeddings —
+numeric rank exactly **127**, matching the theoretical maximum (n-1) precisely; the spectrum
+falls from 7.6e-5 to 2.0e-15 between rank 126 and 127, a ~10-order-of-magnitude cliff, not a
+gradual taper. Disjoint-halves FID on real ground-truth embeddings (30 trials each): mean 1.577
+at n=128/side, 0.214 at n=1024/side, 0.109 at n=2000/side — shrinks cleanly with n on data that
+never changes, direct empirical confirmation of the estimator-bias story already recorded in
+`docs/LANDMINES.md` §14, now demonstrated rather than asserted.
+**Real bug found and fixed mid-build (not a self-critique after the fact — caught by the first
+execution attempt's own traceback):** `EvaluatorMDMWrapper.__init__` hardcodes
+`checkpoints_dir='.'`, which every other script in this project that uses this class satisfies by
+being run with `cwd=third_party/motion-diffusion-model/` — the notebook's own cwd (`notebooks/`)
+broke this on first execution (`FileNotFoundError: ./t2m/text_mot_match/model/finest.tar`). Fixed
+by `os.chdir`-ing into `MDM_ROOT` only for the wrapper's construction and restoring the notebook's
+own cwd immediately after, matching the exact pattern already established in
+`demo/retrieval_embedding.py`, rather than changing the notebook's cwd globally (which would have
+broken the relative paths used everywhere else in the notebook).
+**Verification performed:** notebook executed twice (the second time after the cwd fix);
+confirmed 0 error cells and 4 embedded images via direct nbformat inspection; every printed number
+above read directly from actual cell output, not asserted.
+**Next:** notebook 02 (TMR second evaluator) is the last of my three assigned notebooks (01 now
+belongs to the reviewing session per the author's override, Item 60). It needs an external
+checkpoint download (Google Drive, MIT-licensed, already verified obtainable in Item 55) as its
+first real step, unlike 03/04 which needed none.
