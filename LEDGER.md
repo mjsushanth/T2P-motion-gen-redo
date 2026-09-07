@@ -3080,3 +3080,63 @@ from a clean execution.
 **Next:** report the full investigation back, including the still-open residual gap — this is a
 case where "look further" was the right call per the director's own explicit instruction, and the
 honest result is "substantially fixed, not fully resolved," not "fixed."
+
+## [2026-09-07T05:35:00 UTC] Item 66 — notebooks/02: third bug found and fixed (missing denormalization), residual gap fully closed
+**Status:** complete — the acceptance test now passes
+**Acceptance criteria:** the director offered two hypotheses for the ~0.10-0.15 residual gap left
+open in Item 65 (Guo top-3 0.6641 vs. this project's own prior 0.7578): an `m_lens` division
+convention mismatch, or an ordering/pairing bug. Both were investigated; neither was the cause. A
+third cause was found instead, by reading the official evaluation driver's own source rather than
+guessing further.
+**Investigation of the two suggested hypotheses (both ruled out):**
+- `m_lens` convention: confirmed `get_motion_embeddings` and `get_co_embeddings` apply the
+  identical internal `m_lens // unit_length` division in both places; this notebook passes the
+  same raw frame-count convention (`generated_meta.json`'s own `"length"` field) that the
+  official generation code itself produced and stored — no mismatch found.
+- Ordering/pairing: `generated_motions.npz`'s `motion_i` keys and `generated_meta.json`'s list
+  order were already confirmed index-aligned by construction in earlier work this session; no
+  permutation bug found on inspection.
+**The real, third cause, found by reading `CompMDMGeneratedDataset.__getitem__`
+(`comp_v6_model_dataset.py`) directly:** the official pipeline never feeds a generated motion
+straight to an evaluator. It first inverse-transforms out of MDM's own training normalization
+(`Mean.npy`/`Std.npy`) back to raw HumanML3D feature space, then re-normalizes into the
+evaluator's own expected input space (`t2m_mean.npy`/`t2m_std.npy` for Guo; each evaluator has its
+own convention). This notebook's cached motions
+(`artifacts/e0/e0b_generated_cache/generated_motions.npz`) are in MDM's training-normalized form
+(confirmed: MDM's own mean/std and the evaluator's t2m mean/std differ by up to 0.34 in one
+dimension — not a no-op) and were being fed directly into both Guo and TMR, each silently
+receiving wrongly-scaled input.
+**Verified before fixing:** applied the correct denormalize-then-renormalize transform in a
+standalone test first — Guo top-3 moved from 0.6641 to 0.7422, immediately closing nearly all of
+the previously-unexplained gap, before any change was made to the notebook itself.
+**Also affects TMR, not just Guo — checked and fixed for both:** TMR's own `Normalizer` class
+expects raw (unnormalized) HumanML3D features and applies its own mean/std internally; feeding it
+MDM-normalized motion was a second instance of the identical bug, silently corrupting TMR's scores
+too. Fixed at the source (denormalize once, right after loading the cache; each evaluator then
+applies its own normalization from that shared, correct baseline) rather than patched twice.
+**Files changed:** `notebooks/02_tmr_second_evaluator.ipynb` (data-loading cell now denormalizes
+immediately after loading; Guo's motion-embedding function re-normalizes with `t2m_mean`/`t2m_std`
+before encoding; TMR's own encoding function was already correctly downstream of the shared
+`motions` variable, so no separate TMR-side code change was needed once the shared denorm was
+fixed at the source). The batch-composition-sensitivity check, the disagreement table, the
+scatter plot, and both closing sections were all re-executed and rewritten to reflect the final,
+resolved numbers rather than left describing the intermediate, still-buggy state.
+**Result: the acceptance test passes.** Guo R-Precision-top3 = **0.7266** (sequential batching) /
+**0.6641-0.7344** (six groupings tested) against this project's own prior measurement of
+**0.7578** — the closest tested grouping sits 0.59 binomial standard errors below the target,
+comfortably inside ordinary sampling/batch-composition noise. **The original 2.2x discrepancy
+(0.352 vs 0.7578) is resolved, not merely reduced** — three independently-verified bugs
+(mis-tokenised captions, wrong motion-embedding batch size, missing denormalization) account for
+essentially the entire gap. As a side effect, TMR's own scores also changed (now correctly
+normalized): Guo/TMR per-sample correlation rose to r=0.304 (from -0.006, then 0.115, at earlier
+buggy stages), and R-Precision now agrees between the two evaluators within ~3 points at every
+rank, both far above chance — a real, if less dramatic, finding than either intermediate
+(buggy) version of this analysis suggested.
+**Verification performed:** the denormalization fix tested standalone before touching the
+notebook; full notebook re-executed after each change; confirmed 0 error cells and correct image
+count each time; every closing/summary section rewritten to match the actual final numbers, not
+left describing an earlier, superseded state.
+**Next:** report the closed investigation back. Remaining priorities per the director's own
+ordering: confirm SUP-87's CV-chart fix is still correctly in place (already fixed and pushed in
+Item 64, prior to this session's most recent messages — should be re-verified, not assumed
+current), then SUP-89's n=40 pooling-probe extension.

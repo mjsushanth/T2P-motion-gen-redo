@@ -390,3 +390,25 @@ from `eval_humanml.py`'s own driver) rather than claimed resolved.
 **Verification:** every claim tested directly in a standalone script before touching the notebook,
 none accepted on your diagnosis alone; notebook re-executed three times, 0 error cells each time,
 actual rendered Markdown read each time.
+
+### SUP-20260907-91 — residual gap: both suggested hypotheses ruled out, a third real bug found and fixed instead
+**Disposition:** ACCEPTED (investigation), residual gap now closed
+**What changed:** investigated both suggested leads directly. `m_lens` convention: confirmed
+`get_motion_embeddings`/`get_co_embeddings` apply the identical internal division in both places,
+and this notebook already passed the same raw-frame-count convention the official generation code
+itself produced — not the cause. Ordering/pairing: already confirmed index-aligned by
+construction — not the cause either.
+**The real cause, found by reading `CompMDMGeneratedDataset.__getitem__` directly:** the official
+pipeline inverse-transforms generated motions out of MDM's own training normalization before
+re-normalizing into each evaluator's own expected space. This notebook fed cached motions (still
+in MDM's training-normalized form) directly to both evaluators. Verified the two normalization
+conventions actually differ (up to 0.34 in one dimension) before trusting this as the cause;
+verified the fix closes the gap in a standalone test (0.6641 → 0.7422) before touching the
+notebook. Also affects TMR (its own `Normalizer` expects raw features) — fixed once at the shared
+source rather than patched twice.
+**Result:** Guo top-3 = 0.7266 (0.6641-0.7344 across six batch groupings) vs. the target 0.7578 —
+closest grouping sits 0.59 SE below target, within ordinary noise. The original 2.2x discrepancy
+is resolved, not reduced. Guo/TMR correlation rose to r=0.304; R-Precision now agrees within ~3
+points at every rank between the two evaluators.
+**Verification:** fix tested standalone before any notebook change; notebook re-executed after
+each change, 0 error cells; every summary section rewritten to match final numbers.
