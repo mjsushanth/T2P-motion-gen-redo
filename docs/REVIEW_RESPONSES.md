@@ -281,3 +281,32 @@ two-sided vs Mann-Whitney p=0.034 one-sided), which would have read as equivocal
 both one-sided consistently; re-executed the notebook a second time.
 **Verification:** notebook executed twice via `jupyter nbconvert --execute`, 0 error cells both
 times, every relevant output read directly before writing up.
+
+### SUP-20260907-83 — n=16 underpowered, sidedness switch undisclosed, no multiple-comparison correction
+**Disposition:** ACCEPTED (all three points)
+**What changed:** `notebooks/01_clip_spatial_blindness.ipynb` rebuilt: pilot n=16/group kept
+first, separately labeled, and auditable; 24 new pairs per group added with genuinely varied
+sentence frames (not the same template re-run), reaching n=40/group. Power analysis (using the
+pilot's own effect size) now runs before the full-sample comparisons, computed transparently.
+Every pairwise comparison reports both one-sided and two-sided p for both Welch's t and
+Mann-Whitney, plus the Bonferroni threshold (0.05/3=0.0167) and whether each comparison clears it.
+**Verified independently before choosing an effect-size estimate:** recomputed Cohen's d directly
+from the pilot data (0.678) rather than trusting a rank-biserial conversion formula — checked your
+point-biserial-style conversion (0.829) exactly reproduces with `2r/sqrt(1-r^2)`, and my own
+earlier AUC-based conversion gives 0.707; all three require roughly the same n=40 target for solid
+power, so I used the direct, conversion-free number throughout rather than picking whichever
+looked best.
+**Result: strengthened, not weakened.** At n=40, spatial vs modifier: Mann-Whitney one-sided
+p<0.00001, Cohen's d=+0.995 — clears Bonferroni easily. Reported per your instruction #4 as
+whatever the data actually showed, which in this case was a much stronger result than the
+underpowered pilot, not a vanishing one.
+**A nuance the notebook now discloses rather than hides:** the confound check (verb vs modifier)
+that was clean at n=16 (p=0.097, no difference) now shows a real difference at n=40 (p=0.00244) —
+modifiers separate somewhat worse than verbs in general at this larger, more varied sample. This
+doesn't invalidate the primary spatial-vs-modifier test (already matched on word class), but the
+"zero confound" framing from round 1 was itself an n=16 artifact and is stated as such, with the
+secondary finding (modifiers vs verbs) flagged as worth its own follow-up rather than smoothed over.
+**Correction, per your request:** `LEDGER.md` Item 56's phrasing implied you had claimed my
+56.89% figure was wrong. Appended Item 57 correcting the record — you flagged a discrepancy,
+investigated, and reported your own method needed fixing; that is a different event from being
+corrected by the producer, and the ledger now says so.

@@ -2686,3 +2686,56 @@ gate (Item 55) already reported obtainable; still awaiting direction on whether 
 `notebooks/02`. Noted for later, not started: the director's mention of an approved further
 notebook series (263-d representation / F1 slice bug, FID covariance rank-deficiency at n=128,
 F6 classifier-free-guidance-in-loss proof) — explicitly nothing to start yet.
+
+## [2026-09-07T02:10:00 UTC] Item 57 — notebooks/01, round 2: expanded to n=40/group, both sided p-values + Bonferroni reported, one attribution correction to Item 56
+**Status:** complete
+**Acceptance criteria:** the director re-verified notebooks/01 round 1 and found the finding
+correct but mis-sized: (1) the reported significance for spatial-vs-modifier came from switching
+a t-test from two-sided (p=0.070) to one-sided (p=0.035) after seeing the two-sided result look
+weak — a legitimate call given a genuinely pre-registered direction, but reported in a way that
+didn't show both numbers, which reads as the shape of p-hacking regardless of intent; (2) no
+correction was applied for the 3 pairwise comparisons actually run (Bonferroni threshold 0.0167,
+which the uncorrected p=0.034 does not clear); (3) n=16/group was underpowered for the observed
+effect (~23-38/group needed depending on the effect-size conversion used), and — unlike E1, where
+more samples meant hours of unaffordable generation — fixing this here costs nothing: CLIP text
+embedding is instant, no training, no dataset, no compute budget involved.
+**Independently verified before acting:** recomputed Cohen's d directly from the actual pilot
+data (0.678, via pooled-SD formula) rather than trusting either the director's point-biserial-
+style conversion (0.829) or my own earlier rank-biserial-via-AUC conversion (0.707) — three
+different plausible numbers depending on the conversion path, all in rough agreement, and all
+requiring n=40/group to reach comfortable (91-98%) power regardless of which conversion is
+"correct." Used the direct, conversion-free Cohen's d throughout the rebuilt notebook rather than
+relying on any rank-biserial approximation.
+**Files changed:** `notebooks/01_clip_spatial_blindness.ipynb` (rebuilt: pilot n=16/group kept
+first and separately labeled for auditability, 24 new pairs per group appended with genuinely
+varied sentence frames — not the same template reused with new words — reaching n=40/group; a
+power-analysis section computing the pilot's own effect size and the n needed for 80%/95% power,
+run before the full-sample comparisons, not after; every pairwise comparison now reports both
+one-sided AND two-sided p for both Welch's t and Mann-Whitney, plus an explicit Bonferroni
+threshold (0.05/3=0.0167) and whether each comparison clears it; verdict cell rewritten to report
+whatever the n=40 data actually shows).
+**Result: the finding did not weaken at higher n — it strengthened substantially, and surfaced an
+honest new nuance.** Spatial (mean 0.9707) vs non-spatial modifier (mean 0.9442) at n=40: Mann-
+Whitney one-sided p<0.00001 (two-sided p=0.00001), Cohen's d=+0.995 — clears Bonferroni easily,
+far past the n=16 pilot's marginal p=0.034. But the confound check (verb vs modifier) now shows a
+real difference itself (p=0.00244) that did NOT appear at n=16 (p=0.097) — modifiers in general
+separate somewhat worse than verbs at this larger, more diverse n. This does not invalidate the
+primary spatial-vs-modifier test (already matched on word class, doesn't depend on verbs and
+modifiers being equivalent), but it does mean the clean "verb-vs-modifier shows literally zero
+difference" framing from round 1 was itself an n=16 artifact, not a settled fact — stated as such
+in the notebook rather than quietly dropped.
+**Correction to Item 56's own phrasing, per the director's direct request:** Item 56 wrote "their
+own stricter-regex recount of 54.18% was the wrong one, not mine" in a way that reads as if the
+director had claimed my 56.89% was wrong. They did not — they flagged a discrepancy, investigated
+it themselves, and reported that their own method was the one that needed fixing. The distinction
+matters for the queue's own audit trail: a reviewer disclosing their own instrument error is not
+the same event as a reviewer being corrected by the producer, and Item 56 should not have implied
+the latter.
+**Verification performed:** independently recomputed Cohen's d via three methods before choosing
+which to report; notebook executed twice (once for the n=40 expansion, once more after refining
+the verdict cell's confound-check wording for precision); confirmed 0 error cells both times;
+read every relevant output directly.
+**Next:** report to the director that the finding survived and strengthened at n=40, with the new
+verb-vs-modifier nuance disclosed rather than hidden. Awaiting direction on Task 2 (`notebooks/02`,
+TMR) and the newly-mentioned further notebook series (263-d representation/F1, FID covariance
+rank-deficiency, F6 CFG-in-loss) — nothing started on either.
