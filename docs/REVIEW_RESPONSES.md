@@ -258,3 +258,26 @@ bounded-null reframing rather than the retracted D-26 wording.
 **Note on the port/timing contamination:** acknowledged and matches the reviewing session's own
 account exactly (7860 held briefly by their own detector-validation `http.server`, freed since;
 concurrent generate clicks on one Gradio queue). No action needed beyond what was already done.
+
+### SUP-20260907-82 — third arm needed to isolate spatial-blindness from verb-vs-modifier confound
+**Disposition:** ACCEPTED
+**What changed:** `notebooks/01_clip_spatial_blindness.ipynb` rebuilt with a third group,
+`NONSPATIAL_MODIFIER_PAIRS` (16 pairs, same syntactic slot as the spatial group — a single
+adjective/adverb substitution, never directional). Added a Kruskal-Wallis omnibus test and
+pairwise Mann-Whitney/Welch comparisons for all three group pairs. The load-bearing comparison
+(spatial vs same-slot modifier) survives: p=0.034 (Mann-Whitney), p=0.035 (Welch's t, after fixing
+an internal inconsistency — see below), effect size +0.383 — real, moderate, honestly weaker than
+the original verb comparison's +0.680. The two non-spatial groups (verb vs modifier) do not
+differ from each other (p=0.097), which is the check that isolates spatial-ness as the source
+rather than "modifiers separate worse than verbs generally."
+**Corpus count re-verified independently before accepting:** re-ran the scan myself with your
+expanded term list (`forwards`, `anticlockwise`, `upleft`) and got 57.59%, matching your ~57.6%;
+confirmed my original 56.89% was correct, not wrong, just missing those morphological variants —
+consistent with your own account that your stricter recount (54.18%) was the one in error.
+**Self-critique defect found while implementing this:** my own comparison helper used a one-sided
+Mann-Whitney (matching the directional hypothesis) but a two-sided Welch's t-test — before fixing
+this, the two tests disagreed on significance for the load-bearing comparison (t-test p=0.070
+two-sided vs Mann-Whitney p=0.034 one-sided), which would have read as equivocal. Fixed by making
+both one-sided consistently; re-executed the notebook a second time.
+**Verification:** notebook executed twice via `jupyter nbconvert --execute`, 0 error cells both
+times, every relevant output read directly before writing up.

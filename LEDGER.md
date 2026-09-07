@@ -2636,3 +2636,53 @@ result), a live `curl` check against the actual Google Drive file id extracted f
 `notebooks/02` without further authorization, per the explicit instruction that the director
 assigns a fallback if TMR were not obtainable — since it is obtainable, the next step is the
 director's call, not mine to start unprompted.
+
+## [2026-09-07T01:45:00 UTC] Item 56 — notebooks/01: third arm added (SUP-20260907-82), spatial-blindness finding isolated from the verb-vs-modifier confound
+**Status:** complete
+**Acceptance criteria:** the director independently re-verified notebooks/01 (24,503 captions,
+"right" 24.25%, 0 error cells, the rank-biserial fix confirmed as caught correctly) and raised one
+real design gap: the original spatial-vs-nonspatial comparison substituted a *modifier* in the
+spatial group but a *verb* in the control group, so "CLIP is blind to spatial language" and the
+weaker "CLIP separates verbs better than modifiers in general" were both consistent with the same
+numbers. Required: a third arm of non-spatial *modifier* pairs (same syntactic slot as the
+spatial group) to isolate spatial-ness specifically.
+**Independently verified before acting:** re-ran the corpus scan myself with the director's
+claimed expanded term list (adding `forwards`, `anticlockwise`, `upleft`) — got 57.59%, matching
+their "~57.6%" almost exactly, and confirmed my original 56.89% figure was correct (not wrong),
+just missing those morphological variants — consistent with what the director themselves
+reported (their own stricter-regex recount of 54.18% was the wrong one, not mine).
+**Files changed:** `notebooks/01_clip_spatial_blindness.ipynb` (added `NONSPATIAL_MODIFIER_PAIRS`,
+16 pairs, single adjective/adverb substitution, no directional content; added a Kruskal-Wallis
+omnibus test across all three groups plus pairwise Mann-Whitney/Welch comparisons for
+spatial-vs-verb, spatial-vs-modifier [now the load-bearing one], and verb-vs-modifier [the
+confound check]; expanded the corpus term list per the director's own catch; rewrote the verdict
+cell to report whichever way the load-bearing comparison actually lands, not the original
+two-group framing). Full notebook rebuilt and re-executed twice (once to add the third arm,
+once more after catching and fixing a second issue below).
+**Result: the finding survives, isolated, moderated.** Spatial (mean 0.9654) vs non-spatial
+modifier (mean 0.9446): Mann-Whitney p=0.0338, Welch's t p=0.0348 (both one-sided, matching the
+directional hypothesis), rank-biserial effect size +0.383 — real, but markedly weaker than the
+original spatial-vs-verb comparison's effect size (+0.680). Critically, the two non-spatial
+groups do NOT differ from each other (verb vs modifier, p=0.097, two-sided) — meaning the
+under-separation is attributable to spatial-ness specifically, not to modifiers separating worse
+than verbs in general. Kruskal-Wallis across all three groups: p=0.0033.
+**Self-critique defects found:** my own `compare()` helper used a one-sided Mann-Whitney
+(`alternative="greater"`, matching the pre-registered directional hypothesis) but a two-sided
+Welch's t-test — an internal inconsistency I introduced, not something the review caught. Before
+this fix, the load-bearing comparison's t-test (p=0.070, two-sided) and Mann-Whitney (p=0.034,
+one-sided) disagreed on significance at the conventional 0.05 threshold, which would have read as
+equivocal. Caught by noticing the two tests gave different significance verdicts for what should
+be the same directional question, fixed by making both tests one-sided consistently
+(`alternative=alt`), and the notebook re-executed a second time. Recorded because this is the
+same class of error the effect-size sign bug was (a presentation/methodology bug, not a data
+error), and it changed which side of the significance line the load-bearing result reads on.
+**Verification performed:** re-ran the full corpus scan independently before accepting the
+director's correction (not accepted on their authority alone); re-executed the notebook twice via
+`jupyter nbconvert --execute`, confirmed 0 error cells both times, read every relevant cell's
+actual printed output before writing this entry.
+**Next:** report to the director that the third arm survives (isolated, p<0.05, weaker effect
+size than the original two-group comparison, honestly reported as such). Task 2's feasibility
+gate (Item 55) already reported obtainable; still awaiting direction on whether to start
+`notebooks/02`. Noted for later, not started: the director's mention of an approved further
+notebook series (263-d representation / F1 slice bug, FID covariance rank-deficiency at n=128,
+F6 classifier-free-guidance-in-loss proof) — explicitly nothing to start yet.
