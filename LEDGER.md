@@ -3321,3 +3321,36 @@ Items A and B, self-select the next-most-useful item from `reviews/REVIEW_QUEUE.
 handover, and record the choice and rationale here. Both Items A and B are now complete; will
 check `reviews/REVIEW_QUEUE.md` for open findings before self-selecting, unless further direction
 arrives first.
+
+## [2026-09-07T07:15:00 UTC] Item 71 — self-selected: SUP-20260907-95's directional confound argument incorporated into E2, qualified rather than accepted whole
+**Status:** complete
+**Why this, chosen over an unrelated queue item:** `reviews/REVIEW_QUEUE.md`'s newest entry
+(SUP-20260907-95) is a just-accepted review of my own just-completed notebooks/05, making a
+concrete, actionable proposal directly against the design document I had just written
+(`docs/EXPERIMENT_DESIGN_E2.md`, Item 70) — closing this loop before picking an unrelated item
+keeps Item A's design current with the newest finding bearing on it, rather than shipping a
+design already one review-cycle stale.
+**What I checked before accepting it:** the reviewer's claim that the caption-length confound
+"favours us" (spatial captions being longer should raise, not lower, R-Precision, making an
+observed deficit conservative) rests on an unverified premise — no notebook in this project has
+tested whether R-Precision correlates with caption length in this evaluator, and the opposite
+is equally defensible a priori: CLIP's own 77-token window with MDM's `CTX=22` truncation
+(`model/mdm.py::load_and_freeze_clip`, confirmed against `reviews/REFERENCE_pooling_probe.py`'s
+own `CTX=22` constant) could compress a longer caption's signal rather than sharpen it. Declined
+to accept the directional claim as fact; incorporated it as a stated, open assumption instead.
+**Files changed:** `docs/EXPERIMENT_DESIGN_E2.md` §3 (now pre-registers reporting BOTH the raw/
+unmatched and the length-matched spatial-vs-non-spatial comparison, per the reviewer's "report
+both" recommendation; adds a cheap no-training addendum — correlate per-sample retrieval hit/miss,
+already a byproduct of computing R-Precision, against caption length on the baseline arm, so the
+confound's actual direction gets measured once the baseline arm runs rather than assumed now).
+`docs/REVIEW_RESPONSES.md` (reply citing SUP-20260907-95: ACCEPTED the re-derivation in full,
+qualified the directional argument specifically, explained why).
+**Verification performed:** re-read the CLIP truncation convention directly from
+`reviews/REFERENCE_pooling_probe.py` (already used and cited earlier this session for notebook
+01b) rather than asserting the counterpoint from memory; confirmed SUP-95's own numeric
+re-derivation (split sizes, effect sizes) matches notebooks/05's actual output before marking it
+ACCEPTED without qualification on that part.
+**Next:** design document (Item A) and its self-review loop with SUP-95 are both closed. If no
+further direction arrives, next self-selection will scan `reviews/REVIEW_QUEUE.md` again for any
+item raised after SUP-95, or fall back to the handover's mentioned F6 classifier-free-guidance
+notebook.

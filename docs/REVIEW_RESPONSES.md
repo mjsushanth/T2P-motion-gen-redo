@@ -412,3 +412,27 @@ is resolved, not reduced. Guo/TMR correlation rose to r=0.304; R-Precision now a
 points at every rank between the two evaluators.
 **Verification:** fix tested standalone before any notebook change; notebook re-executed after
 each change, 0 error cells; every summary section rewritten to match final numbers.
+
+### SUP-20260907-95 — confound re-derived exactly; directional argument incorporated into E2, but labeled an assumption, not accepted as fact
+**Disposition:** ACCEPTED (re-derivation), with one qualification on the directional claim
+**What changed:** `docs/EXPERIMENT_DESIGN_E2.md` §3 now pre-registers reporting **both** the raw
+(unmatched) and length-matched spatial-vs-non-spatial comparison, per your "build the matched
+split; report both" recommendation — not the matched comparison alone.
+**The qualification:** your argument that the confound "favours us" rests on an unverified
+premise — that longer captions make retrieval *easier* in this evaluator. That is plausible but
+this project has never measured it, and the opposite is equally defensible a priori (CLIP's own
+77-token window, MDM's `CTX=22` truncation, could compress a longer caption's signal rather than
+sharpen it). Treating "the confound is conservative" as settled would repeat the exact failure
+this project's own discipline exists to catch — an untested directional assumption doing load-
+bearing work in an experimental design. The design document now states this as an open
+assumption, not a fact, and pre-registers a cheap, no-training check as part of E2's own
+baseline-arm scoring: correlate per-sample retrieval hit/miss (already a byproduct of computing
+R-Precision, nothing new to generate) against caption length, so the direction gets measured
+rather than assumed once the baseline arm actually runs.
+**Everything else in SUP-95 re-derives exactly** — split sizes, effect sizes, and the correct
+separation of the real caption-length confound from the negligible motion-length one — no
+disagreement there.
+**Verification:** re-checked the CLIP truncation convention this qualification cites directly
+against `model/mdm.py`'s `load_and_freeze_clip`/`clip_encode_text` and `reviews/
+REFERENCE_pooling_probe.py`'s own `CTX=22` constant, both already established earlier this
+session, rather than asserting the truncation-window counterpoint from memory.

@@ -109,6 +109,25 @@ set's own word-count distribution) and report R-Precision per tercile per subset
 a warning sign, not a confirmation** — a real spatial-conditioning effect should show up across
 length terciles, not concentrate in the one where the confound is strongest.
 
+**Report both the raw (unmatched) and the length-matched comparison, not the matched one alone**
+(per SUP-20260907-95's review of notebook 05, accepted). The reviewer's argument: if longer
+captions make retrieval *easier* (more distinctive text should be less confusable with other
+candidates in the same batch), the length confound would push the spatial subset's raw
+R-Precision *up*, working against — not for — a hypothesis of spatial deficit. On that
+argument, an unmatched result that still shows the baseline scoring *worse* on spatial captions
+would already be conservative evidence of a real deficit, not an artifact of the confound.
+**This directional claim itself is a plausible hypothesis, not a measured fact — no notebook in
+this project has tested whether R-Precision actually correlates with caption length in this
+evaluator**, and the opposite is also defensible a priori (a longer caption gives the diffusion
+model more to get wrong, or a longer caption pushes the CLIP encoder's own 77-token truncation
+window, MDM's own `CTX=22`/`clip.tokenize(..., truncate=True)` convention, which could compress
+rather than sharpen the embedding). **Report the raw comparison, the matched comparison, and the
+correlation between caption length and per-sample retrieval success on the baseline arm's own
+scored output** (a cheap, no-training addendum — the retrieval hit/miss per sample already exists
+as a byproduct of computing R-Precision, no new generation needed) — so the direction of this
+confound is measured from this project's own data rather than assumed from either side's
+intuition.
+
 ## 4. The regression control
 
 **Non-spatial R-Precision must not measurably degrade.** This is not a secondary check — it is a
