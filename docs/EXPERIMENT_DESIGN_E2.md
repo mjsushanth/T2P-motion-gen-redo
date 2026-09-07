@@ -128,6 +128,21 @@ as a byproduct of computing R-Precision, no new generation needed) — so the di
 confound is measured from this project's own data rather than assumed from either side's
 intuition.
 
+**How to read the unmatched result, either way the untested premise resolves** (the reviewer's
+asymmetric-interpretation argument, made explicit and bidirectional rather than assuming one
+direction):
+
+| if the length-correlation check (above) finds... | ...then an unmatched spatial deficit is | ...and an unmatched null/advantage is |
+|---|---|---|
+| length **helps** retrieval (reviewer's premise) | conservative — held despite a length advantage; already believable without matching | uninterpretable — could be the confound, not a real absence of deficit |
+| length **hurts** retrieval (the truncation counter-argument) | uninterpretable — could be the confound doing the work, not a real deficit | conservative — held despite a length disadvantage; already believable without matching |
+| no correlation either way | either unmatched result is directly interpretable; the matched split becomes a robustness check, not a requirement |  |
+
+The matched/stratified comparison (above) is therefore not optional scaffolding around a headline
+unmatched number — it is what makes the result interpretable in the two rows where the unmatched
+comparison alone is not, and which row applies is an empirical question this design answers before
+trusting either arm's raw R-Precision gap.
+
 ## 4. The regression control
 
 **Non-spatial R-Precision must not measurably degrade.** This is not a secondary check — it is a

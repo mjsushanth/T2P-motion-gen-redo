@@ -3354,3 +3354,37 @@ ACCEPTED without qualification on that part.
 further direction arrives, next self-selection will scan `reviews/REVIEW_QUEUE.md` again for any
 item raised after SUP-95, or fall back to the handover's mentioned F6 classifier-free-guidance
 notebook.
+
+## [2026-09-07T07:25:00 UTC] Item 72 — E2: asymmetric-interpretation logic made explicit and bidirectional (director's cross-session follow-up on SUP-95)
+**Status:** complete
+**Context:** the director's own cross-session message restated SUP-20260907-95's argument and
+asked explicitly for "the asymmetric-confound reasoning... in your own words" in the design. Item
+71 (previous entry) had already qualified the premise as unverified and pre-registered a
+correlation check, but had not written out the actual asymmetric interpretation *rule* the
+director asked for — a real gap, not just a restatement of already-completed work.
+**What I added, and why it goes further than the director's framing:** the director's message
+states the asymmetry in one direction only (assumes length helps retrieval). Since Item 71 already
+established that premise is unverified and the opposite (CLIP's `CTX=22` truncation compressing a
+longer caption) is equally defensible, a one-directional interpretation rule would silently break
+if the length-correlation check comes back the other way. `docs/EXPERIMENT_DESIGN_E2.md` §3 now
+has a bidirectional table: which of {unmatched deficit, unmatched null/advantage} is
+conservative-and-already-believable vs. uninterpretable-without-matching, under each of the three
+possible outcomes of the pre-registered length-correlation check (helps / hurts / no effect). The
+matched split is reframed as answering exactly the two cells where the unmatched result alone is
+not trustworthy, rather than as a blanket requirement.
+**Files changed:** `docs/EXPERIMENT_DESIGN_E2.md` §3 only (one new subsection + table).
+**Self-critique:** considered just adopting the director's one-directional framing verbatim, since
+it is simpler to write and matches what was asked for literally — declined, because doing so
+would have re-introduced the exact unverified-assumption-as-load-bearing-fact problem Item 71 had
+just corrected. A single flat asymmetry claim only holds if the premise is true; the bidirectional
+table holds regardless of which way the (still unmeasured) correlation actually resolves.
+**Verification performed:** re-read the edited section back in place to confirm the table's four
+outcome cells are mutually exclusive and jointly exhaustive over the three-way correlation
+outcome, and that the "no correlation" row correctly reduces the matched split to a robustness
+check rather than a requirement (the one case where director's original framing and this version
+agree exactly).
+**Next:** Item A is now fully closed against the director's own follow-up. No SendMessage tool
+is available in this session to reply directly to the director; this ledger entry plus the
+design-doc diff are the only channel back, consistent with this project's established
+file-based, ledger-first communication convention. Will continue self-selecting from
+`reviews/REVIEW_QUEUE.md`/handover per the standing instruction if nothing further arrives.
