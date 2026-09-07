@@ -3208,3 +3208,50 @@ each change; confirmed 0 error cells and correct image counts; read the actual p
 cross-check output each time rather than assuming the fix worked.
 **Next:** per the director's own summary, the notebook queue is otherwise clear; the next real
 decision belongs to the author.
+
+## [2026-09-07T06:30:00 UTC] Item 69 — notebooks/05: spatial/non-spatial test-split built and checked for confounds (Item B, author-directed, relayed via the director)
+**Status:** complete — a real confound was found, not resolved (correctly, per its own scope)
+**Acceptance criteria:** partition HumanML3D's official test split into spatial/non-spatial
+subsets using notebook 01's own term list; report sizes and cross-check against notebook 01's
+corpus-wide 57.6% figure; check the split for length/action-type confounds BEFORE any future
+experiment builds on it, since a confound found now is cheap and one found after a training run
+is expensive; report whichever way it lands.
+**Verified before building:** confirmed the project's actual test-split convention directly
+rather than assuming it — `dataset/HumanML3D/test.txt` lists exactly 4,198 IDs, all in the
+`sample######` (non-`train_`-prefixed) naming convention this project's own materialized
+`texts/`/`new_joint_vecs/` directories already use; the `train_sample######`-prefixed files
+(4,000 of them) are the separate train split and correctly excluded.
+**Files changed:** `notebooks/05_spatial_subset_split.ipynb` (new). Six-layer structure; loads
+all 4,198 real test-split captions and their real materialized motion lengths (no streaming, no
+new download); applies notebook 01's own expanded spatial-term list; reports split sizes with an
+explicit cross-check against notebook 01's own 57.6% corpus figure; two confound checks (caption
+word count, motion frame count) each with Mann-Whitney/Welch's t *and* Cohen's d (not p-values
+alone, so a large-n false alarm can be told apart from a real effect); an illustrative (explicitly
+weaker, not a formal test) first-verb overlap check as an action-type proxy.
+**Result:**
+- **Split sizes:** 2,448 spatial / 1,750 non-spatial (58.3% spatial) — agrees closely with
+  notebook 01's own corpus-wide 57.6%, consistent with the test split being drawn from the same
+  distribution as the rest of the corpus, not a skewed subsample.
+- **A real confound was found:** spatial captions are **4.18 words longer on average** than
+  non-spatial captions (14.38 vs. 10.19 words), p<0.00001, Cohen's d=+0.592 — a medium-sized
+  effect, not a large-n artifact. **Any future experiment comparing R-Precision between these two
+  subsets must control for this** (matching or stratifying on caption length) before attributing
+  a difference to spatial language specifically, exactly the failure mode this check exists to
+  catch before a training run, not after.
+- **Motion length differs too, but the effect is negligible in practice:** -5.5 frames
+  (-0.28s), p=0.00031 (significant only because n>1,700/group), Cohen's d=-0.104 — explicitly
+  distinguished from the caption-length confound rather than reported as equally concerning.
+- **Action-type overlap (illustrative only):** 4 of the top 10 first-verbs are shared between
+  groups — a weak proxy, reported with that caveat, not as a formal confound test.
+**Self-critique defect found and fixed before finalizing:** the first version reported both
+confound checks with only a p-value, which would have overstated the motion-length finding (p<0.001,
+but the actual effect size is negligible-to-small at this large n). Added Cohen's d to both checks
+and rewrote the "what it means" section to state the size distinction explicitly, matching this
+project's own established discipline of never reporting statistical significance alone at large n.
+**Verification performed:** notebook executed via `jupyter nbconvert --execute` twice (once
+initially, once after adding effect sizes); confirmed 0 error cells and 2 embedded images both
+times; read the actual printed/rendered output each time before writing this entry.
+**Next:** Item A (`docs/EXPERIMENT_DESIGN_E2.md`, the pre-registered design document) needs this
+notebook's subset sizes and — now — its confound finding as an input: the design must specify how
+it controls for the caption-length confound (matching, stratification, or an explicit acknowledgment
+of the limitation) rather than treating the split as clean.
