@@ -3582,3 +3582,34 @@ SUP-95 for 05) rather than asserting status from memory.
 remaining substantive item before considering whether clearly-useful work remains; if none is
 found, will say so explicitly here rather than idling silently, per the director's explicit request
 not to let a stop look like a lapse.
+
+## [2026-09-07T09:20:00 UTC] Stated stopping point — queue scanned, one candidate found, deliberately not started without a signal
+**Status:** stopping here, by choice, not by idling — recorded per the director's explicit request
+**What I checked:** `reviews/REVIEW_QUEUE.md` ends at SUP-20260907-97, pure acknowledgment/praise,
+no open action item. `guidance/README.md` states the directory is otherwise empty of a formally
+requested item (only naming D-11's rotation-vs-position question as a *likely future* request, not
+a produced one). `guidance/RESEARCH_E_novel_directions.md` (a collaborator-produced document, read
+but not written to) contains a fully-specified, unconsumed proposal — "Proposal 2," a curriculum-
+learning training-order experiment (uniform-random vs. strict-easy-to-hard vs. Gaussian-schedule
+arms, using this project's own 57.6%/caption-complexity statistics as the ordering signal),
+complete with arms, compute estimate, and a pre-stated objection with mitigation.
+**Why I am not turning this into a design document right now, despite the standing "keep going"
+instruction:** every item completed this session (Items 70-75) was either an explicitly assigned
+task or a direct, small-scope follow-up on one (a review response, a self-audit, a README). A new
+pre-registered design document for an entirely different experimental line (curriculum learning)
+would be a bigger step: a self-initiated third experimental proposal, before the author has even
+decided the second one's (E2's) actual disposition — the director's own last message named that
+decision as "the author's, not yours and not mine." Starting a new experimental design on top of an
+undecided one risks exactly the kind of unrequested scope growth `CLAUDE.md`'s "match the scope of
+your actions to what was actually requested" guards against, even under a standing autonomy grant.
+**What is actually done, as a milestone:** eight notebooks (01, 01b, 02-07), each executed with 0
+error cells, six of eight independently reviewed and accepted, two self-audited with two real
+figure defects found and fixed; `notebooks/README.md` as the entry point; `docs/EXPERIMENT_DESIGN_E2.md`
+fully specified and accepted, incorporating two rounds of review feedback; `docs/LANDMINES.md` §24
+added as a corrective finding. This is a complete, coherent, self-contained body of work, not a
+partial one left mid-stream.
+**What would resume this:** author or director direction on E2's disposition (run on Kaggle vs.
+stop here); or an explicit go-ahead to turn `guidance/RESEARCH_E`'s Proposal 2 (or any other
+guidance/ item) into its own pre-registered design document, matching the Item A/E2 pattern.
+Neither has arrived; recorded here, stated plainly, rather than continuing to invent scope or
+going silent.
