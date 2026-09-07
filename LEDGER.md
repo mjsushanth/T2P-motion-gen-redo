@@ -3522,3 +3522,63 @@ finalizing any claim.
 `reviews/REVIEW_QUEUE.md`/handover if nothing further arrives — the handover's three-notebook
 queue (263-d/F1, FID rank, F6) is now fully complete along with this one, so the next self-
 selection will need to look beyond that specific list.
+
+## [2026-09-07T09:10:00 UTC] Item 75 — self-audit of notebooks 06/07 against the reviewer's own checklist; two real figure defects found and fixed; notebooks/README.md written
+**Status:** complete
+**Context:** the director's cross-session message stated it has no budget left to review notebooks
+06 or 07 and handed off the exact checklist it would have used, asking for an explicitly-labeled
+self-audit (weaker than independent review) rather than silence. Also asked for
+`notebooks/README.md` as an entry point across all eight notebooks.
+**Self-audit performed, item by item:**
+1. **Opened every rendered PNG directly** (`06_conditioning_collapse.png`,
+   `07_circularity_trap.png`) rather than trusting the plotting code. **Found two real defects:**
+   notebook 06's right-panel subplot title was clipped at the canvas edge (the same class of
+   defect as SUP-85's clipped title on notebook 03); notebook 07's two annotation text boxes
+   (the noise-blip label and the hypothesis-effect label) visually overlapped and were illegible
+   together. Both are exactly the categories the director's checklist named ("clipped
+   annotations," "overlapping... annotations") — this self-audit would have missed nothing an
+   independent reviewer's first look would have caught here.
+2. **Checked axis-sharing on every comparison panel.** Notebook 06's two subplots share their
+   x-axis (training step); their y-axes intentionally differ (weight norm vs. loss — different
+   quantities, not two conditions of the same metric, so no shared-axis violation). Notebook 07
+   has one panel, not applicable.
+3. **Cross-checked the director's suggested anchor for notebook 06 and found it does not
+   exist.** The director's message said to anchor notebook 06 against `FORENSICS.md` F6's own
+   description — `FORENSICS.md` has no F6 entry and no CFG/classifier-free-guidance content at
+   all (confirmed by direct grep, zero matches). F6 is documented in `docs/LANDMINES.md` §11 and
+   `REBUILD_SPEC.md` instead, which is what notebook 06 already anchors against directly (reading
+   the archived project's own primary-source cell 47, a stronger check than either markdown
+   summary would have been). Recorded here rather than silently substituting the correct file
+   without noting the director's pointer was wrong.
+4. **Re-derived every headline statistic independently**, in a fresh scratch script
+   (`/tmp/self_audit_06_07.py`, not committed — throwaway), separate from both notebooks' own
+   code: notebook 07's counts (38/128, 44/128, exact match between cross-arm and same-arm-seed
+   comparisons), z-scores (0.8047 both), and MDE table all reproduced exactly from the raw JSON
+   artifacts. Notebook 06's gradient-amplification result was re-run with a **different random
+   seed** (99, not the notebook's own 1) and reproduced the same near-exact linear scaling with
+   `w` (ratios 1.00, 2.01, 3.02, 5.00, 7.06 against w values 1,2,3,5,7) — confirms the result is a
+   property of the formula, not a seed-specific artifact.
+5. **Nothing else failed.** Both notebooks' central claims held under independent re-derivation;
+   the only failures were the two visual defects above.
+**Files changed:** `notebooks/06_cfg_training_loss_collapse.ipynb` (title shortened on both
+subplots so neither clips, re-executed), `notebooks/06_conditioning_collapse.png` (regenerated),
+`notebooks/07_why_six_samples_is_not_a_finding.ipynb` (both annotations repositioned to
+non-overlapping corners of the log-scale plot, re-executed), `notebooks/07_circularity_trap.png`
+(regenerated), `notebooks/README.md` (new — one-line question and headline result per notebook,
+ordered by argument per the director's suggested arc (representation/F1 bug -> evaluator's limits
+-> conditioning finding -> statistical discipline) rather than filename order; states reviewed vs.
+self-audited-only status per notebook explicitly, per the director's own instruction not to let a
+self-audit read as a review; states the dataset-provenance caveat (SUP-20260907-90) once, in one
+place, rather than leaving it buried).
+**Verification performed:** both notebooks re-executed via `jupyter nbconvert --execute` after the
+figure fixes; confirmed 0 error cells and 1 embedded image each; re-opened both regenerated PNGs
+directly and confirmed the title and annotation-overlap defects are gone, not just addressed in
+code. Cross-checked every "reviewed" vs. "self-audited only" status claim in the new README
+against the actual `reviews/REVIEW_QUEUE.md` entries (SUP-82/83/84 for 01, SUP-93 for 01b,
+SUP-88/91/92 for 02, SUP-85/86/87 and SUP-94's "notebooks 01, 01b, 02, 03, 04 complete" for 03/04,
+SUP-95 for 05) rather than asserting status from memory.
+**Next:** per the director's own instruction, continuing on my own judgement. Both handover items
+(self-audit, README) are complete. Will scan `reviews/REVIEW_QUEUE.md` and `guidance/` for any
+remaining substantive item before considering whether clearly-useful work remains; if none is
+found, will say so explicitly here rather than idling silently, per the director's explicit request
+not to let a stop look like a lapse.
