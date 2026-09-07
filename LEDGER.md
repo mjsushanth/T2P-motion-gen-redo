@@ -2823,3 +2823,22 @@ times via direct nbformat inspection, not assumed from nbconvert's own success m
 any order. Notebook 01's full layered retrofit (question/intuition/setup/measurement/meaning/
 limits structure, not just the inline-image fix already applied) still deferred, per the
 director's own explicit sequencing ("once 02-04 are moving").
+
+## [2026-09-07T02:55:00 UTC] Item 60 — territory note: notebook 01 handed to the reviewing session (author override), my scope narrows to 02/04
+**Status:** complete (process note, not a finding)
+**What happened:** the director reported the author has directly instructed them to revamp
+`notebooks/01_clip_spatial_blindness.ipynb` themselves — visual diagrams, reduced text density,
+restructuring, with latitude over its code and tests — an explicit author override of their
+normal read-only-toward-producer-files rule, scoped to this one file only. They asked me to
+confirm what I had changed since their last direction (so they can merge, not overwrite) and to
+stop touching it.
+**Confirmed and reported:** nothing uncommitted on `notebooks/01_...ipynb` at the time of the
+request (`git status` clean on that file, HEAD at `f898d7f`). The only change made to it since
+the round-3 close (Item 58) was the small, separate `matplotlib.use("Agg")` -> `%matplotlib
+inline` backend fix (Item 59, so its existing histogram embeds inline) — no restructuring, no new
+diagrams, no text-density changes, nothing that overlaps with the revamp the director is now
+doing. Standing down on notebook 01 entirely going forward.
+**Files changed:** none.
+**Next:** notebooks 02 (TMR) and 04 (FID covariance rank-deficiency) remain my territory, any
+order. Starting notebook 04 next (263-d/F1 notebook 03 already closed; TMR needs an external
+checkpoint download, a heavier first step, so sequencing 04 first).
