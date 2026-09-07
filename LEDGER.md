@@ -3613,3 +3613,64 @@ stop here); or an explicit go-ahead to turn `guidance/RESEARCH_E`'s Proposal 2 (
 guidance/ item) into its own pre-registered design document, matching the Item A/E2 pattern.
 Neither has arrived; recorded here, stated plainly, rather than continuing to invent scope or
 going silent.
+
+## [2026-09-07T09:40:00 UTC] Item 76 — notebooks/06: added the loss-decomposition finding the director asked for; checked and did not adopt the director's proposed causal mechanism
+**Status:** complete
+**Context:** the director's cross-session message (SUP-98) corrected an earlier "budget exhausted"
+claim, lifted the UNREVIEWED flag on both notebooks 06 and 07 after independently re-deriving
+their numbers, and confirmed my self-audit (Item 75) as sound supporting evidence. It then
+requested one addition to notebook 06: state explicitly that the archived formula's training loss
+converges *lower* than the correctly-trained (dropout) formula's, and connect this to
+`CLAUDE.md`'s rule 3 ("a training loss is not a result") — the founding lesson of this whole
+project. The director's own proposed explanation for the gap: the archived model reaches its lower
+loss by *discarding* the conditioning pathway (the `c=u=eps` degenerate solution `docs/LANDMINES.md`
+section 11 originally described, before this notebook's own earlier work — Item 73 — already
+corrected that framing).
+**What I checked before writing anything:** the director's specific causal claim directly
+contradicts this notebook's own already-established, already-reviewed finding (Part A/B: the
+archived model's conditioning pathway does NOT go to zero; it converges to `||W_c||=0.512`, and
+its *effective* strength, `w * ||W_c|| = 1.536`, already matches dropout's own raw `||W_c||=1.535`
+almost exactly). Re-ran this in a fresh scratch script (`/tmp/verify_loss_gap_mechanism2.py`, not
+committed) using the notebook's own exact seeds, confirming every number the notebook already
+prints, before deciding whether the director's mechanism was right.
+**Result: the director's specific mechanism is not supported; the real explanation is different
+and, I believe, more precise.** Both models learn to use conditioning to almost exactly the same
+effective degree (confirmed: the two converged models score nearly identically both with the real
+caption (0.089 vs 0.089) and with no caption at all (2.479 vs 2.478)). **The two models' own
+training-loss numbers diverge (0.089 vs 0.316) for a reason that has nothing to do with how well
+either model uses the caption**: the archived formula's every training sample receives the full
+`w`-corrected combination, so its own loss only ever reflects real-caption-quality; the
+conditioning-dropout formula must score the no-caption case explicitly on ~10% of samples (a real,
+necessary cost so the model has a working null branch for actual inference-time CFG use), so its
+own loss is a genuine blend of both numbers. **The archived formula's lower loss is not evidence
+of a better-trained model — it is evidence that its loss function was never asked the question
+that would have shown otherwise.** This is `CLAUDE.md` rule 3 demonstrated with numbers, and it
+is a different (and directly checkable, rather than assumed) mechanism from "discarding
+conditioning."
+**Files changed:** `notebooks/06_cfg_training_loss_collapse.ipynb` (right-panel title retitled a
+second time to name the finding directly without clipping; new code + markdown between Part B and
+Part C computing and printing the real-caption / no-caption / own-training-loss decomposition for
+both models; new second figure, a grouped bar chart of that decomposition; "What it means" section
+extended with a new paragraph stating the loss-is-not-a-result finding and explicitly naming that
+the "discards conditioning" alternative was checked and not supported). `notebooks/06_conditioning_collapse.png`
+(regenerated, retitled). `notebooks/06_loss_is_not_a_result.png` (new — the second figure the
+director's message also requested; grouped bars, three comparison groups, shared y-axis across
+both models per this project's own axis-sharing convention).
+**Self-critique:** considered simply adding the director's requested markdown cell using their own
+proposed wording ("achieves lower loss by discarding conditioning") since that is literally what
+was asked for — declined, because it would have restated a claim this same notebook's own earlier
+sections (and `docs/LANDMINES.md` section 24) already found false, reintroducing an error into a
+notebook that exists specifically to demonstrate the discipline of not asserting a plausible causal
+story without checking it against the model's actual measured behavior.
+**Verification performed:** notebook re-executed via `jupyter nbconvert --execute` twice (once
+after the first draft of the decomposition, once after adjusting the retitled panel to avoid
+clipping); confirmed 0 error cells and 2 embedded images both times; opened both regenerated PNGs
+directly and confirmed the new bar chart renders all six bars with legible, non-overlapping value
+labels and no title clipping; every printed number in the new cells matches the independent
+scratch-script re-derivation exactly.
+**Next:** per the director's closing instruction, continuing on my own judgement. Notebook 07
+required no changes (director confirmed it verified exactly, with only an already-disclosed
+rounding-convention difference). Both notebooks 06 and 07 are now independently reviewed per the
+director's own message; `notebooks/README.md`'s "self-audited only" status line for both should be
+read as superseded by this — not yet updated in the README itself, noted here as the next small
+edit if no other direction arrives first.

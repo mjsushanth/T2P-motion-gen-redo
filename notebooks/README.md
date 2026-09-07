@@ -86,11 +86,15 @@ should be read as implying official acquisition.
   moderate learning rates instead of a silent standstill — matching §11's own separate point about
   gradient instability (the `5*tanh` squash and gradient clipping as compensating hacks) rather
   than its "no gradient pressure" framing. `docs/LANDMINES.md` §24 records this as a correction to
-  §11, not a retraction. **Self-audited only — not yet independently reviewed** (the reviewing
-  session stated explicitly it lacks budget for a real verification pass on this notebook;
-  self-audit performed 2026-09-07: every rendered figure opened, both headline results
-  independently re-derived in a separate scratch script with a different random seed, one real
-  figure defect found and fixed — a clipped subplot title).
+  §11, not a retraction. A second finding, added after independent review (below): the archived
+  formula's own training loss converges *lower* than the correct formula's, not because it
+  discards conditioning (checked directly — it doesn't), but because its loss never scores the
+  no-caption case in isolation the way the correct formula must — `CLAUDE.md`'s "a training loss
+  is not a result," demonstrated on the exact bug this project's predecessor died of. **Reviewed**
+  (`reviews/REVIEW_QUEUE.md` SUP-20260907-98 independently re-derived both headline results and
+  requested the loss-decomposition addition above; a self-audit performed 2026-09-07, before that
+  review landed, had already opened every rendered figure and found and fixed one real defect — a
+  clipped subplot title).
 
 ## 4. The statistical discipline
 
@@ -104,9 +108,11 @@ should be read as implying official acquisition.
   reading, which is circular by construction, rather than the pilot's own hypothesis-motivated
   effect, which needed an affordable n). This is the direct precedent for
   `docs/EXPERIMENT_DESIGN_E2.md` stating its own possible underpowering up front rather than
-  discovering it after the fact. **Self-audited only — not yet independently reviewed** (same
-  disclosure as notebook 06; self-audit performed 2026-09-07: every headline number re-derived in
-  a separate scratch script against the raw artifact JSONs directly, one real figure defect found
+  discovering it after the fact. **Reviewed** (`reviews/REVIEW_QUEUE.md` SUP-20260907-98
+  independently re-derived the binomial statistics and MDE table, matching exactly aside from a
+  disclosed rounding-convention difference; a self-audit performed 2026-09-07, before that review
+  landed, had already re-derived every headline number in a separate scratch script against the
+  raw artifact JSONs directly, and found and fixed one real figure defect
   and fixed — two overlapping annotation text boxes).
 
 ## A note on the self-audits above
