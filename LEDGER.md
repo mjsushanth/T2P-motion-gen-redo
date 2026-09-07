@@ -3388,3 +3388,65 @@ is available in this session to reply directly to the director; this ledger entr
 design-doc diff are the only channel back, consistent with this project's established
 file-based, ledger-first communication convention. Will continue self-selecting from
 `reviews/REVIEW_QUEUE.md`/handover per the standing instruction if nothing further arrives.
+
+## [2026-09-07T08:10:00 UTC] Item 73 — notebooks/06: F6 (CFG-in-training-loss) demonstration; self-caught the notebook's own central claim was wrong, corrected before shipping, docs/LANDMINES.md section 24 added
+**Status:** complete
+**Why this, self-selected:** the director's cross-session message (SUP-97) confirmed the queue is
+clear through SUP-97 and handed off standing direction: work from the handover and queue, keep
+moving, self-select and record why. The handover's "queued and specced but not started" list has
+three notebooks; 263-d/F1 (notebook 03) and FID rank (notebook 04) are already complete. **F6 —
+classifier-free guidance folded into the training loss — is the one remaining item**, and matches
+Item 71's own stated fallback.
+**Acceptance criteria (stated before building):** reproduce `docs/LANDMINES.md` section 11's
+claim — that folding the CFG combination formula into the training loss gives a text-ignoring
+model zero gradient pressure to start using the caption — on a minimal toy system, verified
+against the archived project's actual primary source (not the paraphrase in LANDMINES.md), with
+every number produced by a cell in the notebook.
+**What actually happened, and why this entry exists:** the first built version of the notebook
+stated the "zero gradient" claim as a confirmed result. **The executed measurement cell
+contradicted it** — the archived formula's gradient on the conditioning pathway was not zero; it
+was larger than the correct (conditioning-dropout) formula's gradient, and scaled linearly with
+the guidance scale `w` (3.0, 6.0, 9.1, 15.3, 21.1 at w=1,2,3,5,7). A full toy training run then
+showed the archived formula's conditioning weight actually grew and its loss converged *below*
+the dropout formula's, in direct contradiction to the "collapse" narrative the notebook's own
+first draft asserted. **Caught this before considering the notebook done, by reading the printed
+output against the prose rather than assuming the derivation was right because it sounded
+plausible** — the same discipline this project applies to a reviewer's claims, applied here to my
+own.
+**Root cause of my own error:** conflated "a value collapses to a fixed point" with "the gradient
+through that point is zero" — a linear layer's output at zero weight is zero, but its gradient
+with respect to that weight, evaluated at zero, is the layer's own input, not zero. True premise
+(the forward-value algebra), false conclusion (no gradient), and I had written the conclusion
+into the notebook before testing it.
+**What I verified instead, before rewriting the notebook's claims:** ran a follow-up scratch test
+(`/tmp/test_instability.py`, not committed — throwaway) checking whether the measured
+amplification (gradient scaling with `w`) produces the instability `docs/LANDMINES.md` section
+11's own point 3 already asserts but never demonstrated (the tanh squash and gradient clipping as
+compensating hacks). Confirmed directly: at the archived project's own learning-rate-adjacent
+settings, the archived formula diverges at `w=7.0` where dropout remains stable, and diverges at
+**both** tested guidance scales (including the project's own default, `w=3.0`) at learning rates
+only 3-6x larger; conditioning dropout never diverges at any tested learning rate. Reproduced
+this result inside the actual notebook (Part C) before treating it as established.
+**Files changed:** `notebooks/06_cfg_training_loss_collapse.ipynb` (new — six-layer structure;
+Setup reads the archived project's own `DL_T2P_IMPL.ipynb` cell 47 directly via a code cell and
+asserts each of section 11's claims against it before proceeding, rather than trusting the
+paraphrase; Measurement has three parts — Part A: gradient measurement at the text-blind point
+across w=1..7, falsifying the "zero gradient" claim; Part B: full toy training run showing
+convergence, not collapse, at a small learning rate; Part C: the instability test, confirming
+section 11's point 3 directly). `docs/LANDMINES.md` (new section 24 — corrects, does not retract,
+section 11: the forward-value collapse algebra is confirmed exactly; the "no gradient pressure"
+interpretation is not supported by this toy and is superseded by a gradient-amplification-causes-
+instability mechanism that matches section 11's own point 3).
+**Self-critique defect found and fixed before finalizing (the one described above):** rewrote the
+Measurement, "What it means", and "What would change my mind" sections completely rather than
+patching the numbers under the old narrative — matching this project's own established practice
+of never silently swapping a conclusion under unchanged prose.
+**Verification performed:** notebook executed via `jupyter nbconvert --execute` twice (once with
+the incorrect narrative, caught before shipping; once after the full rewrite); confirmed 0 error
+cells and 1 embedded image both times; read every printed number directly against the prose
+before finalizing, both times.
+**Next:** per the director's standing instruction, will continue self-selecting from
+`reviews/REVIEW_QUEUE.md` and the handover if nothing further arrives. The open gap this notebook
+itself names — the archived project's real Phase 3 loss (0.69) is not explained by either the
+"no gradient" or the "instability" framing, since an unstable run is not usually the best-loss
+phase of three — is left as a stated, unresolved limitation, not chased further here.

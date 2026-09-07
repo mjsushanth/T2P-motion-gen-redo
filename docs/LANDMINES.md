@@ -973,3 +973,67 @@ test is the discipline that would have exposed the gap before the advice was giv
 same discipline §16 demands of a blocker claim.
 
 **Cheap tests do not need a justification to run. They need one to skip.**
+
+---
+
+## 24. A value collapsing to zero does not mean its gradient collapses too — a correction to section 11's "no gradient pressure" claim
+
+**Status: VERIFIED (2026-09-07, `notebooks/06_cfg_training_loss_collapse.ipynb`). Corrects, does
+not retract, section 11 — the forward-value algebra in that entry is confirmed exactly; its
+interpretive claim about training-time incentive is not.**
+
+**The trap.** Section 11 argues, correctly, that `predicted = u + w*(c-u)` collapses to `u` alone
+whenever the network's conditioned and unconditioned forward passes agree (`c = u`), for any
+guidance scale `w` — and concludes from this that "there is no gradient pressure to use the
+text." **Those are two different claims, and the second does not follow from the first.** A
+function's *value* being zero at a point (here, `c - u = 0`) says nothing about whether its
+*gradient* with respect to the parameters that would move it away from that point is also zero.
+For a linear conditioning pathway, it provably is not: the gradient of a linear layer's output
+with respect to its own weight matrix, evaluated at that weight equal to zero, is simply the
+layer's input — not zero, unless the input itself happens to be zero.
+
+**What the toy actually found, tested directly with autograd rather than assumed from the
+algebra:** building the smallest system that instantiates section 11's scenario exactly (a shared
+network whose conditioned and unconditioned passes currently agree, because the dedicated
+conditioning-pathway weight is exactly zero) and measuring the gradient on that pathway under the
+archived combination formula shows it is **not zero** — it is larger than the correct
+(conditioning-dropout) formula's gradient, and it scales **linearly with the guidance scale `w`**
+(`3.0, 6.0, 9.1, 15.3, 21.1` at `w = 1, 2, 3, 5, 7` — matching `predicted = u + w*W_c(c)` exactly
+when `W_c` starts at zero, i.e. `w` acts as a direct multiplier on that pathway's own effective
+step size).
+
+**The corrected mechanism.** An amplified gradient is not, by itself, evidence of a training
+failure — a bigger step in a useful direction converges faster. At a small learning rate the toy
+converges under both formulas (archived formula reaching a *lower* loss than dropout in this
+run). But a step size effectively multiplied by up to 7x (the archived project's own guidance
+ramp, 2.0 to 7.0) is a direct route to divergence at any learning rate large enough to be
+otherwise reasonable: the same toy diverges under the archived formula at `w=7.0` at a learning
+rate where conditioning dropout remains stable, and diverges under **both** guidance scales
+tested, including the archived project's own default (`w=3.0`), at learning rates only 3-6x
+larger. Conditioning dropout — which carries no guidance scale in its training loss at all —
+never diverges at any learning rate tested.
+
+**This matches section 11's own point 3** ("self-inflicted gradient instability... the `5*tanh`
+output squash and gradient clipping... are compensations for an amplification the objective
+created"), which was asserted there but never independently demonstrated. This notebook is that
+demonstration, and it points at instability, not absence, as the load-bearing failure mode.
+
+**What this changes and what it does not.** The underlying design defect section 11 identifies —
+CFG belongs at inference time, not folded into the training loss — stands, unchanged, and is
+still root-cause-grade. What changes is *why* it is fatal: not because the model faces zero
+incentive to use the caption (this project's own toy could not reproduce that claim in the one
+architecture it tried, a linear, additively-injected conditioning pathway structurally similar to
+MDM's own `embed_text` mechanism, `REBUILD_SPEC.md` line 109), but because the same combination
+formula that section 11 describes creates a guidance-scale-dependent instability that plausibly
+explains the tanh squash and gradient clipping the original team needed as compensating hacks.
+**The archived project's own reported Phase 3 loss (0.69, lowest of three phases) remains
+unexplained by either framing** — a model experiencing training instability is not typically
+described as achieving the best loss of a run — and is recorded here as a real, open gap between
+this correction and the archived project's actual numbers, not yet closed by this notebook or by
+section 11.
+
+**Practice.** An algebraic argument that a value collapses to a fixed point is not, by itself, an
+argument that gradient descent gets stuck there — the two claims require separate proof, and the
+gap between them is exactly where this entry's correction lives. Test the gradient directly with
+autograd before asserting an "no incentive" story; a plausible-sounding derivation from a true
+premise is still a claim, not a result, until it is measured.
