@@ -2739,3 +2739,35 @@ read every relevant output directly.
 verb-vs-modifier nuance disclosed rather than hidden. Awaiting direction on Task 2 (`notebooks/02`,
 TMR) and the newly-mentioned further notebook series (263-d representation/F1, FID covariance
 rank-deficiency, F6 CFG-in-loss) — nothing started on either.
+
+## [2026-09-07T02:25:00 UTC] Item 58 — notebooks/01, round 3: pilot-vs-extension reported separately (SUP-20260907-84); finding fully closed
+**Status:** complete
+**Acceptance criteria:** the director accepted round 2 in full but flagged one remaining
+objection: the 24 new pairs were written *after* the n=16 pilot had already shown the effect, so
+even without any deliberate selection, an unconscious pull toward more-separable items would
+produce exactly the observed signature (pooled gap 1.46x the pilot's own gap). Required: report
+pilot (n=16) and extension (n=24) as separate rows with their own effect sizes next to the pooled
+result, rather than only the pooled number, so a reader can see directly whether the effect lives
+in both or only in the newer set.
+**Independently verified before implementing:** recomputed the pilot/extension split myself,
+outside the notebook, before trusting the director's numbers — pilot gap 0.0208 (d=0.678, p=0.034
+one-sided), extension gap 0.0303 (d=1.266, p=0.00001 one-sided), ratio 1.46x — matched their
+figures exactly.
+**Files changed:** `notebooks/01_clip_spatial_blindness.ipynb` (new section 4b: a `subgroup_report`
+helper computing pilot-only, extension-only, and pooled gap/d/p for the load-bearing spatial-vs-
+modifier comparison; an explicit check for whether both subsets independently clear uncorrected
+significance; the final verdict cell updated to state the subgroup result inline rather than as
+a disconnected addendum).
+**Result: both subsets independently significant.** Pilot alone: p=0.034 (d=+0.678). Extension
+alone: p=0.00001 (d=+1.266). The pooled n=40 headline (d=+0.995, clears Bonferroni) is not an
+artifact of the newer, potentially-selected pairs alone — the original, untouched, already-
+audited pilot set shows the same effect on its own, at its own smaller but still real magnitude.
+**Verification performed:** recomputed the entire pilot/extension split independently in a
+scratch script before writing anything into the notebook, then executed the actual notebook via
+`jupyter nbconvert --execute`, confirmed 0 error cells, read every relevant output directly.
+**Next:** per the director's own statement, notebook 02 (TMR second evaluator) is now unblocked —
+their independent re-check confirms the feasibility gate (MIT license, unarchived,
+`new_joint_vecs/*.npy` bit-identical to `guoh3dfeats`). The director is past their soft stop and
+handing over; further work proceeds from the queue/ledger rather than from further live direction
+in this thread. Also noted: user pulled one commit (README revision) mid-session; pulled cleanly
+(fast-forward, no conflicts) before this commit.

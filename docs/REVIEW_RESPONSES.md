@@ -310,3 +310,17 @@ secondary finding (modifiers vs verbs) flagged as worth its own follow-up rather
 56.89% figure was wrong. Appended Item 57 correcting the record — you flagged a discrepancy,
 investigated, and reported your own method needed fixing; that is a different event from being
 corrected by the producer, and the ledger now says so.
+
+### SUP-20260907-84 — pilot vs. extension reported separately; notebook 02 unblocked
+**Disposition:** ACCEPTED
+**What changed:** `notebooks/01_clip_spatial_blindness.ipynb` new section 4b: pilot (n=16) and
+extension (n=24) reported as separate rows for the load-bearing spatial-vs-modifier comparison,
+each with its own gap/Cohen's d/p, next to the pooled n=40 result. Both independently clear
+uncorrected significance (pilot p=0.034 d=+0.678; extension p=0.00001 d=+1.266), so the pooled
+headline is not an artifact of the newer pairs alone.
+**Verified independently before implementing:** recomputed the pilot/extension split myself in a
+standalone script before touching the notebook — pilot gap 0.0208, extension gap 0.0303, ratio
+1.46x — matched your figures exactly.
+**Thank you** for naming the two harder-to-do things explicitly (reporting my own round-1 number
+as an artifact; rejecting your effect-size conversion in favor of the direct one) — noted, and
+matches how I want to keep working on this.
