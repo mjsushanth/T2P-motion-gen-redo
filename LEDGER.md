@@ -3255,3 +3255,69 @@ times; read the actual printed/rendered output each time before writing this ent
 notebook's subset sizes and — now — its confound finding as an input: the design must specify how
 it controls for the caption-length confound (matching, stratification, or an explicit acknowledgment
 of the limitation) rather than treating the split as clean.
+
+## [2026-09-07T07:00:00 UTC] Item 70 — docs/EXPERIMENT_DESIGN_E2.md: pre-registered spatial-adapter experiment design (Item A, author-directed, relayed via the director)
+**Status:** complete (design only — nothing in this design has been run)
+**Acceptance criteria (stated by the director before writing, restated here for the record):**
+arms (baseline unmodified checkpoint vs. treatment checkpoint+small spatial-contrast adapter,
+exact mechanism and placement specified); the spatial/non-spatial split (notebooks/05) as the
+design's novel contribution, R-Precision reported per subset; an explicit regression control
+against non-spatial degradation, citing MoCLIP's (arXiv:2505.10810) "competitive FID" as the
+exact failure mode; a power/MDE calculation using notebooks/05's real subset sizes as an input,
+stated honestly if the affordable MDE is too large to be useful; pre-registered failure/
+abandonment conditions; a compute plan costed against Kaggle's free tier with the P100-inflation
+caveat stated plainly; and an explicit statement of how the design controls for notebooks/05's
+own caption-length confound.
+**Files changed:** `docs/EXPERIMENT_DESIGN_E2.md` (new).
+**Design summary:**
+- **Arms.** Baseline = released MDM checkpoint, unmodified, no training (its R-Precision numbers
+  already exist from E0b/notebooks 02 — what's new is scoring the two subsets separately, which
+  has not been done). Treatment = same checkpoint + a single trainable linear adapter inserted
+  between CLIP's frozen pooled output and MDM's own `embed_text` layer, trained via a contrastive
+  loss on a **synthetic** spatial-pairs set (deliberately distinct from notebook 01/01b's 40
+  evaluation pairs, to avoid circularity), with CLIP and the diffusion transformer kept fully
+  frozen. Chose adapter-after-frozen-CLIP over fine-tuning CLIP itself specifically because
+  MoCLIP's own reported outcome (fine-tuned CLIP, only "competitive" FID afterward) is the exact
+  failure mode this design is built to catch, and an isolated linear adapter has a much smaller
+  blast radius than fine-tuning the whole encoder if it goes wrong.
+- **The novel split.** R-Precision-top3 reported separately for spatial (n=2,448) and non-spatial
+  (n=1,750) test subsets, for both arms — four numbers, not the one aggregate number every
+  published evaluation reports (confirmed via `guidance/RESEARCH_E_novel_directions.md` that this
+  split is not done elsewhere). Comparisons are length-stratified (terciles) specifically because
+  notebooks/05 found the two subsets differ by 4.18 words on average (d=+0.592) — a real,
+  medium-sized confound, not a large-n artifact — so a pooled comparison would be invalid; a
+  treatment effect that only appears in the tercile where the confound is strongest is flagged as
+  a warning sign, not a confirmation, in the failure conditions.
+- **Regression control.** Non-spatial R-Precision must not drop by more than this project's own
+  already-measured same-arm seed variance (D-28: 0.047 points at n=128) — an explicit,
+  pre-registered abandonment trigger, not a soft caveat.
+- **Power/MDE.** Using this project's own validated `n = z^2 . 2p(1-p) / delta^2` formula
+  (p~=0.35, this project's own E0b/notebook 02 baseline, not the published-frontier 0.76): at 3sigma,
+  full-subset generation can detect down to roughly 0.10-0.12 R-Precision points on the spatial
+  subset and 0.12-0.14 on the non-spatial subset — stated as a ceiling, with realistic affordable
+  n (smaller than the full subset) pushing the true MDE higher, not hidden.
+- **Compute plan.** Every GPU-hour number in this section is explicitly labeled a translation
+  from this project's own measured Mac CPU/MPS rates (D-27/D-28: 3.15s/sample generation), not a
+  fresh GPU measurement — flagged for direct timing on the first real Kaggle session before any
+  full-subset run is committed to. At zero assumed GPU speedup over MPS (deliberately the most
+  conservative floor), full two-arm generation across both subsets is estimated at ~7.3 hours,
+  comfortably inside Kaggle's free ~30 GPU-hours/week even without any GPU speedup credited.
+**Self-critique before finalizing:** checked that the design does not smuggle in the notebook
+01/01b evaluation pairs as training data for the adapter (would be circular) — the design
+explicitly requires a separate synthetic pairs set. Checked that the power calculation uses this
+project's own actually-measured baseline R-Precision (0.35, severely undertrained checkpoint) and
+not a published-frontier number that would understate the true n needed. Checked that the Kaggle
+free-tier claim is labeled UNVERIFIED (relayed, not independently confirmed by this session
+against Kaggle's own current documentation) rather than stated as fact.
+**Verification performed:** re-read `REBUILD_SPEC.md` §6/§6a directly (not from memory) before
+writing, to match this project's own established design-document conventions (hypothesis/
+success-criterion table format, explicit regime-note-style caveats, honest-question ->
+proposed-construction-as-judgment-call -> what-remains-unresolved -> sequencing-recommendation
+structure). Cross-checked every number cited (subset sizes, confound effect sizes, seed
+variance, baseline R-Precision) against the specific prior notebook/decision that established it,
+rather than restating from memory.
+**Next:** per the director's own standing instruction — if no further direction arrives after
+Items A and B, self-select the next-most-useful item from `reviews/REVIEW_QUEUE.md` and the
+handover, and record the choice and rationale here. Both Items A and B are now complete; will
+check `reviews/REVIEW_QUEUE.md` for open findings before self-selecting, unless further direction
+arrives first.
