@@ -3450,3 +3450,75 @@ before finalizing, both times.
 itself names — the archived project's real Phase 3 loss (0.69) is not explained by either the
 "no gradient" or the "instability" framing, since an unstable run is not usually the best-loss
 phase of three — is left as a stated, unresolved limitation, not chased further here.
+
+## [2026-09-07T08:20:00 UTC] Note — notebook 06 is UNREVIEWED, per the director's own explicit disclosure
+**Status:** informational, no action
+The director's cross-session message stated it does not have budget left to verify notebook 06
+(re-derive its arithmetic, open its rendered figures, cross-check against `FORENSICS.md` F6) and
+explicitly said not to read its silence as approval, and to record this rather than treat it as
+tacit acceptance. **Recorded as instructed: `notebooks/06_cfg_training_loss_collapse.ipynb` has
+not been independently reviewed by anyone but me.** Its own self-critique (Item 73) already
+documents one defect I found and fixed myself before shipping; an outside review may still find
+something that self-check missed, and until one happens the notebook's claims carry only the
+confidence of my own verification, not a second pair of eyes.
+
+## [2026-09-07T08:45:00 UTC] Item 74 — notebooks/07: "why six samples is not a finding" (director-assigned, `E1A vs E1B`'s bounded null, the seed-only reproduction, and the circularity trap)
+**Status:** complete
+**Acceptance criteria (director's message, restated in my own words):** re-derive, from this
+project's own saved artifacts (not memory), why E1's 38/128-vs-44/128 gap is not a finding: the
+binomial floor (0.80 sigma); the same-arm seed-only reproduction (E1A seed 10 vs seed 20
+reproducing the entire cross-arm gap from randomness alone); the minimum-detectable-effect
+calculation showing the experiment was powered for a different effect size, not powerless
+outright; and the circularity trap in D-26's original framing (powering against your own noise
+reading demands more samples the smaller that reading is). Close by connecting to
+`docs/EXPERIMENT_DESIGN_E2.md`'s own pre-registered power section.
+**Verified before building, not assumed from the director's message:** read
+`artifacts/e1/e1a_power_check_record.json`, `e1b_train_record.json`, `e1a_seed2_train_record.json`,
+and `e1a_seed10_mps_validation_record.json` directly. Confirmed the director's specific numbers
+(seed 10 = 38/128, seed 20 = 44/128) against the real `seed` fields and `r_precision_top3_*`
+values in these files, and found one thing worth being precise about: **a fourth file
+(`e1a_seed10_mps_validation_record.json`) also has `seed: 10` but scores differently (0.328125,
+not 0.2969)** — a second, later, MPS-validation run of the same nominal seed, consistent with
+this project's own already-documented MPS non-determinism (`docs/LANDMINES.md` section 7), not a
+labeling error. Excluded it from the notebook's central comparison and said so explicitly, rather
+than silently picking whichever "seed 10" record supported the story. Also independently
+recomputed the MDE table (`n = z^2 * 2p(1-p)/delta^2`, p=0.32) rather than pasting
+`docs/DECISIONS.md`'s numbers, and found the recomputed values differ by a handful of samples per
+row from the doc's own prose (186 vs 187, 286 vs 287, ~1,783 vs ~1,780) — traced this to a
+rounding-convention difference (nearest vs. ceiling) plus using the exact `k/128` fraction instead
+of each JSON's 4-decimal-rounded field, not a real disagreement; stated this explicitly in the
+notebook rather than silently matching the prior number or leaving an unexplained discrepancy for
+a future reader to puzzle over.
+**Result — the exact-match finding, stronger than the director's own framing:** the cross-arm
+comparison (E1A=38/128 vs E1B=44/128) and the same-arm seed-only comparison (E1A seed10=38/128 vs
+seed20=44/128) do not merely produce z-scores that agree "to three significant figures" (the
+director's phrasing) — **the raw counts are identical integers in both comparisons (38 and 44
+both times)**, so the two z-score computations are not just close, they are the same arithmetic
+performed on the same numbers. Confirmed this directly in a code cell (`np.isclose(z_crossarm,
+z_seedonly)` -> True, both 0.8047) rather than asserting it.
+**Files changed:** `notebooks/07_why_six_samples_is_not_a_finding.ipynb` (new — six-layer
+structure; Setup loads all four JSON records directly; Measurement Part A recomputes the 0.80
+sigma binomial floor; Part B is the seed-only reproduction with the exact-count finding above;
+Part C recomputes the MDE table and n=128's own detectable-effect range; Part D plots the
+required-n-vs-effect-size curve on a log axis, marking where D-26's original noise-blip choice
+and the real hypothesis-motivated effect each land on it, making the circularity visually
+undeniable rather than just stated in prose; closes by connecting explicitly to
+`docs/EXPERIMENT_DESIGN_E2.md`'s own pre-registered power section as the direct downstream
+consequence of this lesson).
+**Self-critique defect found and fixed before finalizing:** the first executed version used each
+JSON's own rounded 4-decimal `r_precision_top3_*` field directly in the gap/SE/MDE formulas
+instead of recovering the exact integer count and using `k/128` — a small but avoidable precision
+drift that pushed the noise-blip sample-size estimate to 1,784 instead of matching the project's
+own ~1,780-1,781. Caught by comparing the executed output against `docs/DECISIONS.md`'s stated
+numbers rather than accepting a plausible-looking result, fixed by recovering exact fractions from
+the raw counts, re-executed, and the residual few-sample difference that remained afterward was
+traced to a rounding-convention difference and stated explicitly rather than left unexplained.
+**Verification performed:** notebook executed via `jupyter nbconvert --execute` three times (once
+initial, once after the precision fix, once after adding the rounding-convention clarification);
+confirmed 0 error cells and 1 embedded image every time; read every printed number against the
+primary-source JSON files and against `docs/DECISIONS.md`/`reviews/REVIEW_QUEUE.md` SUP-77 before
+finalizing any claim.
+**Next:** per the director's standing instruction, will self-select the next item from
+`reviews/REVIEW_QUEUE.md`/handover if nothing further arrives — the handover's three-notebook
+queue (263-d/F1, FID rank, F6) is now fully complete along with this one, so the next self-
+selection will need to look beyond that specific list.
