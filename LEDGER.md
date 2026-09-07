@@ -2888,3 +2888,31 @@ above read directly from actual cell output, not asserted.
 belongs to the reviewing session per the author's override, Item 60). It needs an external
 checkpoint download (Google Drive, MIT-licensed, already verified obtainable in Item 55) as its
 first real step, unlike 03/04 which needed none.
+
+## [2026-09-07T03:40:00 UTC] Item 62 — notebooks/03, 04: closing sections converted from print() to rendered Markdown, per NOTEBOOK_STYLE_GUIDE.md
+**Status:** complete
+**Acceptance criteria:** the director's style guide (`reviews/NOTEBOOK_STYLE_GUIDE.md`, read after
+studying the revamped `notebooks/01`) requires the "what it means" closing section to use
+`display(Markdown(f"..."))` with live computed values, not `print()` of a long f-string — the
+values must still be computed by a cell (never pasted), but rendered with headings/bold/tables
+instead of a wall of monospace. Also incorporated the guide's "calibrate before you report"
+pattern for notebook 04 specifically, per the director's own suggestion: surface the large-n FID
+floor as a named scale before the n=128 headline number, not only as a same-paragraph comparison.
+**Files changed:** `notebooks/03_263d_representation_and_f1_bug.ipynb` (closing bone-length-CV
+summary converted to a Markdown cell with a two-row table, wrong-slice vs `recover_from_ric`).
+`notebooks/04_fid_covariance_rank_deficiency.ipynb` (two changes: the disjoint-halves results
+table converted to Markdown with an explicit calibration statement — "n=2000/side settles near
+0.109, call this the practical floor" — stated before the reader reaches the n=128 headline, plus
+a computed ratio, "14.5x higher," making the gap legible as a multiple rather than requiring the
+reader to divide two numbers themselves; the closing "what it means" section converted to
+Markdown, now referencing the already-established floor rather than repeating all three numbers
+a second time).
+**Verification performed:** both notebooks re-executed via `jupyter nbconvert --execute`; confirmed
+0 error cells, images intact (4 each, unchanged from before), and exactly the expected count of
+new `text/markdown` display outputs (1 in 03, 2 in 04) via direct nbformat inspection; read the
+actual rendered markdown content of each new cell to confirm it reads correctly, not merely that
+it executed without raising.
+**Not touched:** `notebooks/01_clip_spatial_blindness.ipynb` — the director's own in-progress
+revamp under the author's override; excluded from this commit as agreed (Item 60).
+**Next:** notebook 02 (TMR second evaluator), the last of my three assigned notebooks, per the
+director's own sign-off to take it once 03/04's closing sections were converted.
