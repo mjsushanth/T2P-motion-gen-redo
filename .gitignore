@@ -12,6 +12,10 @@ __pycache__/
 *.pth
 *.ckpt
 
+# TMR's pretrained checkpoint (124MB, MIT-licensed, fetched via gdown -- see notebooks/02's own
+# setup cell for the exact download command and md5 checksum, same convention as /checkpoints/)
+third_party/TMR/models/
+
 # local pointer to the read-only original-project archive (not published)
 .archive_path
 

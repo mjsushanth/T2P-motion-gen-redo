@@ -2916,3 +2916,85 @@ it executed without raising.
 revamp under the author's override; excluded from this commit as agreed (Item 60).
 **Next:** notebook 02 (TMR second evaluator), the last of my three assigned notebooks, per the
 director's own sign-off to take it once 03/04's closing sections were converted.
+
+## [2026-09-07T04:15:00 UTC] Item 63 — notebooks/02: TMR as a second evaluator, built and executed; SUP-85/86 addressed on notebook 03
+**Status:** complete
+**Acceptance criteria:** build `notebooks/02_tmr_second_evaluator.ipynb` per the director's spec
+(feasibility already confirmed obtainable, Item 55/58's own handover): re-score the existing E0b
+generated motions with TMR alongside the Guo evaluator, scatter plot per-sample scores, a
+disagreement table naming specific captions, grouped R-Precision top-1/2/3 bar chart. Separately,
+two real presentation defects (SUP-20260907-85, -86) surfaced against notebook 03 while this was
+in progress — addressed both before considering either notebook done.
+**TMR setup (new, one-time):** cloned `github.com/Mathux/TMR` into `third_party/TMR` (MIT
+license, re-confirmed via `gh api`), removed its nested `.git` (this project vendors third-party
+code as plain directories, no submodules, matching `motion-diffusion-model`/`text-to-motion`).
+Installed only the two genuinely missing dependencies (`hydra-core`, `hydra-colorlog` — `einops`,
+`pytorch_lightning`, `orjson` were already present at compatible versions) via `uv pip install`,
+confirmed `torch`/`numpy` versions unchanged afterward. Downloaded the pretrained checkpoint via
+`gdown` (Google Drive, the exact file id from `LEDGER.md` Item 55's own feasibility check),
+**verified its md5 (`7b6d8814f9c1ca972f62852ebb6c7a6f`) matched exactly before extracting.**
+Smoke-tested the pipeline end-to-end via TMR's own `text_motion_sim.py` logic before building
+anything: a genuinely matched (caption, motion) pair scored 0.85, a deliberately mismatched pair
+scored 0.52 — confirms the pipeline discriminates correctly before trusting it for a real
+comparison. `third_party/TMR/models/` (124MB of checkpoint weights) is gitignored, matching this
+project's own `/checkpoints/` convention — the exact fetch command and checksum are documented in
+the notebook itself, not just in this entry.
+**Real bug found and fixed before it blocked anything:** TMR's own `text_motion_sim.py` (run via
+its documented hydra CLI) fails on first use — `TokenEmbeddings.__init__` unconditionally tries to
+load a precomputed dataset-wide text-embedding cache this project never downloaded (only the
+model checkpoint was fetched, not the full annotation/embedding cache, which is unnecessary for
+scoring a small set of specific captions). Fixed by constructing `TokenEmbeddings` directly with
+`preload=False`, which falls back to its own already-built-in live encode-on-the-fly path — not a
+patch to TMR's own code, just bypassing an unneeded, unavailable cache at the call site.
+**Result, all numbers produced fresh by cells in the notebook:** Pearson correlation between
+Guo's and TMR's per-sample scores on the same 128 real generated motions: **r = -0.006** —
+essentially zero. R-Precision under each evaluator's own native protocol: Guo top-1/2/3 =
+0.133/0.234/0.352; TMR = 0.219/0.312/0.406 (chance = 0.031) — both real, TMR consistently higher.
+**Investigated the near-zero correlation rather than reporting it flat:** the 8 worst-
+disagreement samples all have Guo scoring >=0.96 — near its own ceiling — while TMR spreads the
+same motions 0.37-0.48. Connected explicitly (not left as a coincidence) to this project's
+already-documented finding that Guo's embedding space compresses real motions into a narrow
+high-similarity band (`docs/LANDMINES.md` #13, the full-corpus-retrieval-collapse finding from
+the demo work) — the raw-score correlation is confounded by that same ceiling; R-Precision, which
+only depends on relative ranking within a batch, is not, and is reported as the more trustworthy
+of the two comparisons for that stated reason.
+**SUP-20260907-85 (P1/P2/P3, against notebook 03) and SUP-20260907-86 (P1, against notebook 03),
+found while this was in progress, addressed before either notebook was called done:**
+- `03_bone_length_histograms.png`: independently auto-scaled x-axes made the correct decode
+  (CV 0.00033%) look MORE dispersed than the broken one (CV 69.9%) — the exact display-inverts-
+  the-finding defect `LANDMINES.md` §19 names, in the single figure this notebook exists to
+  deliver. Fixed: shared x-axis across both panels (computed from the wrong-slice data, which
+  sets the real scale), correct decode's spike annotated explicitly rather than hidden in an
+  axis-corner offset label.
+- `03_263d_layout.png`: overlapping red annotation text, a narrow-segment label overflowing the
+  left edge, another clipped at the right edge. Fixed: the two red annotations moved to separate
+  vertical rows; narrow segments (`root motion`, `foot contact`, 4 units wide each) now labeled
+  outside the bar with a leader line instead of centered text that cannot fit; x-axis margin
+  extended so no label clips.
+- `03_skeleton_side_by_side.png`: a 3-D rendering in which neither skeleton read as a human body
+  (default viewing angle, no equal-aspect constraint, independent per-panel axis ranges). Fixed
+  per the director's own verified reference (`reviews/REFERENCE_03_skeleton_fixed.py`, adapted
+  not copied): a flat frontal (x-y, not x-z — HumanML3D's up-axis is y, x-z is the floor plane
+  and was the reference's own first, rejected attempt) projection, equal aspect, shared limits
+  computed across both skeletons per frame, axes off. Extended the fix with a 4-frame strip
+  (0.25/0.45/0.65/0.85 through the sequence) rather than one frame, per the review's own suggested
+  addition, so the wrong decode reads as incoherent over time, not just a single bad pose.
+- Notebook 04's eigenvalue spectrum (already praised as "excellent, the standard the other
+  figures should meet") got the review's one optional suggestion applied anyway: the two regions
+  ("127 directions with measurable spread" / "385 directions at numerical zero, never sampled")
+  now labeled directly on the plot.
+**Files changed:** `notebooks/02_tmr_second_evaluator.ipynb` (new), `notebooks/03_...ipynb` (three
+figure fixes above, re-executed), `notebooks/04_...ipynb` (one label addition, re-executed),
+`.gitignore` (new entry for `third_party/TMR/models/`), `third_party/TMR/` (vendored, `.git`
+removed).
+**Verification performed:** all three notebooks executed via `jupyter nbconvert --execute` after
+every change (03 twice, 04 twice, 02 twice — once for the initial build, once after adding the
+ceiling-effect investigation); confirmed 0 error cells and correct image counts each time via
+direct nbformat inspection; visually inspected all four of notebook 03's rendered PNGs directly
+(not assumed correct from a successful execution) before considering the SUP-85/86 fixes done —
+this is the same discipline SUP-86 itself named ("read the executed output before writing the
+verdict").
+**Next:** all three of my assigned notebooks (02/03/04) are now built, executed, and address every
+open review finding against them. Report back; await further direction (the director mentioned an
+approved further notebook series — 263-d/F1 already done as 03, FID rank-deficiency already done
+as 04, plus a new F6 CFG-in-loss proof not yet started).

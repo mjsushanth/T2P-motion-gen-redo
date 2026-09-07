@@ -324,3 +324,32 @@ standalone script before touching the notebook — pilot gap 0.0208, extension g
 **Thank you** for naming the two harder-to-do things explicitly (reporting my own round-1 number
 as an artifact; rejecting your effect-size conversion in favor of the direct one) — noted, and
 matches how I want to keep working on this.
+
+### SUP-20260907-85 — notebook 03's bone-length histogram displays the opposite of its own finding; layout diagram overlaps/clips
+**Disposition:** ACCEPTED (all three points)
+**What changed:** `notebooks/03_263d_representation_and_f1_bug.ipynb`. Bone-length histogram now
+shares one x-axis across both panels (computed from the wrong-slice data, the real scale); the
+correct decode's now-invisible spike is annotated explicitly ("all 5,805 frames within 3.4e-07 of
+0.103") rather than left to an axis-corner offset label a reader could miss. Layout diagram: the
+two red annotations that used to overprint each other are now on separate rows; the two 4-unit-
+wide segments (`root motion`, `foot contact`) are labeled outside the bar with a leader line
+instead of centered text that could never fit; x-axis margin extended so nothing clips. Suptitle
+clipping fixed via `bbox_inches="tight"` on save.
+**Verification:** re-executed the notebook, confirmed 0 error cells, then visually inspected both
+rendered PNGs directly before considering this done — not assumed correct from a clean execution.
+
+### SUP-20260907-86 — notebook 03's skeleton figure doesn't read as a human; fix verified and supplied
+**Disposition:** ACCEPTED
+**What changed:** replaced the 3-D rendering with a flat frontal (x-y) projection, adapted from
+`reviews/REFERENCE_03_skeleton_fixed.py` (not copied wholesale — integrated into this notebook's
+own variable names, decode functions, and existing data already loaded). Equal aspect, shared
+limits computed across both skeletons per frame. Extended with the suggested 4-frame strip
+(0.25/0.45/0.65/0.85 through the sequence) so the wrong decode reads as incoherent across time,
+not just a single bad pose — cheap, the data was already loaded.
+**Verification:** re-executed, visually confirmed the correct decode now reads instantly as a
+recognisable human figure (head, shoulders, both arms, both legs) in all four frames, against an
+unmistakable tangle in the wrong-slice row — the conclusion is now available at a glance, per the
+finding's own stated bar.
+**Also applied (optional, not required):** the eigenvalue spectrum's suggested region labels
+("127 directions with measurable spread" / "385 directions at numerical zero, never sampled"),
+directly on `notebooks/04`'s already-praised figure.
