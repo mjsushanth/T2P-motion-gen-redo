@@ -3674,3 +3674,40 @@ rounding-convention difference). Both notebooks 06 and 07 are now independently 
 director's own message; `notebooks/README.md`'s "self-audited only" status line for both should be
 read as superseded by this — not yet updated in the README itself, noted here as the next small
 edit if no other direction arrives first.
+
+## [2026-09-07T10:00:00 UTC] Item 77 — top-level README.md rewritten for a human reader (author-directed)
+**Status:** complete
+**Author's instruction (direct, not relayed):** the existing root `README.md` was stale (still
+said "nothing has been trained or measured here yet") and wrong in emphasis. Rewrite it to lead
+with the notebooks as the project's primary asset — exploration, mission statement, then
+achievements — followed by docs/research-record material, then the rest of the project's story
+last. Keep it short, plain, and aimed at a human reader, not an agent. Explicit exclusions: no
+narrative about how the original course project failed or which dataset mistakes caused it, and
+no glamorizing either the old project's mistakes or this project's own agentic/AI-assisted
+process. Status table and headline findings could be freely rewritten to match.
+**What changed:** replaced the entire root `README.md`. New structure: a two-sentence framing of
+the task and the project's core discipline (no claim without a number, no number without its own
+code beside it) with no mention of the original project's failure mode; a notebooks section
+leading with two embedded figures (`notebooks/03_skeleton_side_by_side.png`,
+`notebooks/07_circularity_trap.png`) and all eight notebooks each reduced to one question plus
+one plain-language finding, linked directly to the `.ipynb` files; a research-record section
+naming `docs/LANDMINES.md`, `docs/DECISIONS.md`, `docs/EXPERIMENT_LOG.md`, `docs/GLOSSARY.md`,
+and `docs/EXPERIMENT_DESIGN_E2.md` by what each is for, not what's in them; a rewritten status
+table reflecting the project's actual current state (evaluator cross-validated, spatial-language
+weakness measured, the training-bug mechanism reproduced, the test split checked for confounds,
+E2 pre-registered, no training run yet — each stated as a plain question-and-answer row rather
+than a stage/percent-complete table); a short "going deeper" section pointing at
+`docs/00_START_HERE.md`, `REBUILD_SPEC.md`, `LANDSCAPE.md`/`POSITIONING.md`, and `LEDGER.md` for
+anyone who wants the full depth; hardware note kept, one line.
+**What was deliberately left out, per the instruction:** the previous README's framing of the
+original course project (three months, no measurement, a suspected data-decode bug) — that
+history remains in `docs/00_START_HERE.md`/`BRIEFING.md`/`FORENSICS.md` for anyone who wants it,
+but is no longer the root README's opening story. No mention of Claude sessions, autonomous runs,
+or the review/producer process as a headline feature — those mechanics stay in `CLAUDE.md`/
+`AUTONOMOUS_RUN_PROMPT.md`, not the human-facing front page.
+**Verification performed:** confirmed both embedded image paths resolve to real files
+(`notebooks/03_skeleton_side_by_side.png`, `notebooks/07_circularity_trap.png`) before linking
+them; every notebook link and doc pointer checked against the actual current filenames in
+`notebooks/` and `docs/` rather than assumed from memory.
+**Next:** continuing on my own judgement per the standing instruction, watching for further
+direction.
