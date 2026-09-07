@@ -1037,3 +1037,57 @@ argument that gradient descent gets stuck there — the two claims require separ
 gap between them is exactly where this entry's correction lives. Test the gradient directly with
 autograd before asserting an "no incentive" story; a plausible-sounding derivation from a true
 premise is still a claim, not a result, until it is measured.
+
+---
+
+## 25. Sorting an already-sorted array a second time can silently swap tied elements
+
+**Status: VERIFIED (2026-09-07, while building `notebooks/08_pytorch_mps_silent_failures.ipynb`).
+Corrects a claim in `notebooks/02_tmr_second_evaluator.ipynb` that had already been reviewed and
+closed twice (SUP-20260907-88, -92) — the fourth bug found in that notebook, and the second
+correction this project has made to its own already-accepted work.**
+
+**The trap.** `EvaluatorMDMWrapper.get_motion_embeddings(motions, m_lens)` sorts its input by
+descending length internally (a requirement of `pack_padded_sequence`) and returns embeddings in
+that sorted order — it does **not** un-sort them before returning ("please note that the results
+does not follow the order of inputs," the library's own comment). The correct way to call it is:
+do not pre-sort the input yourself; let it sort once; invert that one sort yourself afterward.
+
+**What actually happened.** `notebooks/02`'s `embed_motions_guo_batched` pre-sorted its own
+input by descending length (`local_order`) *before* calling `get_motion_embeddings`, which then
+sorted the already-sorted input **again**, internally. Numpy's default `argsort` is not stable,
+so a second sort applied to an array that contains ties can permute the tied elements differently
+than the first sort did. **120 of this project's own 128 generated motions share their length
+with at least one other sample** — ties are the rule here, not the exception. The caller's own
+inversion (`local_inv`, built from the *first* sort only) had no way to know about the *second*
+sort's independent tie-break, so for exactly the samples caught in a tie, the wrong embedding
+silently landed at the wrong position.
+
+**Why it looked like something else entirely.** The resulting embedding mismatch was large per
+affected sample (max abs diff 1.13, on embeddings whose values commonly range in the tens) and
+was mistaken for a real property of the network — "motion embeddings are not
+batch-composition-invariant" (`notebooks/02`, following SUP-20260907-88's original framing).
+That framing was itself never re-tested against a *correctly called* baseline. Once tested
+directly — call the function once, invert that one sort, nothing else — encoding 128 motions in
+one call and encoding them in four batches of 32 produce **identical embeddings to float
+precision, for every sample.** The network was batch-composition-invariant the whole time; the
+comparison code was not.
+
+**The number this cost.** `notebooks/02`'s own R-Precision-top3, computed with the double-sort
+bug present: 0.7266. After removing the redundant sort: **0.7578 — an exact match** to this
+project's own independently recorded target on the same 128 motions, not merely "within noise"
+as the notebook concluded twice before this was found.
+
+**Do instead.** Any function wrapping a call to code that sorts its own input and does not
+un-sort before returning: sort **once**, at the outermost layer that will do the inverting, and
+never again downstream. If a length array is likely to contain ties (check: `len(set(lengths))
+< len(lengths)`), a second, independent sort anywhere in the pipeline is not a no-op — verify
+against a version with the redundant sort removed before trusting a "sensitivity" finding that
+this pattern could explain instead.
+
+**Practice.** A claim that "X is not invariant to Y" should be re-tested against the simplest
+possible correct call before being trusted, especially when X is measured through code with its
+own internal reordering. This is the same discipline as sections 20 and 22 applied to a new
+shape: a measured difference is a fact about the *measurement*, not automatically a fact about
+the *thing being measured*, until the measurement itself has been checked for exactly this kind
+of self-inflicted noise.

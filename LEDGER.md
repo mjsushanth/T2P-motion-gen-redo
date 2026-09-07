@@ -3711,3 +3711,75 @@ them; every notebook link and doc pointer checked against the actual current fil
 `notebooks/` and `docs/` rather than assumed from memory.
 **Next:** continuing on my own judgement per the standing instruction, watching for further
 direction.
+
+## [2026-09-07T10:30:00 UTC] Item 78 — a fourth bug found in notebook 02, already reviewed and closed twice: a double-sort silently swapped tied-length embeddings; the corrected number is an EXACT match
+**Status:** complete
+**Context:** while investigating item 4 of the director's notebook 08 request (batch-composition
+sensitivity — "encoding 128 motions at once vs. four batches of 32 gave max abs diff 2.06, mean
+cosine 0.85", presented as an established fact from SUP-88 to demonstrate and explain the
+mechanism of), I tested the director's specific hypothesis (padding-length variation leaking
+through the conv encoder) directly with the real vendored `MovementConvEncoder` +
+`MotionEncoderBiGRUCo` classes before writing anything.
+**What I found, step by step, each step verified before trusting the next:**
+1. The conv encoder alone, tested in isolation: batch-composition invariant to float precision
+   (~2e-5), ruling out the padding-leakage hypothesis directly.
+2. A full pipeline test (sample alone vs. sample inside the real 128-sample batch), replicating
+   how the director's cited claim and this project's own SUP-88 measurement would have been
+   taken, showed a large discrepancy (max abs diff 1.31) — consistent with the existing claim.
+3. Isolated further: the discrepancy is NOT in the GRU/`pack_padded_sequence` stage either — a
+   minimal, controlled toy (bidirectional GRU + packing, realistic scale: batch=128,
+   hidden=1024, seq_len=49) reproduced ZERO discrepancy (diff ~2e-7, float noise only).
+4. Traced the actual cause by replicating `EvaluatorMDMWrapper.get_motion_embeddings`'s own logic
+   manually, step by step: **the function sorts its input by descending length internally and
+   does NOT un-sort before returning** (its own comment says so). The correct calling convention
+   is: don't pre-sort the input yourself, let the function sort once, invert that one sort
+   yourself. `notebooks/02`'s own `embed_motions_guo_batched` (and, per its own docstring, the
+   original SUP-88 measurement this project has cited since) pre-sorted the input by length
+   *before* calling the function — causing the function's own internal sort to run a SECOND time
+   on an already-sorted array. Numpy's default `argsort` is not stable, and **120 of this
+   project's own 128 generated motions share their length with at least one other sample** — so
+   the second sort could, and for exactly 4 samples did, permute tied elements differently than
+   the first sort, silently swapping which embedding landed at which position.
+5. Verified decisively: recomputed `notebooks/02`'s own actual R-Precision-top3 with the
+   double-sort removed (single sort, single correct inversion). Result: **0.7578 — an exact
+   match** to this project's own independently recorded target (E0b's own 0.7578) on the same 128
+   motions, not merely "within noise" as the notebook had concluded twice before (SUP-88, SUP-92,
+   both already marked CLOSED/accepted by the director).
+6. Also re-tested the *original* "batch-composition sensitivity" claim directly with the correct
+   calling convention (all 128 at once vs. four batches of 32, each called correctly): **zero
+   difference, to float precision, for every sample.** The Guo motion encoder is
+   batch-composition-invariant, same as the text encoder — the original claim (SUP-88's "second
+   bug," cited throughout this project and specifically requested by the director as an
+   established fact for notebook 08) does not hold up and was very likely the same class of
+   alignment bug, applied more severely, in an earlier, now-unrecoverable scratch test.
+**Files changed:** `notebooks/02_tmr_second_evaluator.ipynb` (fixed `embed_motions_guo_batched`'s
+double-sort; rewrote the acceptance-check cell, "What it means," and "What would change my mind"
+to state a fourth bug and the batch-composition correction explicitly rather than silently
+updating numbers under old text — matching this project's own established practice; re-executed,
+0 error cells, 2 images, confirmed visually). `docs/LANDMINES.md` (new section 25, the general
+pattern: sorting an already-sorted array a second time can silently swap tied elements — cites
+sections 20/22 as the same discipline in a new shape). `README.md` and `notebooks/README.md`
+(both cited notebook 02's now-stale numbers — 0.7266/r=0.304 — updated to the corrected exact
+match, 0.7578/r=0.328).
+**Self-critique:** this reopens a notebook already reviewed and closed twice by the director
+(SUP-88, SUP-92). Considered treating my own finding as tentative and flagging it rather than
+fixing it outright — declined, because the fix is unambiguous (a controlled, reproducible,
+multiply-cross-checked result: conv-alone invariant, GRU-alone invariant at realistic scale,
+full-pipeline invariant once called correctly, and the fixed number lands on an exact,
+independently-recorded target rather than merely "closer") and this project's own standing
+practice is to confront a contradiction the moment it is found, not sit on it. Also considered
+whether this correction itself might be wrong — mitigated by testing the mechanism from three
+independent angles (isolated conv, isolated GRU at scale, and the full pipeline) before touching
+any file, and by the fixed number's exact match to a target this notebook did not have access to
+tune toward.
+**Verification performed:** every diagnostic script run directly against the real vendored
+`EvaluatorMDMWrapper` and the real 128 cached generated motions (`artifacts/e0/
+e0b_generated_cache/`), not a synthetic toy, for the decisive tests; the GRU-isolation toy used
+realistic scale (batch=128, hidden=1024, seq_len=49) specifically to rule out a scale-dependent
+artifact; notebook 02 re-executed twice after edits, 0 error cells and 2 images both times;
+figures re-opened and visually confirmed (top-3 bars now visibly identical height for both
+evaluators).
+**Next:** proceeding to build `notebooks/08_pytorch_mps_silent_failures.ipynb` (the
+director-assigned task this investigation was originally part of), using the corrected
+understanding of item 4 (a double-sort/tie artifact, not a real batch-composition-sensitivity
+property) rather than the director's original framing.

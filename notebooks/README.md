@@ -44,13 +44,16 @@ should be read as implying official acquisition.
 ## 2. The evaluator's own limits
 
 - **[02_tmr_second_evaluator.ipynb](02_tmr_second_evaluator.ipynb)** — *Does a second, independent
-  evaluator (TMR) agree with this project's primary one (Guo et al.)?* **Yes, once three real bugs
-  were found and fixed** (wrong tokenization, motion-embedding batch-composition sensitivity,
-  missing evaluator-specific normalization) — Guo R-Precision-top3 lands at 0.7266 against this
-  project's own prior 0.7578 (0.59 SE, resolved), TMR at 0.7578, per-sample correlation between the
-  two evaluators rising from -0.006 to 0.304 across the three fixes. The notebook's *original*
-  headline ("the evaluators are uncorrelated") was itself an artifact of the bugs, corrected
-  explicitly in its own closing text rather than silently replaced. **Reviewed**
+  evaluator (TMR) agree with this project's primary one (Guo et al.)?* **Yes, once four real bugs
+  were found and fixed** (wrong tokenization, a double-sort that silently swapped a handful of
+  tied-length embeddings — found after two rounds of review had already closed this notebook, and
+  which also corrects an earlier claim that motion embeddings were batch-composition-sensitive;
+  they aren't — missing evaluator-specific normalization; see `docs/LANDMINES.md` §25) — Guo
+  R-Precision-top3 lands at an exact 0.7578, matching this project's own prior target to the
+  digit; TMR also at 0.7578; per-sample correlation between the two evaluators rising from -0.006
+  to 0.328 across all four fixes. The notebook's *original* headline ("the evaluators are
+  uncorrelated") was itself an artifact of the bugs, corrected explicitly in its own closing text
+  rather than silently replaced — twice now. **Reviewed**
   (`reviews/REVIEW_QUEUE.md` SUP-20260907-88/91/92, closed).
 
 ## 3. The conditioning finding

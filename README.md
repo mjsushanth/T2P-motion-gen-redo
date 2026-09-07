@@ -25,32 +25,44 @@ never pasted in from a prior run. Eight questions asked and answered so far.
    The wrong decode fails that check by five orders of magnitude.
 
 2. **[Is a standard motion-quality score (FID) trustworthy at small sample sizes?](notebooks/04_fid_covariance_rank_deficiency.ipynb)**
-   No. The same set of generated motions produces a score that varies several-fold depending on
-   how large the comparison set is — a fact about the metric, not about the motion.
+   No. Comparing real data against *equally real* data should score ~0; at 128 samples per side
+   it scores **1.577**, falling to **0.109** at 2,000 — a **14x** swing driven by sample size
+   alone. A fact about the metric, not about the motion.
 
 3. **[Does a second, independent evaluator agree with the primary one?](notebooks/02_tmr_second_evaluator.ipynb)**
-   Eventually, yes — but only after three real bugs in how the two were being compared were
-   found and fixed. Trusting a single evaluator without a cross-check would have shipped a wrong
-   conclusion.
+   Eventually, yes — but only after **four separate silent bugs** were found and fixed (one after
+   this notebook had already been reviewed and closed twice), moving the primary evaluator's score
+   from **0.352 to an exact 0.7578** — matching this project's own independently recorded target
+   to the digit. Before the fixes the two evaluators looked *uncorrelated* (r = −0.006);
+   afterwards they agree moderately (r = 0.328). Trusting a single evaluator without a cross-check
+   would have shipped an exactly backwards conclusion.
 
 4. **[Does the text encoder actually understand spatial language — "left," "right," "behind"?](notebooks/01_clip_spatial_blindness.ipynb)**
-   No. CLIP measurably struggles to tell spatial opposites apart, and spatial words appear in the
-   majority of real captions in this dataset — not a rare edge case.
+   No. Sentences differing only by *left* vs *right* sit measurably closer together than sentences
+   differing by a comparable non-spatial word — **Cohen's d = 0.995**, n = 40 per group, clearing
+   correction for multiple comparisons. And **57.6%** of this dataset's 24,503 captions contain
+   spatial vocabulary. Not a rare edge case.
 
 5. **[Is that blind spot caused by how the model reads CLIP's output, or is it inside CLIP itself?](notebooks/01b_pooling_probe.ipynb)**
-   Inside CLIP itself. A wiring fix on the reading side would not fix it.
+   Inside CLIP itself. The gap is **wider** in CLIP's per-token features (+0.111) than in the
+   pooled vector the model actually reads (+0.027) — so the obvious cheap fix, "stop pooling,"
+   would not fix it. A negative result that saved the cost of finding out the expensive way.
 
 6. **[Before comparing "spatial" vs. "non-spatial" captions, is that comparison even fair?](notebooks/05_spatial_subset_split.ipynb)**
-   Not without care — the two groups differ in caption length in a way that could easily be
-   mistaken for a spatial-language effect if nobody checked first.
+   Not without care. Spatial captions run **41% longer** (14.38 vs 10.19 words, d = 0.592) — a
+   difference that could easily be mistaken for a spatial-language effect. Found before any
+   training run, at the cost of one notebook.
 
 7. **[Could one specific training bug have quietly taught a model to ignore text completely?](notebooks/06_cfg_training_loss_collapse.ipynb)**
-   Yes — demonstrated directly on a rebuilt version of the bug. And its training loss looks
-   *better*, not worse, while this happens: exactly why a loss curve alone is never a result.
+   Yes — demonstrated directly on a rebuilt version of the bug. The conditioning pathway never
+   grows, and the broken objective converges to a **lower** training loss (0.090) than the correct
+   one (~0.3), because it has a degenerate solution that ignores the text entirely. **The loss
+   curve looks better while the model learns to ignore you** — exactly why a loss curve alone is
+   never a result.
 
 8. **[When two results differ by a handful of samples, is that a real effect?](notebooks/07_why_six_samples_is_not_a_finding.ipynb)**
-   No — rerunning the identical setup with only the random seed changed reproduces the same
-   "effect" out of pure chance.
+   No. Rerunning the identical setup with **only the random seed changed** reproduces the same
+   "effect" exactly: 38/128 vs 44/128, the same six-sample gap, from nothing but chance.
 
 <p align="center">
   <img src="notebooks/07_circularity_trap.png" alt="Required sample size explodes as the assumed effect size shrinks — the smaller the effect you assume, the more data you need to detect it" width="640">
@@ -77,6 +89,31 @@ searchable, dated, and meant to be read by whoever picks this up next:
 
 ---
 
+## What this rests on — stated plainly
+
+Three things a reader should know before reading any number above.
+
+**The generative model is not ours.** Where a trained text-to-motion model is needed — for the
+demo, and as the baseline everything is measured against — this project uses the **released MDM
+checkpoint** (Tevet et al., MIT-licensed), not a model trained here. That is deliberate: the
+question being asked is about *measurement and conditioning*, and borrowing a known-good model
+removes one variable. No full-scale training run has happened, and the status table below says so.
+
+**The dataset came from an unofficial mirror.** HumanML3D is derived from AMASS, whose licence is
+the reason the official repository ships *preprocessing scripts* rather than processed data. The
+copy used here is a third-party HuggingFace re-upload with **no licence and no attribution**.
+Integrity is strongly corroborated — ground-truth scores reproduce the published reference
+(0.797), and decoded bone lengths hold constant to 3.4e-07 across thousands of frames — but
+**provenance is undocumented**, which is a different claim from "verified source." Low practical
+risk for private study; it would need resolving before publication or redistribution.
+
+**Some findings are negative, and they are kept.** The pooling probe (#5) set out to confirm a
+cheap fix and refuted it instead. An earlier experiment was closed as underpowered rather than
+written up as a result. Those are recorded in the same place and the same detail as the positive
+findings, because a project that only reports what worked cannot be checked.
+
+---
+
 ## Status
 
 | Question | Where it stands |
@@ -99,4 +136,9 @@ searchable, dated, and meant to be read by whoever picks this up next:
 
 ## Hardware
 
-Apple Silicon. Runs on MPS, not CUDA.
+Apple Silicon throughout — MPS, not CUDA. Getting there was not free: the vendored code assumed
+CUDA-or-CPU in three separate places, each failing **silently rather than loudly**. Fixing them
+took training from 2.284 to 0.231 seconds per step (**9.9x**) and made the demo interactive
+(~10s per generated motion, from several minutes). Those bugs, and the general class of
+PyTorch mistakes that produce confident wrong numbers with no error, are catalogued in
+`docs/LANDMINES.md`.
