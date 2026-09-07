@@ -1,12 +1,13 @@
 # Notebooks — entry point
 
-Eight executed notebooks, each demonstrating one finding this project has already earned, in the
+Nine executed notebooks, each demonstrating one finding this project has already earned, in the
 six-layer structure (`reviews/NOTEBOOK_STYLE_GUIDE.md`): question, intuition, setup, measurement,
 what it means, what would change my mind. Every number in every notebook is produced by a cell in
 that notebook — none are pasted from `LEDGER.md` or `docs/`. Ordered below by argument, not by
 filename, so the arc reads in one pass: representation and the F1 bug, then the evaluator's own
 limits, then the conditioning finding, then the statistical discipline that governs how any of
-this should be trusted.
+this should be trusted, then a craft notebook on PyTorch/MPS fluency that stands apart from the
+research arc above it.
 
 **Review status, stated plainly per the reviewing session's own request:** "reviewed" means an
 independent reviewing session re-derived the notebook's numbers and opened its rendered figures
@@ -117,6 +118,25 @@ should be read as implying official acquisition.
   landed, had already re-derived every headline number in a separate scratch script against the
   raw artifact JSONs directly, and found and fixed one real figure defect
   and fixed — two overlapping annotation text boxes).
+
+## 5. Craft and fluency
+
+- **[08_pytorch_mps_silent_failures.ipynb](08_pytorch_mps_silent_failures.ipynb)** — *What does
+  PyTorch (and Apple Silicon's MPS backend specifically) get silently wrong, if you don't know to
+  check?* A craft notebook, not a motion-generation one, built at the author's request: nine real
+  specimens (a `(N,)` vs. `(N,1)` broadcasting bug that trains anyway; a device-selection function
+  that silently falls back to CPU; the identical cast-after-transfer bug independently present in
+  a second vendored file; a double-sort that silently swaps tied-length embeddings — found while
+  building this notebook, and the direct cause of notebook 2's fourth-bug correction above; a
+  normalization mismatch that flips a published-looking conclusion; a tokenization mismatch that
+  halved a headline metric with zero exceptions raised; RNG state silently consumed by an
+  unrelated diagnostic; `torch.tensor()`'s quiet copy-and-detach; and gradient accumulation from a
+  missing `zero_grad()`), each demonstrated wrong-way-next-to-right-way with real numbers, plus
+  three candidates tested directly and dropped when they didn't reproduce, stated as such. Closes
+  with five reusable habits — including this project's own invented batch-invariance check — that
+  cover every specimen in the catalogue. **Self-audited only — not yet independently reviewed**
+  (built and self-checked 2026-09-07: every printed claim backed by a runnable cell, one
+  self-referential false positive in its own verification code found and fixed before finalizing).
 
 ## A note on the self-audits above
 

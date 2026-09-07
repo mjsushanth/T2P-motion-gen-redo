@@ -14,7 +14,7 @@ the notebooks below.
 
 Every notebook answers exactly one question, end to end: the question, the intuition behind it,
 the measurement, and what it means — with every number computed live in the notebook itself,
-never pasted in from a prior run. Eight questions asked and answered so far.
+never pasted in from a prior run. Nine questions asked and answered so far.
 
 <p align="center">
   <img src="notebooks/03_skeleton_side_by_side.png" alt="A subtly wrong pose decode looks fine as a tangle of lines, and unmistakably wrong once rendered as a skeleton" width="720">
@@ -67,6 +67,12 @@ never pasted in from a prior run. Eight questions asked and answered so far.
 <p align="center">
   <img src="notebooks/07_circularity_trap.png" alt="Required sample size explodes as the assumed effect size shrinks — the smaller the effect you assume, the more data you need to detect it" width="640">
 </p>
+
+9. **[What do PyTorch and Apple's MPS backend get silently wrong, if you don't know to check?](notebooks/08_pytorch_mps_silent_failures.ipynb)**
+   A craft notebook, not a motion one: nine real specimens — a broadcasting bug that trains
+   anyway, a device-selection function that silently falls back to CPU, a fourth bug in the
+   evaluator notebook above (#3) that two rounds of review had missed — each shown wrong-way-
+   next-to-right-way, with the five habits that would have caught every one of them.
 
 Full index with figures and status: **[notebooks/README.md](notebooks/README.md)**.
 

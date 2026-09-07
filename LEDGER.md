@@ -3783,3 +3783,58 @@ evaluators).
 director-assigned task this investigation was originally part of), using the corrected
 understanding of item 4 (a double-sort/tie artifact, not a real batch-composition-sensitivity
 property) rather than the director's original framing.
+
+## [2026-09-07T11:15:00 UTC] Item 79 — notebooks/08: PyTorch/MPS silent-failures craft notebook (director-assigned, author-approved for larger scope)
+**Status:** complete
+**Acceptance criteria (director's message, restated):** a craft/fluency notebook, explicitly
+different in kind from every prior notebook — not motion-generation research, a programming
+study. Same six-layer structure and visual discipline; every claim demonstrated by a runnable
+cell, wrong-way-next-to-right-way, real numbers printed. Three parts: foundations that explain
+the later bugs' mechanisms, a catalogue of real silent-failure specimens (project-owned plus
+general PyTorch gotchas), and reusable habits that catch them. Explicit rule: verify every
+phenomenon by running it, drop and disclose anything that does not reproduce, distinguish general
+PyTorch traps from MDM-specific ones, and treat the director's own stated hypotheses (explicitly
+flagged as hypotheses, not facts) with the same skepticism as anything else.
+**What happened before any notebook content was written (already logged as Item 78):** testing
+the director's specific hypothesis for the batch-composition-sensitivity item (padding leakage
+through the conv encoder) led to discovering a fourth, previously-unfound bug in `notebooks/02`
+— a double-sort that silently swapped tied-length embeddings, closing that notebook's
+long-standing residual gap to an exact match. Notebook 02 was fixed, re-executed, and its own
+closing text rewritten before any of notebook 08 itself was built, so that notebook 08 could
+report the corrected mechanism rather than the (superseded) original claim.
+**Verified before writing, then built:** every Part 1 foundation item and every Part 2 specimen
+was run directly in a scratch script first (broadcasting, vectorization timing, dtype promotion,
+the MPS float64 crash — confirmed loud, not silent, and stated as such — `.to()` copy semantics,
+`view`/`reshape` contiguity, `eval()`/`no_grad()` independence, the float64-cast-order
+bit-identical proof, `dist_util.dev()`'s CPU fallback, the double-sort/tie mechanism at realistic
+scale, denormalization mismatch, tokenization mismatch, RNG-state consumption, `torch.tensor()`
+copy-and-detach, gradient accumulation). Three director-suggested candidates were tested and
+dropped, each with its own runnable cell showing why: `pack_padded_sequence` with unsorted
+lengths raises a loud `RuntimeError` (not silent); `argsort` tie-breaking agreed exactly between
+CPU and MPS in the tested case; the classic "in-place op corrupts a needed autograd value"
+construction did not fail for the specific op sequence tested (the gradient formula involved
+didn't depend on the modified value) — replaced with gradient accumulation from a missing
+`zero_grad()`, a cleaner and more common specimen in the same neighborhood.
+**Self-caught defect, found during its own verification pass (before calling this done):**
+section 2.3's own verification cell (checking whether two other files with the same anti-pattern
+are actually reachable from this project's code) initially grepped `../notebooks/` as part of its
+"is this imported anywhere" check — which matched **this notebook's own file**, since it
+necessarily contains the strings "trainers.py" and "simplify_loc2rot.py" as plain text in its own
+markdown/code. This produced a false "yes, imported" result that contradicted a direct manual
+check done earlier. Caught by noticing the contradiction rather than trusting the printed output;
+fixed by searching for actual import statements in `.py` files only, excluding the notebook
+itself; re-verified against both files' real import status (neither is imported by any of this
+project's own scripts, demo, or notebooks — `simplify_loc2rot.py` needs a `smplx` dependency this
+project never uses, having built its own skeleton renderer in `notebooks/03` instead).
+**Files changed:** `notebooks/08_pytorch_mps_silent_failures.ipynb` (new, 62 cells, 9 catalogue
+specimens, 3 dropped-and-disclosed candidates, 5 reusable habits, 6 foundational demonstrations).
+`README.md` and `notebooks/README.md` (added the ninth notebook to both indexes).
+**Verification performed:** notebook executed via `jupyter nbconvert --execute` four times across
+the build (initial syntax-error fix for a nested-triple-quote collapse — the same class of
+authoring bug this project has hit before when building notebook builder scripts; the
+dropped-candidates cells added; the section 2.3 self-reference bug found and fixed); confirmed 0
+error cells at every stage; read every printed output against the intended claim before
+finalizing, catching the self-reference bug in exactly this step.
+**Next:** per the standing instruction, continuing on my own judgement. This closes the
+director's most recently assigned task; will watch for further direction and re-scan
+`reviews/REVIEW_QUEUE.md`/`guidance/` if nothing arrives before self-selecting again.
