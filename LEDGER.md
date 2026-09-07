@@ -3890,3 +3890,74 @@ than by an accidental force-push or silent overwrite.
 **Files changed:** `docs/EXPERIMENT_DESIGN_E2.md` only. `README.md` deliberately untouched.
 **Next:** will continue monitoring for the director's actual `README.md` push (if and when it
 lands) and reconcile numbers then if needed, rather than preempting it now.
+
+## [2026-09-07T12:00:00 UTC] Item 81 — end-of-day wrap-up: outstanding work committed, demo server stopped, closing state recorded
+**Status:** complete — the author is closing the day; this entry is written so tomorrow starts
+from a written position, not from anyone's memory of tonight
+**Context:** the director's closing message confirmed two things worth recording plainly: git
+commits are, and remain, authorised (a prior "no commits" instruction the director had been
+enforcing was itself stale — the author confirmed the authorisation directly, and this session's
+own practice of committing after each unit of work was correct throughout); and Item 80's
+catch (declining to touch `README.md` after finding the director's described edit rested on
+pre-correction numbers) was accepted as correct and logged on the director's own side as
+SUP-20260907-100, which also confirms notebook 08's section 2.4 already reflects the corrected
+double-sort/tie understanding (verified again below, since the director's spec for that section
+predates Item 78's finding).
+**Verified before considering it done:** grepped `notebooks/08_pytorch_mps_silent_failures.ipynb`
+directly for its own section 2.4 text — confirmed it already opens with "This section was
+rewritten after this notebook's own construction found a fourth bug..." and states the corrected
+mechanism (double-sort/tie artifact, not genuine batch-composition sensitivity) throughout,
+including the exact 0.7266 -> 0.7578 number. No rebuild was needed; this was already correct
+from Item 79, before the director's closing message asked for it.
+**Actions taken:**
+1. **Stopped the demo server** (`demo/app.py`, PID 78693, up 9h14m) — confirmed the process no
+   longer exists after `kill`.
+2. **Committed all outstanding work**, grouped by territory rather than as one dump, per the
+   director's own suggestion to group however reads best in the log:
+   - `notebooks/01_clip_spatial_blindness.ipynb` + its three new figures (`01_fig_corpus.png`,
+     `01_fig_design.png`, `01_fig_results.png`) — the director's own revamp under its
+     author-granted scoped override on this one file; committed as-is, not edited by this
+     session.
+   - `guidance/RESEARCH_D_gpu_procurement.md`, `guidance/RESEARCH_E_novel_directions.md` —
+     collaborator-produced research; committed as-is, with an explicit pointer to
+     `guidance/VERIFICATION_NOTE.md` in the commit message so these are never read unqualified.
+   - `reviews/REVIEW_QUEUE.md`, `reviews/SUPERVISOR_LOG.md`, `reviews/NOTEBOOK_STYLE_GUIDE.md`,
+     and four `REFERENCE_*` files (skeleton-render fix, bone-length CV-axis fix, pooling probe
+     reference implementation) — reviewer territory, committed as-is.
+   All three pushed; working tree confirmed clean (`git status --short` empty) before writing
+   this entry.
+**Files changed:** none directly by this entry; three commits made in the actions above
+(`42faac7`, `9fba764`, `f15256e`).
+
+---
+
+### Closing state, 2026-09-07 — for whoever reads this next
+
+**What exists now:** nine executed notebooks (01, 01b, 02-08), each with 0 error cells, covering
+representation/metric traps (03, 04), evaluator cross-validation (02), the spatial-language
+conditioning finding (01, 01b, 05), the archived project's own root-cause training bug (06), the
+statistical discipline this project runs on (07), and a general-purpose PyTorch/MPS craft
+notebook (08). `notebooks/README.md` indexes all nine with reviewed/self-audited status stated
+explicitly. `docs/EXPERIMENT_DESIGN_E2.md` is a complete, twice-reviewed, pre-registered design
+for the next experiment (a small adapter repairing CLIP's measured spatial-language weakness),
+costed against this machine's own directly-measured hardware (~1.2h for the affordable design,
+~338 samples/arm/subset; ~7.3h for the full-subset design; Kaggle demoted to a contingency only).
+`docs/LANDMINES.md` carries two new entries from tonight (§24: a gradient-amplification
+correction to §11's "no gradient pressure" claim; §25: the double-sort/tie pattern that cost
+notebook 02 a fourth bug post-closure). The root `README.md` is mid-reconciliation between this
+session's own commits (which include the corrected notebook 02 number, 0.7578, and the ninth
+notebook) and a director-side edit described but not yet pushed as of this entry (Item 80) — check
+`git log` on `README.md` specifically before trusting its current content is the intended final
+version.
+
+**The single open decision, explicitly not this session's or the director's to make:** whether to
+actually run E2 — on this machine, ~1.2 hours for the affordable design or ~7.3 hours for the
+full-subset design, both now measured against real local hardware, not a hypothetical — or to
+stop the research programme at the nine completed, reviewed/self-audited notebooks as a complete,
+defensible body of work on its own. Everything upstream of that decision (the finding motivating
+it, the design, the power calculation, the compute cost, the regression control) is specified and
+committed. Nothing downstream of it has been started, and nothing should be, without the author's
+own direct word.
+
+**Repo state:** working tree clean, all local commits pushed to `origin/main`, demo server
+stopped, no compute running.
