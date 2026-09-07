@@ -3140,3 +3140,41 @@ left describing an earlier, superseded state.
 ordering: confirm SUP-87's CV-chart fix is still correctly in place (already fixed and pushed in
 Item 64, prior to this session's most recent messages — should be re-verified, not assumed
 current), then SUP-89's n=40 pooling-probe extension.
+
+## [2026-09-07T05:55:00 UTC] Item 67 — notebooks/01b: pooling probe scaled to n=40 (SUP-20260907-89)
+**Status:** complete
+**Acceptance criteria:** the director's own n=8 pilot (`reviews/REFERENCE_pooling_probe.py`)
+found that MDM's per-token CLIP features show the SAME spatial-blindness pattern as the pooled
+vector notebook 01 already established — suggesting "switch to per-token features" is probably
+not a fix, but n=8 with every p>0.19 could not confirm it. Requested: re-run at this project's
+own n=40 pair sets (reused from notebook 01, not a fresh set) and report whichever way it lands.
+**Verified before building:** confirmed my recalled copy of notebook 01's own 40 spatial / 40
+non-spatial-modifier pairs is byte-for-byte identical to the director's current (revamped)
+notebook 01 (extracted and diffed programmatically — only a tuple-vs-list JSON artifact, zero
+content differences) before claiming reuse rather than re-derivation.
+**Files changed:** `notebooks/01b_pooling_probe.ipynb` (new — a separate notebook, not a section
+appended to notebook 01, since notebook 01 is the reviewing session's own territory per the
+author's override, Item 60). Same six-layer structure as this session's other notebooks; the
+pilot's own three-representation method (pooled/mean-over-tokens/most-divergent-token) unchanged,
+scaled to n=40, with Bonferroni correction and both sided p-values added (this project's own
+established statistical discipline, not in the original n=8 pilot).
+**Result: the pilot's finding is confirmed, not just suggested.** All three representations show
+spatial pairs less separated than non-spatial-modifier controls, and the gap **grows**, not
+shrinks, moving from pooled (+0.0265, d=+0.995) to most-divergent-token (+0.1106, d=+0.724) — all
+three comparisons significant even after Bonferroni correction (threshold 0.0167; largest p=0.00023).
+**Pooling is not the cause of the spatial-blindness finding; CLIP's per-token representations are
+already spatially weak before any pooling happens.** The practical implication: "switch MDM to
+per-token CLIP features" would likely add general signal but should not be proposed as a fix
+specifically for the spatial deficit — a real, negative result that heads off an expensive wrong
+turn, reported as such per the task's own explicit instruction to report whichever way it lands.
+**Verification performed:** notebook executed via `jupyter nbconvert --execute`, confirmed 0 error
+cells and 1 embedded image; cross-checked the "pooled" row's numbers (0.9707/0.9442/+0.0265/
+d=0.995) against notebook 01's own already-published pooled-representation numbers — exact match,
+confirming this notebook computes the pooled case identically to notebook 01 rather than by a
+subtly different method.
+**Next:** with the residual-gap investigation (Item 66), SUP-87 re-verification, and this pooling
+probe all complete, all currently-known open items from the director's review queue are
+addressed. Awaiting further direction — the strategic context relayed (free Kaggle compute,
+pretrained-checkpoint-plus-modification direction, three already-published approaches not to
+re-propose, and the unlicensed-dataset-provenance note) is noted for future planning, nothing
+actioned on it yet since no specific task was assigned against it.
