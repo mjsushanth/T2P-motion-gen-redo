@@ -207,45 +207,46 @@ Stated before any run, so a disappointing result cannot be re-narrated afterward
 
 ## 7. Compute plan
 
-**Free tier: Kaggle, ~30 GPU-hours/week, P100 (16GB) or T4x2 (32GB), 9-hour session cap, no
-credit card** (per the relayed strategic context, `LEDGER.md` Item 67 — not independently
-re-verified by this session; treat as UNVERIFIED until this project itself confirms it directly
-against Kaggle's own current documentation before relying on it for a real run).
+**Corrected (2026-09-07, author-directed, relayed via the director): E2 runs on this machine,
+not Kaggle.** The earlier version of this section costed E2 against Kaggle's free tier and
+treated this machine's own measured rate as a lower-bound translation toward unmeasured GPU
+hardware. The author's own question, relayed exactly: why leave a validated instrument for an
+unvalidated one? This machine has already paid, three times over, to close a silent-failure
+surface on the MPS path (D-27/D-28, `docs/LANDMINES.md` §7; the E0a device-parity gate, 4e-8
+device delta against a 2.7e-3 seed-noise floor) — moving to Kaggle would mean re-establishing the
+dataset, re-running that gate on unfamiliar hardware, and re-opening exactly the class of defect
+this project has spent the most effort eliminating, to chase a hypothetical GPU speedup nobody
+has measured. **Kaggle is the contingency if E2 grows past what this machine affords, not the
+plan.**
 
-**This project has never measured a GPU rate directly — every number below is a translation from
-this project's own Mac CPU/MPS measurements (D-27/D-28), not a fresh measurement, and is labeled
-as such.**
+**Every number below is this project's own directly measured local rate (D-27/D-28: 3.15
+s/sample, batch 32, 1000 diffusion steps, `trans_enc` 17.9M-param architecture, the same
+architecture this design reuses unchanged) — not a translation to different hardware, so none of
+the GPU-generation-rate uncertainty the earlier version of this section carried applies anymore.**
 
-- **Adapter training (the cheap part).** A single linear layer, a few thousand synthetic pairs,
-  a contrastive loss with no motion data involved at all — this is a small classification-scale
-  training job, plausibly under an hour on any GPU tier Kaggle offers, including the 2016-era
-  P100. **Unmeasured; should be timed directly in the first few minutes of the first Kaggle
-  session, not assumed**, before committing to a specific n of synthetic pairs.
-- **Generation (the expensive part, dominates cost per D-28's own finding for this exact
-  architecture).** This project's own measured MPS rate is 3.15 s/sample (D-27/D-28, batch 32,
-  1000 diffusion steps, `trans_enc` 17.9M-param architecture — the same architecture this design
-  reuses unchanged). A P100/T4 GPU should be substantially faster than Apple Silicon MPS for this
-  workload, but **by how much is not measured by this project and should not be assumed** — the
-  relayed strategic context's own caveat (a P100 is 2016 Pascal with no bf16, so an RTX-5090-based
-  hour estimate needs inflating 2-4x) cuts the other way for a *CPU-based* estimate translated
-  *up* to a GPU: treat any pre-run estimate here as order-of-magnitude only.
-  - At this project's own MPS rate (3.15 s/sample) with no GPU speedup assumed at all (the most
-    conservative floor): generating the full spatial subset (2,448 samples) would cost ~2.1
-    CPU/MPS-hours; the non-spatial subset (1,750) ~1.5 hours; both arms (baseline + treatment)
-    roughly double this, ~7.3 hours total generation, comfortably inside one week's 30-hour
-    Kaggle allocation even at zero GPU speedup, and likely a real overestimate given P100/T4 GPUs
-    should outperform CPU-bound MPS meaningfully for this workload — measure this on the first
-    Kaggle session before finalizing which n to actually run.
-  - The 9-hour session cap constrains a single run's *length*, not the total weekly budget —
-    if a full-subset generation run exceeds 9 hours, it must be checkpointed and resumed across
-    sessions (a real engineering requirement, not yet designed — needed regardless of whether
-    this specific experiment ever runs, since any future full-budget training run has the same
-    requirement, per the relayed strategic context's own note).
-- **Total estimated compute for this design as specified: comfortably inside one week's free
-  Kaggle allocation, likely with room to spare** — but every number above is a translation from
-  Mac-measured rates to unmeasured GPU hardware, stated as an estimate, not a measurement, and the
-  first real Kaggle session should measure the actual GPU rate before any full-subset run is
-  committed to.
+- **Adapter training (the cheap part).** A single linear layer, a few thousand synthetic pairs, a
+  contrastive loss with no motion data involved at all — a small classification-scale training
+  job. Unmeasured on this specific setup; should be timed directly in the first few minutes of an
+  actual run, not assumed, before committing to a specific n of synthetic pairs. Expected to be
+  minutes, not hours, given the parameter count involved (a single linear layer, not the 17.9M
+  diffusion model).
+- **Generation (the expensive part, per D-28's own finding for this exact architecture).**
+  - **The affordable design** (§5's own MDE table: ~338 samples/arm/subset detects the pilot's
+    hypothesis-motivated effect at 3σ): 338 samples × 2 subsets (spatial, non-spatial) × 2 arms
+    (baseline, treatment) = 1,352 generations × 3.15 s/sample ≈ **1.2 hours, one sitting, on this
+    machine.**
+  - **The full-subset design** (every available caption generated once, no sampling): 4,198
+    captions/arm (2,448 spatial + 1,750 non-spatial) × 2 arms = 8,396 generations × 3.15 s/sample
+    ≈ **7.3 hours — one overnight run, still on this machine**, and the version that gets closest
+    to the tighter end of §5's MDE range rather than the affordable-design floor.
+  - No session-length cap, no re-established dataset, no new device-parity gate to pass: this is
+    the same hardware, same environment, same evaluator instance every other number in this
+    project has already been checked against.
+- **Total estimated compute for this design as specified: 1.2-7.3 hours depending on which n is
+  chosen, entirely on this machine, in one sitting or one overnight run.** Kaggle's free tier
+  (~30 GPU-hours/week, P100/T4x2, 9-hour session cap — `LEDGER.md` Item 67, still UNVERIFIED
+  against Kaggle's own current documentation) remains a documented fallback only if a future,
+  larger version of this design outgrows what a single local run affords.
 
 ## 8. What this design does not claim
 
@@ -258,7 +259,7 @@ as such.**
   requires the same sign-off every other training run in this project requires, per
   `CLAUDE.md`'s own standing authorization scope.
 
-**Would reverse if:** the power calculation (§5), once affordable n is actually measured on
-Kaggle (§7), shows an MDE larger than any effect size worth caring about — in which case this
+**Would reverse if:** the power calculation (§5), once affordable n is actually measured on this
+machine (§7), shows an MDE larger than any effect size worth caring about — in which case this
 design should be shelved with that conclusion stated plainly, the same way D-26/D-28 shelved E1B's
 generation-side comparison, rather than run anyway "to see."

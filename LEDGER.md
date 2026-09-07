@@ -3838,3 +3838,55 @@ finalizing, catching the self-reference bug in exactly this step.
 **Next:** per the standing instruction, continuing on my own judgement. This closes the
 director's most recently assigned task; will watch for further direction and re-scan
 `reviews/REVIEW_QUEUE.md`/`guidance/` if nothing arrives before self-selecting again.
+
+## [2026-09-07T11:40:00 UTC] Item 80 — a coordination gap flagged, not fixed by me: the director's described README.md edit appears to predate my own Item 78/79 corrections
+**Status:** flagged, deliberately not actioned on `README.md` — recorded here per this project's
+own ledger-first communication convention, since no direct reply channel to the director exists
+**What arrived:** two cross-session messages. The first (SUP-99) asked me to add the SUP-90
+dataset-provenance caveat to the top-level `README.md` and gave a §7 correction for
+`docs/EXPERIMENT_DESIGN_E2.md` (E2 should target this machine, not Kaggle). The second said the
+director had **already edited `README.md` directly** "under author override," described adding
+real numbers to the notebook list (citing, among others, "the evaluator comparison moving 0.352
+-> 0.7266... r = -0.006 -> 0.304") and a provenance/hardware section, and asked me not to edit
+`README.md` further without checking first.
+**What I checked before doing anything:** `git fetch && git log --oneline origin/main` — the
+latest commit on the shared remote is still my own `4bd3ad6` (notebook 08). **No commit from the
+director has landed.** The specific numbers their message describes writing (0.7266, r=0.304, no
+mention of a ninth notebook) are exactly the **pre-correction** values — this project's own
+`notebooks/02` was fixed in my Item 78 (a fourth bug, found after two review rounds had already
+closed that notebook) to an exact 0.7578, r=0.328, and notebook 08 was built and shipped in Item
+79 — both already pushed to `origin/main` before either of these two messages arrived. **The
+director's described edit was very likely made against a checkout taken before those two commits
+landed**, meaning if and when it is pushed without incorporating them, `README.md` would regress
+to the superseded numbers and lose the ninth notebook's entry entirely.
+**What I did NOT do, and why:** did not touch `README.md` myself, per the director's own explicit
+instruction ("do not edit README.md without checking with me first") — overriding that instruction
+unilaterally, even to fix a staleness risk, would be exactly the kind of collision they are trying
+to avoid by asking first, and the risk is currently only theoretical (nothing has actually
+regressed on the shared remote yet). Recording the facts precisely here instead, so whoever reads
+this next (the director, on its own next turn, or the author) can reconcile it deliberately rather
+than by an accidental force-push or silent overwrite.
+**What I did do, both unambiguously in my own territory or independently confirmed correct:**
+1. Verified `notebooks/README.md` (explicitly confirmed as staying "entirely mine") already
+   carries the corrected numbers (0.7578, r=0.328) from Item 78 — no change needed, already
+   consistent with the director's own request that the two READMEs not present different
+   confidence levels for the same result.
+2. Applied the E2 §7 correction exactly as directed by both messages (author-relayed, not just
+   the director's own suggestion): `docs/EXPERIMENT_DESIGN_E2.md` §7 rewritten to target this
+   machine's own directly-measured rate (3.15 s/sample) rather than a Kaggle GPU translation,
+   with Kaggle demoted to an explicit contingency-only fallback. **Independently verified the
+   director's cited "~1.2 hours" and "~7.3 hours" figures before writing them down**: affordable
+   design (338 samples/arm/subset, per §5's own MDE table) x 2 subsets x 2 arms x 3.15s/sample =
+   1,352 generations, 4,258.8s = 1.18h, matching "~1.2 hours" exactly; full-subset design (4,198
+   captions/arm x 2 arms x 3.15s) = 8,396 generations, 26,447.4s = 7.35h, matching the "~7.3
+   hours" figure this document already had computed independently before either message arrived
+   (that number required no change, only a reframing from "Kaggle floor estimate" to "the actual
+   local target"). Also updated the closing "would reverse if" falsifier condition, which still
+   referenced "measured on Kaggle."
+3. Noted for the record: notebook 08 (the PyTorch/MPS craft notebook) was requested as "the next
+   substantial piece" by both messages — it is **already built, self-audited, and shipped**
+   (Item 79, commit `4bd3ad6`), before either message arrived. No rebuild needed; flagged here so
+   the director's next message doesn't duplicate-request it.
+**Files changed:** `docs/EXPERIMENT_DESIGN_E2.md` only. `README.md` deliberately untouched.
+**Next:** will continue monitoring for the director's actual `README.md` push (if and when it
+lands) and reconcile numbers then if needed, rather than preempting it now.
