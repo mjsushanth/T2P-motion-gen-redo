@@ -3178,3 +3178,33 @@ addressed. Awaiting further direction — the strategic context relayed (free Ka
 pretrained-checkpoint-plus-modification direction, three already-published approaches not to
 re-propose, and the unlicensed-dataset-provenance note) is noted for future planning, nothing
 actioned on it yet since no specific task was assigned against it.
+
+## [2026-09-07T06:10:00 UTC] Item 68 — notebooks/03, 04: explicit cross-checks against existing project numbers added (SUP-20260907-92's carry-forward lesson)
+**Status:** complete
+**Acceptance criteria:** the director's retrospective on notebook 02's three-bug investigation
+(SUP-92) named the general lesson: three silent mis-scalings compounded into a confident,
+backwards conclusion, and the only reason any of it surfaced was an internal consistency check
+against one of this project's own prior numbers — not review, not tests. Requested going
+forward: whenever a notebook produces a headline number, print an explicit cross-check against
+an existing number in this project, where one exists. Named two concrete targets: notebook 04
+against `LANDMINES.md` #14's three FID values; notebook 03's bone lengths against the dataset's
+own prior measurement.
+**Files changed:** `notebooks/03_263d_representation_and_f1_bug.ipynb` (added a printed
+cross-check comparing this notebook's fresh 40-motion measurement against `FORENSICS.md` F1's
+original 250-streamed-sample measurement — mean CV 24.49% here vs. 25.81% there, max 69.87% vs.
+81.70%, different data, same order of magnitude and same worst-bone identity). `notebooks/04_...`
+(added a cell computing actual FID between the 128 cached generated motions and the loaded
+n=4640 fixed reference, cross-checked against `LANDMINES.md` #14's three prior values).
+**Self-critique defect found and fixed before finalizing:** the first version of the notebook 04
+cross-check used a naive `min <= x <= max` range check against the three LANDMINES values, which
+printed "falls outside" for a value that was actually an exact match (3.2909, matching round 3's
+own value to within float rounding) — because round 3 used the identical fixed reference this
+notebook also loads, so an exact match was the CORRECT expected outcome, not a range-membership
+question. Caught by noticing the printed "outside" contradicted the visibly-identical numbers,
+not by re-running blindly; rewrote to name which of the three prior rounds is expected to match
+exactly (round 3) and why, rather than treating all three as a single range to fall inside.
+**Verification performed:** both notebooks re-executed via `jupyter nbconvert --execute` after
+each change; confirmed 0 error cells and correct image counts; read the actual printed
+cross-check output each time rather than assuming the fix worked.
+**Next:** per the director's own summary, the notebook queue is otherwise clear; the next real
+decision belongs to the author.
