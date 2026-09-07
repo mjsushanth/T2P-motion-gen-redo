@@ -2998,3 +2998,30 @@ verdict").
 open review finding against them. Report back; await further direction (the director mentioned an
 approved further notebook series — 263-d/F1 already done as 03, FID rank-deficiency already done
 as 04, plus a new F6 CFG-in-loss proof not yet started).
+
+## [2026-09-07T04:30:00 UTC] Item 64 — notebooks/03: third figure defect (SUP-20260907-87), the all-bones CV bar chart's blue bars were never visible
+**Status:** complete
+**Acceptance criteria:** the director retracted their own earlier endorsement of
+`03_bone_length_cv_all_bones.png` (SUP-85/its follow-up had cited this figure as the correct
+pattern to fix the histogram toward) after actually opening the rendered PNG rather than reading
+the plotting code: `symlog` at default `linthresh` crushed the correct-decode CV values
+(~0.00007% mean) into sub-pixel height against the wrong-slice values (9-70%), so **no blue bars
+render anywhere in the figure**, even though the legend lists `recover_from_ric` — a reader would
+plausibly conclude the series was never plotted, not that it is near-zero.
+**Independently verified before fixing:** opened the actual rendered PNG myself (not assumed from
+the finding's description) — confirmed zero visible blue bars across all 21 bones, exactly as
+reported.
+**Files changed:** `notebooks/03_263d_representation_and_f1_bug.ipynb` (the CV bar chart:
+`ax2.set_yscale("symlog")` → `ax2.set_yscale("log")` with an explicit `ax2.set_ylim(floor, ...)`,
+floor computed one decade below the smallest real correct-decode CV rather than left to
+matplotlib's default; title updated to state the actual mean CV number directly, `0.00007%`, not
+just "near-zero").
+**Verification performed:** re-executed the notebook (`jupyter nbconvert --execute`), confirmed 0
+error cells, then opened the resulting PNG directly and confirmed blue bars are now visible for
+every one of the 21 bones, roughly five orders of magnitude below red — the actual comparison
+this figure exists to show, now actually shown. This is the third figure-level defect found
+against this specific notebook in one review pass (histogram, layout diagram, this bar chart) —
+all three are now fixed and independently visually re-confirmed, not just re-executed.
+**Next:** all three of my assigned notebooks (02/03/04) address every review finding raised
+against them so far, each fix visually re-confirmed by opening the actual rendered image, not
+inferred from a clean execution or from reading plotting code.

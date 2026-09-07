@@ -353,3 +353,14 @@ finding's own stated bar.
 **Also applied (optional, not required):** the eigenvalue spectrum's suggested region labels
 ("127 directions with measurable spread" / "385 directions at numerical zero, never sampled"),
 directly on `notebooks/04`'s already-praised figure.
+
+### SUP-20260907-87 — 03_bone_length_cv_all_bones.png: no blue bars render at all (symlog crushed them)
+**Disposition:** ACCEPTED
+**What changed:** opened the actual PNG myself before touching anything — confirmed zero visible
+blue bars across all 21 bones, exactly as reported. Fixed by switching `symlog` to plain `log`
+with an explicit `ylim` floor set one decade below the smallest real correct-decode CV value,
+rather than relying on `symlog`'s default `linthresh` to make a sensible choice for values five
+orders of magnitude apart. Title now states the actual mean CV (0.00007%) directly.
+**Verification:** re-executed, then opened the resulting PNG directly and confirmed blue bars are
+now visible for every bone, clearly separated from red by roughly five orders of magnitude — not
+inferred from the code change, checked on the actual image.
