@@ -79,11 +79,12 @@ Generation uses **MDM's own released checkpoint** (MIT license, GuyTevet/motion-
 finding fairly if shown here.
 
 **The relative quality of the two panes below cannot be attributed to truncation** — that
-comparison was tested directly (E1B) and found statistically unresolvable at any sample size
-this hardware affords (0.80σ; resolving it would need ~1,780 generated samples per arm per
-seed, ~9 CPU-hours each). The retrieval panes above are this demo's actual evidence; the panes
-below just show what a real generator does with each caption. **Each generation takes several
-minutes** (CPU-only, 1,000 diffusion steps, no GPU available).
+comparison was tested directly (E1B) and found a bounded null at this project's affordable
+sample size (`docs/DECISIONS.md` D-28: effects ≥0.175 excluded at 3σ). The retrieval panes above
+are this demo's actual evidence; the panes below just show what a real generator does with each
+caption. **Each generation takes about 10 seconds** (MPS, `docs/DECISIONS.md` D-27/D-28 — this
+was several minutes on CPU before MPS training/generation was validated; measured directly,
+click to rendered video, not assumed from the batch-32 rate elsewhere in this project).
 """
 
 
@@ -221,7 +222,7 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
     gr.Markdown(GENERATION_MD)
     with gr.Row():
         seed_box = gr.Number(label="Seed", value=10, precision=0, scale=1)
-        generate_btn = gr.Button("Also generate (several minutes)", scale=1)
+        generate_btn = gr.Button("Also generate (~10s each, MPS)", scale=1)
     generation_note_md = gr.Markdown()
     with gr.Row():
         with gr.Column():

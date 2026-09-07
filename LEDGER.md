@@ -2569,3 +2569,70 @@ cell's actual output text directly (not assumed from the code) before writing th
 arXiv:2305.00976, actually obtainable — code, checkpoint, license — ~20 minutes, do not start
 building the notebook yet) is the next item, per the explicit ordering in the author-directed
 instructions.
+
+## [2026-09-07T01:15:00 UTC] Item 54 — SUP-80 fix verified live; real MPS generation timing measured cleanly
+**Status:** complete
+**Acceptance criteria:** confirm the `demo/app.py` bugfix (Item 51) produces two genuinely
+different videos when driven live in a browser, on the exact click order that exposed the
+original bug (generate without retrieval first); get a real, uncontaminated single-sample MPS
+generation wall-clock time for the UI copy.
+**First attempt was contaminated, as the director flagged:** a concurrent click from the
+reviewing session's own browser session landed on the same Gradio queue as mine (also a port
+collision — 7860 was briefly held by an unrelated `http.server` the reviewing session was using
+to validate a detector; the restarted demo fell back to 7861, and the earlier port is free again
+now). That run's *correctness* was still valid — full caption "a person walks forward and then
+sits down on a chair" (md5 `9ce89536...`), truncated "a person walks forward" (md5 `3b14e611...`)
+— two different mp4s under two different captions, confirming the fix — but its *timing* was
+discarded per the director's own warning, not used anywhere.
+**Clean re-run, single click, verified nothing else on the queue (`lsof -i :7861`) first:**
+caption "a person kneels down and then stands back up" -> full/"a person kneels down and then
+stands back up" done in **10.3s** from click, truncated/"a person kneels down" done in **21.3s**
+total for both. Measured from the actual output file mtimes against the JS click timestamp, not
+from server stdout (which buffers unpredictably, per Item 51's own lesson).
+**Files changed:** `demo/app.py` (button label "Also generate (several minutes)" ->
+"Also generate (~10s each, MPS)"; `GENERATION_MD` updated to state the measured ~10s figure and
+to cite D-28's bounded-null framing instead of the retracted "unresolvable" language).
+**Environment changes:** none (demo server already running on the patched code from Item 51).
+**Verification performed:** file-mtime-based timing (not log-based), md5sum difference check,
+results.txt content check — all direct, not asserted from the earlier contaminated run.
+**Next:** report to the director that SUP-80 is closed (verified live, real timing measured).
+
+## [2026-09-07T01:20:00 UTC] Item 55 — Task 2 feasibility gate: TMR is obtainable, low integration friction. Stopping here per instructions, notebook NOT started.
+**Status:** complete
+**Acceptance criteria:** ~20 minutes, answer only whether TMR (arXiv:2305.00976) is actually
+obtainable — public code, a downloadable checkpoint, and its license. Explicitly instructed not
+to start building `notebooks/02_tmr_second_evaluator.ipynb` regardless of the answer.
+**Answer: YES, obtainable, with unusually low integration friction for this project specifically.**
+- **Code:** `github.com/Mathux/TMR`, official implementation by the paper's own authors
+  (Petrovich/Black/Varol), 309 stars, not archived, last pushed 2023-12-11.
+- **License:** MIT (confirmed via `gh api repos/Mathux/TMR` — `license.spdx_id: MIT`).
+- **Checkpoint:** `prepare/download_pretrain_models.sh` downloads a pretrained-weights archive
+  from Google Drive (file id `1n6kRb-d2gKsk8EXfFULFIpaUKYcnaYmm`) via `gdown`, with a published
+  md5sum for integrity checking. **Verified the link is live** (`curl` returns HTTP 200 and
+  Google Drive's expected large-file "virus scan warning" interstitial, not a dead-link or
+  permission-denied page) — not merely assumed from the README existing.
+- **Data-format compatibility — the actual reason this is low-friction:** TMR's own `DATASETS.md`
+  states its `guoh3dfeats` motion representation is, for motions under 10s, **bit-identical** to
+  HumanML3D's own released `new_joint_vecs/*.npy` files (the author's own stated sanity check:
+  `np.abs(new - old).mean() < 1e-10`). This project's E0b generations and ground-truth motions
+  are already stored in exactly that format
+  (`third_party/motion-diffusion-model/dataset/HumanML3D/new_joint_vecs/`). **Re-scoring the
+  existing E0b generations would not require touching AMASS or recomputing any features** — the
+  README's own worked example uses the identical path convention this project already has:
+  `text_motion_sim.py run_dir=RUN_DIR text=TEXT npy=/path/to/motion.npy`, demonstrated in the
+  README against `HumanML3D/HumanML3D/new_joint_vecs/001034.npy`.
+**Not yet checked (deliberately, per the 20-minute scope):** whether the pretrained checkpoint's
+own `requirements.txt` (pytorch_lightning, hydra-core, einops, orjson) installs cleanly in
+`mjs_mlcvdl_unified_m5` without dependency conflicts; whether inference forces CUDA anywhere in
+the loading path; the actual runtime of scoring E0b's existing sample set. These are notebook-
+build-time questions, not obtainability questions, and are left for `notebooks/02` if and when
+building it is authorized.
+**Files changed:** none (`LEDGER.md` only, per the explicit instruction to write the answer here
+and stop).
+**Verification performed:** `gh api` for repo metadata and license, `gh api ... /contents/...`
+for README.md/DATASETS.md/the download script's actual content (not summarized from a search
+result), a live `curl` check against the actual Google Drive file id extracted from that script.
+**Next:** report Task 1 (clean) and this gate's answer (obtainable) to the director; do not start
+`notebooks/02` without further authorization, per the explicit instruction that the director
+assigns a fallback if TMR were not obtainable — since it is obtainable, the next step is the
+director's call, not mine to start unprompted.

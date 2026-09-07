@@ -240,3 +240,21 @@ generation wall-clock time, once done.
 second instance worth adding to §20 alongside the F5 miss. Agreed it's the same shape; deferred
 adding the entry itself until after live verification confirms the fix actually works, so the
 landmine's own worked example is accurate rather than written from the bug report alone.
+
+### SUP-20260906-80 (continued) — live verification complete: fix confirmed, real MPS timing measured
+**Disposition:** ACCEPTED, fully closed
+**Verification performed live:** drove the demo on the exact broken click order (generate without
+retrieval first). First attempt (`t2p_demo_gen_6lkjv9o8`, "a person walks forward and then sits
+down on a chair") completed with two different mp4s (full vs truncated captions correctly
+different, confirmed via `results.txt` and differing md5sums) — but its timing was contaminated
+by a concurrent click from the reviewing session's own browser on the same Gradio queue, per the
+message's own warning; discarded and not used anywhere. Re-ran clean (verified via `lsof -i
+:7861` that nothing else was connected first): "a person kneels down and then stands back up" ->
+full done in 10.3s, both panels done in 21.3s total, measured from file mtimes against the click
+timestamp (not from buffered server stdout).
+**What changed:** `demo/app.py` button label and `GENERATION_MD` updated with the real measured
+~10s figure (was "several minutes"); also updated the "unresolvable" language to match D-28's
+bounded-null reframing rather than the retracted D-26 wording.
+**Note on the port/timing contamination:** acknowledged and matches the reviewing session's own
+account exactly (7860 held briefly by their own detector-validation `http.server`, freed since;
+concurrent generate clicks on one Gradio queue). No action needed beyond what was already done.
