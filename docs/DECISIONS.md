@@ -662,3 +662,42 @@ the actual finding worth acting on next.
 (not merely "would be nice") — at that point, n~400-1,600/arm on MPS is cheap and the design
 above (2 seeds/arm, matching this project's own demonstrated seed sensitivity) is ready to run
 un-retracted.
+
+### D-29 — No training-comparison experiments for now: the instrument has to be trusted before it is used to compare · JUDGEMENT (author-directed, 2026-09-07)
+
+**The decision.** No new two-arm training studies, no 475k-step reproduction run, no caption-
+augmentation ablation, no training-based experiment of any kind, until further notice. This
+applies even though D-27/D-28 just made such runs cheap on MPS — affordability was never the
+blocking question.
+
+**Why.** Every training-comparison experiment this project could run right now shares E1's exact
+shape: a comparison at a training budget nobody has shown is adequate (this project's own model
+tops out at 0.63% of MDM's published budget; even a full 475k-step run would be this project's
+first-ever attempt at that scale, with no track record of it working here), measured with an
+evaluation instrument this project has already found reasons to distrust in two independent ways
+this session — R-Precision saturates at the published frontier and stops discriminating exactly
+where a converged model would need it to (`LANDSCAPE.md` §1.3, D-25's own regime note), and the
+Guo evaluator's text-motion embedding space collapses to ~1% at full-corpus retrieval, resolving
+only within its trained 32-candidate protocol (§1.5 of `RESULTS.md`, `LANDMINES.md` §13). Running
+a bigger, more expensive version of E1 before either of those instrument questions is settled
+would spend real compute re-deriving the same "was the instrument the problem or the model" doubt
+that D-28 just spent a whole night resolving for the retrieval-space finding specifically. **The
+instrument work comes first, and it needs no training at all** — it can be answered by probing
+the frozen CLIP text encoder MDM already conditions on, and by finding a second, independent
+evaluator to cross-check the Guo evaluator against, neither of which requires training a single
+model.
+
+**New deliverable format, starting now: executed Jupyter notebooks in `notebooks/`.** Every prior
+deliverable in this project has been a script + a JSON record + a markdown write-up. That format
+is right for a measurement but wrong for a demonstration meant to be read and be convincing on its
+own — a notebook that shows its own internals (the actual CLIP embeddings, the actual similarity
+matrix, the actual distribution, not a number quoted from a ledger) is a stronger form of the same
+append-only, re-verify-before-trusting discipline this project has followed all along, applied to
+presentation rather than just to computation. **A notebook that has never been executed, with no
+committed outputs, is not a deliverable** — the same standard this project already applies to
+every other claim (VERIFIED means observed here, with the output saved, not asserted).
+
+**Would reverse if:** the instrument questions above are resolved (a second evaluator cross-check
+lands, and/or the CLIP spatial-language question is answered one way or the other) and a
+specific, pre-registered training comparison is designed against a stated, defensible budget —
+at which point D-27/D-28's MPS affordability makes it cheap to actually run.

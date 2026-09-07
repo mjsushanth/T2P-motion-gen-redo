@@ -2533,3 +2533,39 @@ successful run; the crashed first attempt produced no file, so nothing was lost)
 **Next:** live browser verification of the `demo/app.py` bugfix (SUP-20260906-80): restart the
 server, drive both buttons with a caption where truncation fires, confirm two different generated
 videos, measure a real single-sample MPS generation wall-clock time.
+
+## [2026-09-07T00:50:00 UTC] Item 53 — D-29 recorded; Task 1 notebook (CLIP spatial blindness) built, executed, confirmed
+**Status:** complete
+**Acceptance criteria:** author-directed pivot away from training-comparison experiments (every
+such experiment repeats E1's exact shape — an unproven training budget, scored by an instrument
+already under suspicion) toward instrument-level questions that need no training. New deliverable
+format: executed Jupyter notebooks in `notebooks/`, with committed outputs, not scripts or
+markdown. Task 1: does MDM's own frozen CLIP text encoder (the actual conditioning signal, not a
+stand-in) distinguish spatial language (left/right, forward/backward) from non-spatial language
+of comparable edit distance, with a proper control group and a significance test, not two
+cherry-picked numbers — plus how much of HumanML3D's own corpus this actually touches.
+**Files changed:** `docs/DECISIONS.md` (new D-29: the "no training comparisons for now" decision,
+in my own words, with the reversal condition named). `notebooks/01_clip_spatial_blindness.ipynb`
+(new — built via `nbformat`, executed via `jupyter nbconvert --execute`, outputs committed).
+**Result, produced entirely by cells in the notebook, not pasted from anywhere:** MDM's own
+`load_and_freeze_clip`/`clip_encode_text` (copied verbatim from `model/mdm.py`, ViT-B/32, the
+version this project's checkpoints actually use) embeds 16 spatial minimal pairs (mean cosine
+similarity 0.9654) measurably closer together than 16 non-spatial control pairs of comparable
+edit distance (mean 0.9296) — Welch's t p=0.00050, Mann-Whitney p=0.00056 (one-sided), rank-
+biserial effect size 0.680 (large). **The spatial blind spot is real and not narrow**: 56.9% of
+24,503 real HumanML3D captions contain at least one of left/right/forward/backward/clockwise/
+in-front-of/behind — "right" alone appears in 24.25% of all captions. This is a benchmark-wide
+limitation, not a footnote case.
+**Self-critique defects found:** my first rank-biserial effect-size formula
+(`1 - 2U/(n1*n2)`) returned -0.680 for an effect that is unambiguously in the positive
+(spatial > nonspatial) direction — a sign-convention bug in the formula, not in the underlying
+p-values or means. Caught by inspecting the printed sign against the already-confirmed direction
+of the means, before writing the verdict cell; fixed to `2U/(n1*n2) - 1` (positive when the first
+group is stochastically larger) and the notebook re-executed end to end.
+**Verification performed:** ran the notebook twice end to end via `jupyter nbconvert --execute`
+(once before, once after the effect-size fix), confirmed zero error cells both times, read every
+cell's actual output text directly (not assumed from the code) before writing this entry.
+**Next:** report to the director that Task 1 ran clean; Task 2's feasibility gate (is TMR,
+arXiv:2305.00976, actually obtainable — code, checkpoint, license — ~20 minutes, do not start
+building the notebook yet) is the next item, per the explicit ordering in the author-directed
+instructions.
