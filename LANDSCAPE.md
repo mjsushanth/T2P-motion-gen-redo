@@ -1,9 +1,9 @@
 # LANDSCAPE — text-to-pose / text-to-motion, 2024-2026
 
-Stage 2, Part A. Every claim below was fetched from a primary source (paper page, official
-repo, licence page, or dataset card) by one of three parallel research passes, or is explicitly
-marked UNVERIFIED where it was not. URLs are inline. This document argues nothing — it is the
-evidence `REBUILD_SPEC.md` and `POSITIONING.md` argue from.
+Every claim below was fetched from a primary source (paper page, official repo, licence page, or
+dataset card), or is explicitly marked UNVERIFIED where it was not. URLs are inline. This document
+argues nothing — it is the evidence this project's own design decisions and `POSITIONING.md` argue
+from.
 
 ---
 
@@ -32,9 +32,10 @@ release, official repo **`EricGuo5513/text-to-motion`**
 ([github.com/EricGuo5513/text-to-motion](https://github.com/EricGuo5513/text-to-motion)).
 `final_evaluation.py` is the entry point; checkpoints ship under `checkpoints/t2m/text_mot_match/`.
 Confirmed independently via T2M-GPT's and StableMoFusion's own READMEs, both of which explicitly
-reuse this exact evaluator/checkpoint set. **This is the instrument to reproduce for D-03's
-harness-validation gate** — it is a known, fetchable, third-party artifact, not something to
-reimplement from a paper description (`LANDMINES.md` §10 exists precisely for this reason).
+reuse this exact evaluator/checkpoint set. **This is the instrument to reproduce for this
+project's own harness-validation gate** — it is a known, fetchable, third-party artifact, not
+something to reimplement from a paper description (`docs/LANDMINES.md` §10 exists precisely for
+this reason).
 
 ### 1.3 Published HumanML3D numbers, quoted from each paper's own table
 
@@ -67,13 +68,12 @@ numbers, while diffusion variants (StableMoFusion) closed most of the gap. MDM's
 is a useful sanity floor: **a rebuilt diffusion baseline that cannot beat roughly this number is
 not yet in the range where the field's numbers are comparable.**
 
-**R-Precision is saturated at the frontier — flagged by review (`reviews/REVIEW_QUEUE.md`
-SUP-20260906-02), independently checkable from the table above.** StableMoFusion's R-Prec-top3
-(0.841) and MoMask's (0.807) both **exceed the "Real"/ground-truth row's own 0.797.** Generated
-motion outscoring real motion on a metric means that metric has no dynamic range left at the
-frontier — it can confirm you're in the right regime, but it cannot rank the top of the field.
-**Consequence for `REBUILD_SPEC.md`'s D-03 gate: key the harness-validation reproduction on FID,
-not R-Precision.** FID still shows an intact, informative range (MDM 0.544 -> MoMask 0.045);
+**R-Precision is saturated at the frontier — independently checkable from the table above.**
+StableMoFusion's R-Prec-top3 (0.841) and MoMask's (0.807) both **exceed the "Real"/ground-truth
+row's own 0.797.** Generated motion outscoring real motion on a metric means that metric has no
+dynamic range left at the frontier — it can confirm you're in the right regime, but it cannot rank
+the top of the field. **Consequence: key harness-validation reproduction on FID, not
+R-Precision.** FID still shows an intact, informative range (MDM 0.544 -> MoMask 0.045);
 R-Precision does not, at least not among these seven methods.
 
 **Discrepancy flagged, not resolved:** MotionDiffuse self-reports FID 0.681±.001; MLD's own
@@ -278,8 +278,7 @@ licence in §4.1/4.2, inherited by anything built on it.
   data-scale artifact, though partially fixable with targeted synthetic data.
 - ["Left-Right Symmetry Breaking in CLIP-style VLMs"](https://arxiv.org/abs/2601.12809) (ICML
   2026): left-right competence is a fragile, trained-in artifact tied to a specific "horizontal
-  attention gradient," not a robust representation. **Scope caveat (review,
-  `reviews/REVIEW_QUEUE.md` SUP-20260906-01):** this paper is a controlled **1D synthetic
+  attention gradient," not a robust representation. **Scope caveat:** this paper is a controlled **1D synthetic
   testbed** — Transformer encoders trained on synthetic spatial-relation data, not CLIP ViT-B/32
   evaluated on real captions. It is mechanistic evidence that this failure mode *can* arise
   under controlled conditions, not direct evidence about how CLIP behaves in the wild. Treated
@@ -321,12 +320,11 @@ licence in §4.1/4.2, inherited by anything built on it.
 
 ## OPEN_QUESTIONS carried from Part A research
 
-1. ~~Whether PoseScript's poses are literally SMPL pose parameters~~ **RESOLVED (review,
-   `reviews/REVIEW_QUEUE.md` SUP-20260906-03):** confirmed directly from
-   `github.com/naver/posescript` — PoseScript's poses are **SMPL+H G format**, i.e. genuine SMPL
-   body-model parameters. The load-bearing assumption in this document and in `REBUILD_SPEC.md`
-   was correct: adopting PoseScript does inherit the full SMPL non-commercial licence chain, on
-   top of PoseScript's own CC BY-NC-SA 4.0.
+1. ~~Whether PoseScript's poses are literally SMPL pose parameters~~ **RESOLVED:** confirmed
+   directly from `github.com/naver/posescript` — PoseScript's poses are **SMPL+H G format**, i.e.
+   genuine SMPL body-model parameters. The load-bearing assumption elsewhere in this project was
+   correct: adopting PoseScript does inherit the full SMPL non-commercial licence chain, on top of
+   PoseScript's own CC BY-NC-SA 4.0.
 2. ChatPose's Table 1 numbers (RT2P/RP2T recall) — sourced from arXiv HTML only, CVF PDF returned
    403. Re-check before quoting elsewhere.
 3. Champ's architecture/results — sourced from a secondary indexing page, not a primary fetch.
