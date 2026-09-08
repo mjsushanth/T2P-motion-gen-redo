@@ -224,3 +224,50 @@ exhibit at all; the tercile analysis (§9.2) is underpowered to detect a length-
 even if one exists; and TMR's own -1.95σ reading, while not clearing the pre-registered threshold,
 is the largest single number in this table and is not nothing -- a repeat at this same power on a
 better-trained checkpoint would be the natural next check before concluding this generalizes.
+
+### 9.5 A discrepancy against a smaller prior measurement, investigated directly
+
+`notebooks/02`'s own n=128 measurement of this exact checkpoint, this exact evaluator, found Guo
+R-Precision-top3 = 0.7578. E3's own n=4,640 measurement of the same quantity found 0.6172 --
+using the n=128 estimate's own binomial SE, that is 3.71σ apart. Two measurements of the same
+thing disagreeing this much is worth resolving before either number is trusted, not noted and
+left.
+
+**Hypothesis tested: batch-of-32 composition, not the model, explains the gap.** R-Precision
+ranks each sample against 31 decoys drawn from its own batch; if consecutive samples in loader
+order are more mutually similar than a random draw would be, decoys get easier and R-Precision
+rises for that reason alone, independent of anything about the model. A real, measured
+compositional drift motivated the test: the run's first 1,696 captions are 60.6% spatial, the
+next 2,304 are 57.1% -- a genuine pattern in this cached generation, not asserted from theory.
+
+**The test:** re-score the same, already-computed embeddings (no regeneration) with batch-of-32
+assignment replaced by 20 independent random reshuffles of the full 4,640-sample pool, comparing
+against the as-generated (natural loader) order.
+
+| | top-3 |
+|---|---:|
+| natural order | 0.6172 |
+| shuffled (mean of 20 trials, std 0.0048) | 0.6184 |
+
+**Refuted.** Shuffling moves the estimate by 0.0012 -- about 1 SE of the shuffled mean, and 29
+standard deviations short of the 0.7578 the hypothesis needed to explain. Batch composition is
+not why E3's number differs from notebook 02's. **The n=128 measurement was a small-sample
+outlier; E3's own n=4,640 figure, with a binomial SE roughly 5x tighter, supersedes it** as this
+project's best estimate of this checkpoint's Guo R-Precision-top3.
+
+**The spatial-vs-non-spatial null is robust to the same reshuffling**, exactly as predicted before
+the test ran: shuffled spatial mean 0.6006, non-spatial mean 0.5847 (gap +0.0159, same sign and
+similar magnitude as the natural-order gap of +0.0070). This gap-under-reshuffling is a
+consistency check on the *sample*, not a new significance claim about the *model* -- the sample
+itself, however batched, shows a small, same-direction gap; whether that gap reflects a real
+population effect is still governed by §9.1's own combined-SE calculation (0.48σ), not by how
+tightly reshuffling estimates the fixed sample's own gap. Both readings point the same way: no
+resolvable spatial-vs-non-spatial effect, and that conclusion does not depend on how the 4,640
+samples happen to be grouped into batches.
+
+**Consequence for `docs/DECISIONS.md` and future generation-side comparisons:** this project's
+Guo R-Precision-top3 for this checkpoint should be cited as ~0.617 (n=4,640), not 0.7578 (n=128),
+going forward. The 0.7578 figure was independently cross-checked to the digit against an earlier
+measurement and treated as validated at the time -- it agreed with the *wrong* thing to agree
+with, which is itself worth remembering: a cross-check against a small-sample number confirms
+consistency between two samples, not that either one is close to the population value.
