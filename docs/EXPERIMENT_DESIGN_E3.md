@@ -415,8 +415,9 @@ measured **4.03h wall-clock on MPS** per full-scale replication (`artifacts/e3/g
 **three total replications cost ~12.1h of MPS compute** (one already exists; ~8.1h of
 additional compute for two more independent runs) and would yield a genuine, small
 between-replication spread -- a real tightening of the FID half, not another bootstrap. A full
-20-replication protocol matching the paper's own would cost roughly 19 more runs beyond the one
-that exists: **~76h of additional MPS compute**. Both figures are recorded here as the priced
+20-replication protocol matching the paper's own would need 19 more runs beyond the one that
+exists -- **19 x 4.03h ~= 76.6h of additional MPS compute** (~80.6h total across all 20, if
+counted from scratch). Both figures are recorded here as the priced
 cost of closing this gate, not as work undertaken -- whether 3 replications (a cheap, honest
 partial tightening) or the full 20 is worth spending against other candidate work is the
 author's own call, not this session's; noted as the next candidate experiment for this gate,

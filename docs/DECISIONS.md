@@ -48,9 +48,10 @@ that script's own hand-rolled loader, not evidence the ground-truth quantity its
 **The stricter remaining piece** — reproducing MDM's own published FID (0.544±.044, 20
 replications) on its own checkpoint — remains open. `docs/EXPERIMENT_DESIGN_E3.md` §9.7
 bootstrap-resampled E3's own single-replication FID (point estimate 0.4858) and found the
-published 0.544 falls **not distinguishable from the published figure under an uncertainty this
-test cannot tighten**: the accepted interval (point estimate ± 2 bootstrap-std) is [0.335, 0.637],
-a ±15.5% window — against R-Precision's ±1.2% (0.6172±0.0071, above). **A non-rejection, not a
+published **0.544 falls inside that interval — a result not distinguishable from the published
+figure under an uncertainty this test cannot tighten**: the accepted interval (point estimate ±
+2 bootstrap-std) is [0.335, 0.637], a ±15.5% window — against R-Precision's ±1.2%
+(0.6172±0.0071, above). **A non-rejection, not a
 tight reproduction, and the two halves of this gate are not the same strength of evidence**; lead
 with R-Precision wherever both are cited. This bootstrap does not close the gate for a specific,
 named reason: it resamples one fixed generation and one fixed reference pool, so it measures
@@ -61,13 +62,15 @@ terms:** E3's one full-scale generation replication (4,640 samples) measured **4
 MPS** (`artifacts/e3/generate.log`). Three total replications (two more independent runs) would
 cost **~8.1h of additional MPS compute** and yield a genuine, if small, between-replication
 spread — a real tightening, unlike another bootstrap. A full 20-replication protocol matching the
-paper's own would cost roughly 19 more runs, **~76h of additional MPS compute** (supersedes the
-earlier pre-MPS CPU estimate, "~5 CPU-hours... roughly 100", this line previously carried). Both
-are priced here as the next candidate experiment for this gate, not undertaken — whether either is
-worth spending against other candidate work is the author's own call. Numbers from the
-generation-comparison work onward stay labelled internally-comparable-only specifically on the
-FID axis; the R-Precision axis no longer needs that downgrade for this checkpoint.
-**Would close the FID half if:** the ~76h-MPS 20-replication protocol (or a smaller number of
+paper's own would need 19 more runs beyond the one that exists — **19 × 4.03h ≈ 76.6h of
+additional MPS compute** (≈80.6h total across all 20, if counted from scratch with none already
+done) — superseding the earlier pre-MPS CPU estimate, "~5 CPU-hours... roughly 100", this line
+previously carried. Both figures are priced here as the next candidate experiment for this gate,
+not undertaken — whether either is worth spending against other candidate work is the author's
+own call. Numbers from the generation-comparison work onward stay labelled
+internally-comparable-only specifically on the FID axis; the R-Precision axis no longer needs
+that downgrade for this checkpoint.
+**Would close the FID half if:** the ~76.6h-additional-MPS 20-replication protocol (or a smaller number of
 additional independent generation runs, enough to estimate genuine between-replication variance
 directly rather than via bootstrap) is actually spent and lands within the paper's own reported
 spread — this has not been attempted, only priced, and the bootstrap result above is not a
