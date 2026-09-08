@@ -1,6 +1,6 @@
 {
   "experiment": "E1A-power",
-  "description": "Pre-registered power check: does E1A (full caption -> full sequence) trained for num_steps learn text conditioning at all, per docs/EXPERIMENT_LOG.md's E1A-power entry.",
+  "description": "Power check, chance threshold fixed in advance: does E1A (full caption -> full sequence) trained for num_steps learn text conditioning at all.",
   "hand_assembled_note": "The script's own JSON write was never reached -- eh.evaluation() crashed inside evaluate_diversity on the 'e1a' arm (assert activation.shape[0] > diversity_times, diversity_times=min(300,num_samples_limit)=128, generated set size 128 -- the SAME diversity_times off-by-one already documented as a known, non-decisive bug in E0b's own run). R-Precision, Matching Score, and FID for both arms printed successfully BEFORE the crash and are transcribed here directly from artifacts/e1/e1a_power_check_run.log, the same hand-assembly precedent used for artifacts/e0/e0b_mdm_reproduction_record.json.",
   "num_training_steps": 3000,
   "seed": 10,

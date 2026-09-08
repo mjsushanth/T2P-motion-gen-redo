@@ -10,7 +10,7 @@
     "matching_score": 3.0718,
     "r_precision_top1_2_3": [0.5156, 0.6953, 0.7969],
     "fid": 0.1339,
-    "note": "This run's OWN ground-truth-vs-itself FID (0.1339) is far above the paper's ~0.002 at full scale -- direct evidence that 128 samples is too few for a stable FID estimate in this 512-dim embedding space, symmetrically affecting both this row and the 'vald' row below. See EXPERIMENT_LOG.md E0b for the full discussion of what this does and does not license concluding."
+    "note": "This run's OWN ground-truth-vs-itself FID (0.1339) is far above the paper's ~0.002 at full scale -- direct evidence that 128 samples is too few for a stable FID estimate in this 512-dim embedding space, symmetrically affecting both this row and the 'vald' row below. See docs/LANDMINES.md §14 for the full discussion of what this does and does not license concluding."
   },
   "vald": {
     "matching_score": 3.4602,

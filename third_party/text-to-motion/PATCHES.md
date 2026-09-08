@@ -37,4 +37,4 @@ exact provenance UNVERIFIED beyond the architecture-match evidence above.
 
 All vendored `.py` files are unmodified from what was fetched. `glove/our_vab_data.npy`,
 `our_vab_idx.pkl`, `our_vab_words.pkl` are the repo's own committed GloVe word-vector files,
-fetched verbatim (not gitignored, small enough to vendor directly — see sizes in `LEDGER.md`).
+fetched verbatim (not gitignored, small enough to vendor directly).

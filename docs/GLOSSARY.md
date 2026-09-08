@@ -122,4 +122,5 @@ here. Non-deterministic; see `LANDMINES.md` §7.
 **Coefficient of variation (CV)** — standard deviation divided by mean. Used here as the
 bone-length invariant test: a correct pose decode gives a low CV per bone across samples.
 
-**VERIFIED / UNVERIFIED** — this project's epistemic labels. See `00_START_HERE.md` §6.
+**VERIFIED / UNVERIFIED** — this project's epistemic labels. VERIFIED means run, fetched, or
+observed directly, with the output saved; UNVERIFIED means not yet independently checked.

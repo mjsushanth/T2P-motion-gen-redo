@@ -31,5 +31,5 @@
   "r_precision_top3_truncated": 0.65625,
   "r_precision_top3_drop": 0.14504310344827587,
   "reference_e0b_ground_truth_top3": 0.7969,
-  "note": "This measures text-encoder/retrieval information loss only, not generation quality. Does not replace E1B. See docs/EXPERIMENT_LOG.md E1-pilot entry."
+  "note": "This measures text-encoder/retrieval information loss only, not generation quality. Does not replace E1B."
 }

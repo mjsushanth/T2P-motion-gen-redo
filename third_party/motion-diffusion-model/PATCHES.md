@@ -68,7 +68,6 @@ cd ../.. && python3 scripts/materialize_humanml3d_test_subset.py \
 ```
 
 The MDM checkpoint itself (`checkpoints/mdm/humanml-encoder-512/`, 413MB, gitignored) is fetched
-via `gdown` from the official Google Drive link in this repo's own `README.md` (see
-`LEDGER.md` for the exact command used).
+via `gdown` from the official Google Drive link in this project's upstream MDM README.
 
 No other files in this clone have been modified.
