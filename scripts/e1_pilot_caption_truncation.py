@@ -1,4 +1,4 @@
-"""E1-pilot -- zero-training measurement of E1B's caption-truncation effect (review SUP-20260906-34).
+"""E1-pilot -- zero-training measurement of E1B's caption-truncation effect.
 
 Reuses the already-validated evaluator (docs/DECISIONS.md D-03: ground-truth R-Precision
 reproduces the published reference to 0.06 sigma) to measure directly how much text-motion
@@ -23,7 +23,7 @@ This pilot cannot drop samples (every real motion still needs a caption pairing)
 floor of the first 3 words is used instead for those cases, noted in the output.
 
 This measures information loss in the TEXT ENCODER / retrieval space only, not generation
-quality -- does not replace E1B (see docs/EXPERIMENT_LOG.md's E1-pilot entry).
+quality -- does not replace E1B.
 
 Run from third_party/motion-diffusion-model/:
     cd third_party/motion-diffusion-model
@@ -160,7 +160,7 @@ def main():
         "r_precision_top3_drop": top3_full - top3_trunc,
         "reference_e0b_ground_truth_top3": 0.7969,
         "note": "This measures text-encoder/retrieval information loss only, not generation "
-                "quality. Does not replace E1B. See docs/EXPERIMENT_LOG.md E1-pilot entry.",
+                "quality. Does not replace E1B.",
     }
     with open(my_args.out_json, "w") as f:
         json.dump(result, f, indent=2)

@@ -1,12 +1,12 @@
-"""E0b follow-up (per review SUP-20260906-28): fix a full-scale ground-truth reference (mu, cov)
-and re-score the already-cached 128 generated motions against it. Zero regeneration cost -- no
-diffusion sampling here, only encoding real ground-truth motions (fast) and re-encoding the
-already-cached generated motions (fast) through the same evaluator used in E0b.
+"""E0b follow-up: fix a full-scale ground-truth reference (mu, cov) and re-score the
+already-cached 128 generated motions against it. Zero regeneration cost -- no diffusion sampling
+here, only encoding real ground-truth motions (fast) and re-encoding the already-cached generated
+motions (fast) through the same evaluator used in E0b.
 
-This removes the reference-redraw variance that SUP-25/26/27 showed was dominating E0b's FID
-(a +30% swing from redrawing only the n=128 reference). The fixed reference here uses the full
-test split (~4198 sequences, same scale as E0a), saved once so every future FID in this project
-can be compared against the same fixed target.
+This removes the reference-redraw variance shown to be dominating E0b's FID (a +30% swing from
+redrawing only the n=128 reference). The fixed reference here uses the full test split (~4198
+sequences, same scale as E0a), saved once so every future FID in this project can be compared
+against the same fixed target.
 
 Run from third_party/motion-diffusion-model/:
     PYTHONPATH=. python3 ../../scripts/e0b_fixed_reference_rescoring.py
@@ -76,8 +76,8 @@ def main():
         "experiment": "E0b_fixed_reference_rescoring",
         "description": "FID of the SAME 128 cached generated motions (no regeneration) against "
                         "a FIXED full-scale (n={}) ground-truth reference, removing the "
-                        "reference-redraw variance SUP-25/26/27 showed dominated the n=128 "
-                        "vs n=128 comparisons in round 1/round 2.".format(n_gt),
+                        "reference-redraw variance shown to dominate the earlier n=128 "
+                        "vs n=128 comparisons.".format(n_gt),
         "n_ground_truth_reference": n_gt,
         "n_generated": n_gen,
         "fid_generated_vs_fixed_full_scale_reference": fid_fixed_ref,

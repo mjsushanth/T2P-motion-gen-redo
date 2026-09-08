@@ -3,7 +3,7 @@ caption throughout) or E1B (first-action-clause truncation applied to BOTH train
 generation-conditioning captions, per docs/DECISIONS.md D-23's redesigned A/B/C ladder).
 
 --arm a: full caption -> full sequence (the control; E1A's power check already produced one real
-         result this way, R-Precision-top3=0.2969 vs 0.7950 ground truth, LEDGER Item 29).
+         result this way, R-Precision-top3=0.2969 vs 0.7950 ground truth).
 --arm b: first-action-clause-only caption -> full sequence. Truncation is applied to the TRAIN
          loader's captions/tokens (what the model learns to condition on) AND to the generation
          loader's captions/tokens (what conditions sampling and what the retrieval evaluator
@@ -13,10 +13,10 @@ generation-conditioning captions, per docs/DECISIONS.md D-23's redesigned A/B/C 
          is left with FULL captions unchanged, same as every other arm run in this project.
 
 Both arms train on the disjoint materialized TRAIN split and evaluate on the materialized TEST
-split (docs/DECISIONS.md D-25 / review SUP-20260906-37) -- no memorisation confound.
+split (`docs/DECISIONS.md` D-25) -- no memorisation confound.
 
-Includes the diversity_times off-by-one fix (review SUP-20260906-8/E1A-power's own crash,
-LEDGER Item 29): diversity_times must be < the generated set size, not <=.
+Includes the diversity_times off-by-one fix (found via E1A-power's own crash on it):
+diversity_times must be < the generated set size, not <=.
 
 Run from third_party/motion-diffusion-model/:
     cd third_party/motion-diffusion-model
@@ -58,7 +58,7 @@ def truncate_tokens_first_action_clause(caption, tokens):
 
 
 def rescore_against_truncated_captions(motion_loader, eval_wrapper, arm_label):
-    """SUP-20260906-49: E1A is scored against full captions (0.2969) but E1B will be scored
+    """E1A is scored against full captions (0.2969) but E1B will be scored
     against truncated ones, so the raw A-vs-B gap conflates model degradation with "truncated
     captions are intrinsically harder to retrieve against" -- a text-side effect the E1-pilot
     already measured on real motions (0.145), but not in this model's much-lower operating range
@@ -267,12 +267,12 @@ def main():
 
     truncated_rescore = None
     if my_args.arm == "a":
-        # SUP-20260906-49's control: same generated motions, same model, rescored against
-        # truncated captions -- isolates caption-retrievability-alone in this model's operating
-        # range, before any E1B comparison is written up. Cheap: text re-encoding only, the
-        # already-generated motion tensors are reused as-is (no regeneration).
+        # Control: same generated motions, same model, rescored against truncated captions --
+        # isolates caption-retrievability-alone in this model's operating range, before any E1B
+        # comparison is written up. Cheap: text re-encoding only, the already-generated motion
+        # tensors are reused as-is (no regeneration).
         print("rescoring E1A's own generations against truncated captions "
-              "(SUP-20260906-49 control)...")
+              "(caption-retrievability control)...")
         rescore_match, rescore_rprec = rescore_against_truncated_captions(
             motion_loader, eval_wrapper, "e1a_truncated_rescore"
         )
@@ -316,7 +316,7 @@ def main():
         "r_precision_top3_ground_truth": r_prec_gt[2] if r_prec_gt is not None else None,
         f"fid_{arm_name}_vs_ground_truth": fid_arm,
         "note": f"trained on split={my_args.train_split}, evaluated on split={my_args.eval_split} "
-                "(disjoint materialized subsets, per review SUP-20260906-37).",
+                "(disjoint materialized subsets).",
     }
     with open(my_args.out_json, "w") as f:
         json.dump(result, f, indent=2)

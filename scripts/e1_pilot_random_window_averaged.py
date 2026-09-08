@@ -1,4 +1,4 @@
-"""SUP-20260906-47 -- the single random-window draw (e1_pilot_followups.py) is one sample from
+"""The single random-window draw (e1_pilot_followups.py) is one sample from
 a stochastic treatment, not a deterministic arm like the prefix controls: reseeding only changes
 which captions land in which batch for the prefix arms, but it changes the WINDOW PLACEMENT
 ITSELF for random-window. Its across-seed swing (0.0124) is therefore mostly treatment variance,
@@ -115,7 +115,7 @@ def main():
 
     result = {
         "experiment": "E1-pilot-random-window-averaged",
-        "description": "SUP-20260906-47: average the random-window control over N independent "
+        "description": "Averages the random-window control over N independent "
                        "placement draws to separate treatment variance (which placement was "
                        "drawn) from measurement/batching noise, same pattern as MDM's own "
                        "repeat_time averaging.",

@@ -1,4 +1,4 @@
-"""Converged-loss reference, per review SUP-20260906-35.
+"""Converged-loss reference.
 
 Diffusion training loss has no reference scale on its own -- it averages over uniformly
 sampled timesteps, so most of its batch-to-batch variance is which timesteps got drawn, not

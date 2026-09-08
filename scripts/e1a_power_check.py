@@ -1,20 +1,20 @@
-"""E1A power check -- PRE-REGISTERED in docs/EXPERIMENT_LOG.md before this was run.
+"""E1A power check -- its chance threshold and pass/fail criterion were fixed before this was run.
 
 Trains MDM's real architecture from scratch for a small number of steps (E1A: full caption,
-full-sequence target -- the control arm of the redesigned E1 ladder, docs/DECISIONS.md D-23),
-then generates and evaluates R-Precision-top3 against the pre-registered chance threshold
-(3/32 = 0.09375, per docs/DECISIONS.md D-25's R-Precision-decisive regime for E1/E2).
+full-sequence target -- the control arm of the redesigned E1 ladder, `docs/DECISIONS.md` D-23),
+then generates and evaluates R-Precision-top3 against the chance threshold fixed in advance
+(3/32 = 0.09375, per `docs/DECISIONS.md` D-25's R-Precision-decisive regime for E1/E2).
 
 Not the E1 result itself -- a cheap (~1.9h training + ~0.65h generation/eval) check for whether
 this training budget gives E1's A-vs-B comparison any power at all, before spending the full
-matrix's wall-clock (review SUP-20260906-33).
+matrix's wall-clock.
 
-Trains on the materialized TRAIN split, evaluates on the materialized TEST split (review
-SUP-20260906-37): an earlier version of this script trained and evaluated on the same subset,
-which lets an above-chance R-Precision result reflect memorisation of the training pairs rather
-than generalisable text conditioning -- disabling for a check whose only job is detecting real
-learning, not a milder version of the same signal. Requires the train split to already be
-materialized via `materialize_humanml3d_test_subset.py --split train`.
+Trains on the materialized TRAIN split, evaluates on the materialized TEST split: training and
+evaluating on the same subset would let an above-chance R-Precision result reflect memorisation
+of the training pairs rather than generalisable text conditioning -- keeping them disjoint is
+needed for a check whose only job is detecting real learning, not a milder version of the same
+signal. Requires the train split to already be materialized via
+`materialize_humanml3d_test_subset.py --split train`.
 
 Reuses vendored MDM machinery throughout (train_args() parser, create_model_and_diffusion,
 ClassifierFreeSampleModel, get_mdm_loader, EvaluatorMDMWrapper, eval_humanml.evaluation) --
@@ -169,7 +169,7 @@ def main():
         # diversity_times must be < activation.shape[0] (calculate_diversity's own assert), not
         # <=, so a value equal to num_samples_limit crashes once the generated set reaches
         # exactly that size -- the same off-by-one that crashed E0b and this script's own first
-        # real run (LEDGER Item 29). Fixed here rather than deferred a third time.
+        # real run. Fixed here rather than deferred a third time.
         replication_times=1, diversity_times=min(300, my_args.num_samples_limit - 1),
         mm_num_times=0, run_mm=False, eval_platform=None,
     )
@@ -187,9 +187,8 @@ def main():
 
     result = {
         "experiment": "E1A-power",
-        "description": "Pre-registered power check: does E1A (full caption -> full sequence) "
-                       "trained for num_steps learn text conditioning at all, per "
-                       "docs/EXPERIMENT_LOG.md's E1A-power entry.",
+        "description": "Power check, chance threshold fixed in advance: does E1A (full caption "
+                       "-> full sequence) trained for num_steps learn text conditioning at all.",
         "num_training_steps": my_args.num_steps,
         "seed": my_args.seed,
         "train_split": my_args.train_split,
@@ -207,7 +206,7 @@ def main():
         "fid_e1a_vs_ground_truth": fid_e1a,
         "gate_result": "above_chance" if above_chance else "at_or_near_chance",
         "note": f"trained on split={my_args.train_split}, evaluated on split={my_args.eval_split} "
-                "(disjoint materialized subsets, per review SUP-20260906-37) -- an above-chance "
+                "(disjoint materialized subsets) -- an above-chance "
                 "result here reflects held-out generalisation, not memorisation of the training "
                 "captions/motions.",
     }

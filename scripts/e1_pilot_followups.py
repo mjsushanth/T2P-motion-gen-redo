@@ -1,22 +1,22 @@
-"""E1-pilot follow-ups, per review SUP-20260906-38/39 -- two sharpenings of the E1-pilot result
-(scripts/e1_pilot_caption_truncation.py), neither a correction, both requested before deciding
+"""E1-pilot follow-ups -- three sharpenings of the E1-pilot result
+(scripts/e1_pilot_caption_truncation.py), neither a correction, all needed before deciding
 E1B's remaining scope.
 
-SUP-38 -- length-matched control: the rule-truncated captions are shorter (12.62 -> 8.01 words
+Length-matched control: the rule-truncated captions are shorter (12.62 -> 8.01 words
 on average) than the full captions. Some of the measured 0.145 R-Precision-top3 drop could be
 "shorter captions retrieve worse" rather than "this specific selection rule is destructive."
 Control: truncate the SAME full captions to the SAME per-caption word count via a content-neutral
 rule (first N words, N = the rule-truncated caption's own length), re-measure.
 
-SUP-20260906-44 -- both the rule and the first-N-words control keep the CAPTION PREFIX, so
+Random-window control: both the rule and the first-N-words control keep the CAPTION PREFIX, so
 neither separates "shorter" from "keeps the front of the sentence." Added a random contiguous
 N-word WINDOW control (same length, different position) to actually isolate length from
 position: if it scores close to the prefix controls, the effect really is length-driven; if it
 scores materially worse, HumanML3D captions front-load their motion-relevant content and the
 original's rule was accidentally preserving the useful part.
 
-SUP-39 -- conditional effect on captions the rule actually fires on: 44.8% of captions fell
-through to the original's own first-sentence fallback (which changes little for already-short,
+Conditional-effect control: the effect on captions the rule actually fires on. 44.8% of captions
+fell through to the original's own first-sentence fallback (which changes little for already-short,
 single-sentence captions). The corpus-wide 0.145 drop is diluted by that near-zero-effect share.
 This computes the REAL conditional effect via an actual restricted retrieval run on only the
 non-fallback subset (not an arithmetic estimate from the aggregate number) -- restricting both
@@ -25,8 +25,8 @@ evaluate_matching_score.
 
 One determinism change from e1_pilot_caption_truncation.py, stated plainly: this script fixes
 each motion to its FIRST text entry (not Text2MotionDatasetV2's own random.choice per __getitem__
-call), because SUP-39's subgroup restriction needs a stable, known fallback-or-not label per key,
-which random.choice would undermine. This means this script's own "full" and "truncated" arms
+call), because the conditional-effect control needs a stable, known fallback-or-not label per
+key, which random.choice would undermine. This means this script's own "full" and "truncated" arms
 (recomputed here, not reused from the original E1-pilot run) will not be bit-identical to that
 run's 0.8013/0.6563 -- expected to be close, reported as its own comparison point, not silently
 substituted for the original.
@@ -143,10 +143,10 @@ def main():
         lm_caption = " ".join(words[:n])
         lm_tokens = tokens[:n]
 
-        # SUP-20260906-44: first-N-words and the rule both keep a PREFIX, so the earlier
-        # length-matched control cannot separate "shorter caption" from "keeps the front of the
-        # caption" -- add a random contiguous N-word WINDOW, same length, different position,
-        # to actually isolate length from position.
+        # First-N-words and the rule both keep a PREFIX, so the length-matched control alone
+        # cannot separate "shorter caption" from "keeps the front of the caption" -- add a random
+        # contiguous N-word WINDOW, same length, different position, to actually isolate length
+        # from position.
         max_start = max(0, len(words) - n)
         if max_start == 0:
             n_prefix_equals_full += 1
@@ -174,7 +174,7 @@ def main():
     fixseed(my_args.seed)
     eval_wrapper = EvaluatorMDMWrapper("humanml", device)
 
-    # --- Call A: full corpus, three arms (SUP-38's length-matched control lives here) ---
+    # --- Call A: full corpus, three arms (the length-matched control lives here) ---
     log_path_a = Path(my_args.out_json).with_suffix(".full_corpus.log")
     with open(log_path_a, "w") as f:
         fixseed(my_args.seed)
@@ -186,7 +186,7 @@ def main():
         }
         match_score_a, r_prec_a, _ = evaluate_matching_score(eval_wrapper, motion_loaders_a, f)
 
-    # --- Call B: SUP-39's non-fallback-only subset, full vs truncated ---
+    # --- Call B: the non-fallback-only subset, full vs truncated (the conditional-effect control) ---
     nonfallback_set = set(nonfallback_keys)
     restrict_dataset_to_keys(full_loader, nonfallback_set)
     restrict_dataset_to_keys(trunc_loader, nonfallback_set)
@@ -202,9 +202,9 @@ def main():
         }
         match_score_b, r_prec_b, _ = evaluate_matching_score(eval_wrapper, motion_loaders_b, f)
 
-    # --- Call C: SUP-45's re-slice -- restrict the position controls to the 57.3% of keys
-    # that actually had room to place a different window, so the position-effect null isn't
-    # mechanically diluted by the 42.7% where random_window == length_matched by construction.
+    # --- Call C: restrict the position controls to the 57.3% of keys that actually had room to
+    # place a different window, so the position-effect null isn't mechanically diluted by the
+    # 42.7% where random_window == length_matched by construction.
     could_vary_set = set(could_vary_keys)
     restrict_dataset_to_keys(lm_loader, could_vary_set)
     restrict_dataset_to_keys(rw_loader, could_vary_set)
@@ -220,8 +220,8 @@ def main():
         }
         match_score_c, r_prec_c, _ = evaluate_matching_score(eval_wrapper, motion_loaders_c, f)
 
-    # --- Call D: SUP-20260906-46's noise-floor check -- E0b's ~0.016 floor was measured on a
-    # different n (128) and a different score range (~0.65-0.80); re-shuffling the SAME
+    # --- Call D: a noise-floor check local to this comparison -- E0b's ~0.016 floor was measured
+    # on a different n (128) and a different score range (~0.65-0.80); re-shuffling the SAME
     # restricted (n=2663) datasets with a different seed gives a batching-noise estimate actually
     # local to this comparison's n and score range, instead of borrowing one from elsewhere.
     log_path_d = Path(my_args.out_json).with_suffix(".could_vary_subset_seed2.log")
@@ -238,9 +238,9 @@ def main():
 
     result = {
         "experiment": "E1-pilot-followups",
-        "description": "SUP-38 (length-matched control) + SUP-39 (non-fallback-subset "
-                       "conditional effect), both real retrieval re-runs, not arithmetic "
-                       "estimates from the original E1-pilot's aggregate numbers.",
+        "description": "Length-matched control + non-fallback-subset conditional effect, both "
+                       "real retrieval re-runs, not arithmetic estimates from the original "
+                       "E1-pilot's aggregate numbers.",
         "seed": my_args.seed,
         "n_total_keys": len(fallback_keys) + len(nonfallback_keys),
         "n_fallback_keys": len(fallback_keys),

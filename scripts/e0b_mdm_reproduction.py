@@ -80,9 +80,9 @@ def main():
     replication_times = my_args.replication_times
 
     # Build the generated-motion loader ONCE, directly (not via eh.evaluation()'s lazy lambda),
-    # so we can cache the actual generated motions/lengths/captions to disk -- per review
-    # SUP-20260906-23: cache the expensive intermediate (the ~39-minute generation), not just
-    # the cheap final metric, so every follow-up diagnostic question is free from here on.
+    # so we can cache the actual generated motions/lengths/captions to disk -- cache the expensive
+    # intermediate (the ~39-minute generation), not just the cheap final metric, so every
+    # follow-up diagnostic question is free from here on.
     print("Generating (once, will be cached and reused for evaluation below)...")
     motion_loader, mm_motion_loader = get_mdm_loader(
         args, model=model, diffusion=diffusion, batch_size=args.batch_size,
@@ -103,8 +103,8 @@ def main():
         json.dump(gen_meta, f, indent=2)
     print(f"Cached {len(gen_records)} generated motions + metadata to {cache_dir}")
 
-    # Diagnostic per SUP-20260906-21: length distribution and unique-caption count, generated
-    # vs ground truth, checked directly against the actual generated set rather than assumed.
+    # Diagnostic: length distribution and unique-caption count, generated vs ground truth,
+    # checked directly against the actual generated set rather than assumed.
     gen_lengths = [int(r["length"]) for r in gen_records]
     gen_captions = [r["caption"] for r in gen_records]
     gt_lengths = []
@@ -120,7 +120,7 @@ def main():
         "n_unique_generated_captions": len(set(gen_captions)),
         "n_generated_at_max_length_196": sum(1 for l in gen_lengths if l >= 196),
     }
-    print("DIAGNOSTIC (length/caption check, SUP-21):")
+    print("DIAGNOSTIC (length/caption check):")
     print(json.dumps(diagnostic, indent=2))
     with open(cache_dir / "diagnostic.json", "w") as f:
         json.dump(diagnostic, f, indent=2)
