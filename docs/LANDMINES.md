@@ -15,10 +15,6 @@
 
 ## 1. `motion[:66]` is not 22 joints of XYZ
 
-**Status: VERIFIED (2026-09-05). Confirmed against `../primary_source/motion_representation.ipynb`
-and empirically by the bone-length invariant test — see the evidence block below and
-`../FORENSICS.md`.**
-
 **The trap.** HumanML3D motion vectors are `[T, 263]`. It is natural to assume the first 66
 values are 22 joints x 3 coordinates. The canonical layout (Guo et al., CVPR 2022,
 `motion_representation.py`) is:
@@ -45,7 +41,7 @@ It looks vaguely humanoid but subtly wrong, and you spend three months inventing
 for the wrongness: a mysterious coordinate convention, unstable bone lengths that need a
 reference database and post-hoc clamping, a degenerate Z axis, left-right confusion.
 
-**The evidence.** Two independent lines, both VERIFIED here.
+**The evidence.** Two independent lines.
 
 *Primary source.* `primary_source/motion_representation.ipynb`, the official HumanML3D
 processing code, builds the vector as:
@@ -133,14 +129,13 @@ It is not one. It cannot be — a loss is only comparable to another loss over t
 objective on the same data.
 
 **The evidence.** Table 1 of the original the original project report (PDF) reports the three raw
-loss values (1.52e15, 1.17, 0.69) with no derived percentage. **Correction (2026-09-05, peer
-review):** the "99.995% loss reduction" phrasing itself does not appear in the PDF at all — a
-`pdftotext -layout` + grep found the string `99.995` zero times in the report. It appears five
-times in the Obsidian deep-dive notes (`DL - T2P Deep Dive.md`), including inside a scripted
-60-second interview-answer passage. So the invalid comparison is a study-notes / interview-prep
-artifact that the published report itself does not make — worth knowing precisely because it
-means the number is something Joel has been rehearsing to say out loud, not just something once
-written down.
+loss values (1.52e15, 1.17, 0.69) with no derived percentage. The "99.995% loss reduction"
+phrasing itself does not appear in the PDF at all — a `pdftotext -layout` + grep found the string
+`99.995` zero times in the report. It appears five times in a separate set of deep-dive study
+notes, including inside a scripted 60-second interview-answer passage. So the invalid comparison
+is a study-notes / interview-prep artifact that the published report itself does not make — worth
+knowing precisely because it means the number was being rehearsed to say out loud, not just
+something once written down.
 
 **Do instead.** Nothing is a result until it comes off the evaluation harness on a held-out
 split, and the harness itself has been validated against a published number. Loss curves go
@@ -168,21 +163,18 @@ notebook never loads — empirically, `caption_indices[i] != i` for 23,382/23,38
 (99.99%), so training selects essentially arbitrary rows, not merely mislabelled ones
 (`FORENSICS.md` F2).
 
-**Correction (2026-09-05, review):** an earlier version of this entry said "the paper and
-the sampling config say 8" clusters vs. EDA's 10. That was wrong. Both notebooks, as read, use
-10 consistently — the code never uses 8 anywhere. The "8" traces to **documentation only**:
-`README.md` ("8-cluster balanced sampling strategy") and the Obsidian deep-dive ("8 pose
-clusters"); the PDF report states no cluster count at all. So the discrepancy is docs-vs-code,
-not code-vs-code — a fifth instance of this project's documentation describing a cleaner
-pipeline than the code implements. Two more of the same kind, also peer-review-verified: the PDF
-claims K-means ran "on the reduced embeddings" (PCA/t-SNE) but the code fits it on the raw 66-d
-slice; `README.md` claims sampling "avoided 49.6% cluster dominance" but the largest cluster
-measured directly from `clusters.npy` is 38.77% — 49.6% does not reproduce from the saved
-artifacts.
+**A related discrepancy, same pattern:** the project's own documentation claimed "8 pose
+clusters" (both in its README and in separate deep-dive notes), while both notebooks' code, read
+directly, use `n_clusters = 10` throughout, and the PDF report states no cluster count at all —
+the "8" traces to documentation, not to the paper or to either notebook's actual code. Two more
+of the same kind: the PDF claims K-means ran "on the reduced embeddings" (PCA/t-SNE) but the code
+fits it on the raw 66-d slice; the README claims sampling "avoided 49.6% cluster dominance" but
+the largest cluster measured directly from `clusters.npy` is 38.77% — 49.6% does not reproduce
+from the saved artifacts.
 
 **Do instead.** Fit and apply any grouping on **exactly** the vectors you will train on, after
 the same normalisation. Assert it: the array you cluster and the array you sample must be the
-same object, and a test should enforce that. Also: treat this project's own docs/README/notes as
+same object, and a test should enforce that. Also: treat a project's own docs/README/notes as
 **unverified** narrative, same as any other secondary source — verify claims against code and
 saved artifacts, not against what the writeup says the code does.
 
@@ -232,9 +224,8 @@ construction, exactly, with no loss term, no reference database and no post-hoc 
 If you find yourself building a bone-length loss, stop and ask whether you have chosen the
 wrong output space.
 
-**Correction (2026-09-06, Stage 2 landscape research):** this entry previously claimed "this is
-what MDM and MotionDiffuse do." Checked directly against both papers — **that is not accurate.**
-MDM's own paper states its pose representation "is a sequences of human poses represented by
+**Correction:** an earlier version of this entry claimed "this is what MDM and MotionDiffuse do."
+Checked directly against both papers — **that is not accurate.** MDM's own paper states its pose representation "is a sequences of human poses represented by
 either joint rotations or positions... MDM can accept motion represented by either locations,
 rotations, or both," and for its HumanML3D experiments specifically it uses "the same
 representation" as Guo et al.'s own redundant vector — i.e. joint positions, velocities, *and*
@@ -245,10 +236,9 @@ and is "robust to the various motion representations" — again the redundant ve
 rotation-only parameterisation. **Neither flagship model's published HumanML3D numbers rely on
 predicting rotations-only-plus-FK.** The rotation-space argument above is sound **as an
 engineering argument on its own terms** (HumanML3D's bone lengths are a verified dataset
-constant, `LANDMINES.md` §1, so a parameterisation that makes that constancy structural rather
+constant, §1 above, so a parameterisation that makes that constancy structural rather
 than learned is a real advantage) — but it should be argued from that first-principles logic, not
-from a false claim about field precedent. See `REBUILD_SPEC.md` D-11 for how this is actually
-argued.
+from a false claim about field precedent.
 
 ---
 
@@ -277,15 +267,14 @@ anything published.
 
 **Do instead.** Before your harness is allowed to produce a headline number, **reproduce a
 published figure with it** to a stated tolerance. If you cannot, say exactly why and label
-every subsequent number as internally-comparable-only. This is Stage 3's gate and it is the
-single most important thing this project does differently from its predecessor.
+every subsequent number as internally-comparable-only. This gate is the single most important
+thing this project does differently from its predecessor.
 
 ---
 
 ## 11. Classifier-free guidance applied to the TRAINING objective
 
-**Status: VERIFIED (2026-09-05, review audit of `DL_T2P_IMPL.ipynb` cell 47).
-This is a root-cause-grade defect on par with §1.**
+**This is a root-cause-grade defect on par with §1.**
 
 **The trap.** CFG is an *inference-time* extrapolation. At training time the only correct
 mechanism is **conditioning dropout**: replace the text embedding with a null embedding some
@@ -340,9 +329,7 @@ downstream observation is consistent with a working system that just needs more 
    `5*tanh(x/5)` output squash and the gradient clipping that the project treats as
    architectural insights are compensations for an amplification the objective created.
 
-**It was not an oversight — it was the documented design.** (Corroboration found by the audit
-of this entry, 2026-09-06; verified independently by the author before adding.) Cell 46's own
-markdown, verbatim:
+**It was not an oversight — it was the documented design.** Cell 46's own markdown, verbatim:
 
 > "implementation uses progressive guidance scaling **during training** (2.0->7.0 over 50, 100
 > epochs)."
@@ -356,7 +343,8 @@ believed-correct design gets *written up as a contribution* and defended. The or
 lists "Dual-Path Classifier-Free Guidance" among Phase 3's seven headline improvements. Nobody
 was going to find this by re-reading the code, because the code matched the intent exactly —
 the intent was wrong. **The only thing that catches this class of error is an evaluation that
-would have shown the text conditioning doing nothing.** Which is the whole argument for D-02.
+would have shown the text conditioning doing nothing** — the whole argument for building a
+validated evaluation harness before trusting any training loss.
 
 **Do instead.** Conditioning dropout at training:
 ```python
@@ -371,7 +359,7 @@ over `zeros_like`. If you ever see a guidance scale in a training signature, tha
 
 ## 12. The same batch's statistics used to normalise the diffusion target
 
-**Status: VERIFIED (same audit). Two separate defects in one function.**
+**Two separate defects in one function.**
 
 **12a — per-batch normalisation of `x_0`.**
 ```python
@@ -407,8 +395,6 @@ any scheduler call. Assert it: `assert timestep.shape[0] == sample.shape[0]`.
 
 ## 13. R-Precision is meaningless without its candidate-pool size
 
-**Status: VERIFIED in this repository, 2026-09-06, by our own code making the mistake (E0 v1).**
-
 **The trap.** R-Precision is retrieval accuracy over a pool of one correct caption plus N-1
 distractors. **The number is only interpretable against a stated N**, and the field's HumanML3D
 protocol fixes N = 32. Build the pool from the whole batch instead and you get a valid-looking
@@ -422,9 +408,9 @@ the same data and the same checkpoint gave **0.710**. A 2.5x swing from a batchi
 beside every R-Precision figure. Chance is `k/N`, so quote that too: top-3 of 32 is ~9.4% chance,
 which is what makes 0.72 meaningful.
 
-**Extended, 2026-09-06 (Stage 5 demo work, review SUP-20260906-58/62/63): the pool size is not a
-configuration detail — it is the range the instrument is calibrated over at all, and outside
-that range the instrument does not degrade gracefully, it stops meaning anything.** Built a
+**Extension: the pool size is not a configuration detail — it is the range the instrument is
+calibrated over at all, and outside that range the instrument does not degrade gracefully, it
+stops meaning anything.** Built a
 retriever using the same validated text-motion embedding space (`EvaluatorMDMWrapper`'s text
 encoder) this project's R-Precision numbers already come from, intending to use it for full-
 corpus nearest-neighbour retrieval (~8,198 real motions, not a 32-candidate batch). Measured
@@ -434,9 +420,9 @@ elsewhere): full-corpus self-retrieval — does a caption's own true motion rank
 own true motion scores **0.978** cosine similarity against its own text embedding, yet ranks
 **264th out of 8,198**, because every corpus motion occupies a tight **0.97-0.99** cosine band at
 this scale. A TF-IDF retriever on the identical sample found the true motion first **74.7-78.3%**
-of the time (two independent measurements, `demo/measure_self_retrieval.py` and a separate
-director-run measurement) — proving the collapse is specific to this embedding space at this
-scale, not a property of the retrieval task itself.
+of the time (two independent measurements, `demo/measure_self_retrieval.py`) — proving the
+collapse is specific to this embedding space at this scale, not a property of the retrieval task
+itself.
 
 **The reason, stated plainly: the text encoder was trained to discriminate a caption from ~31
 distractors (R-Precision's own batch-of-32 protocol), never to rank it first against thousands of
@@ -459,8 +445,6 @@ whether the code runs) before trusting it.
 ---
 
 ## 14. FID is badly biased when n is not much larger than the feature dimension
-
-**Status: VERIFIED in this repository, 2026-09-06 (E0 progression, real-vs-real).**
 
 **The trap.** FID estimates a 512x512 covariance from n samples. When n is close to d the
 estimate is severely under-conditioned and FID is biased **upward**, so a perfectly good model
@@ -509,15 +493,13 @@ reference's own sample size (round 3) did not shrink the gap — it grew, becaus
 side is still n=128 and a 512-dim covariance from 128 samples is rank-deficient (rank <=127)
 regardless of how well-estimated the other side of the comparison is. **The lesson is stronger
 than "get n big on both sides": a well-conditioned reference paired against a rank-deficient test
-covariance is still an unusable comparison.** Full detail in `docs/EXPERIMENT_LOG.md`'s E0b entry
-and `LEDGER.md` Item 16; the regime-dependent consequence for which metric gates E1/E2 is in
-`docs/DECISIONS.md` D-25.
+covariance is still an unusable comparison.**
 
 ---
 
 ## 15. A multi-line packed field parsed with a single split silently drops every sample after the first
 
-**Status: VERIFIED (2026-09-06), found while building E0b (`scripts/materialize_humanml3d_test_subset.py`).**
+**Found while building `scripts/materialize_humanml3d_test_subset.py`.**
 
 **The trap.** The HF `TeoGchx/HumanML3D` dataset's `caption` field looks like one string, but it
 is actually **multiple newline-separated entries**, each independently in the official
@@ -541,10 +523,9 @@ downstream symptom was `real_num_batches: 0` and an empty generated dataset — 
 warning, just a dataset that loads successfully and iterates zero times.
 
 **The evidence.** Found by directly inspecting `repr(ex['caption'])` on a real HF row rather than
-reasoning about the format from a truncated print statement (Stage 1's own earlier caption
-inspection had only ever printed `str(...)[:200]`, which happened to cut off before the second
-caption entry began, and that partial view was carried forward as an assumption without being
-re-checked here). The raw field, verbatim: `'a person is walking in place at a slow pace.#a/DET
+reasoning about the format from a truncated print statement (an earlier caption inspection had
+only ever printed `str(...)[:200]`, which happened to cut off before the second caption entry
+began, and that partial view was carried forward as an assumption without being re-checked here). The raw field, verbatim: `'a person is walking in place at a slow pace.#a/DET
 person/NOUN is/AUX walk/VERB in/ADP place/NOUN at/ADP a/DET slow/ADJ pace/NOUN#0.0#0.0\nperson
 walking at a average pace forward, swaying arms and torso with a sense of swagger#person/NOUN
 walk/VERB at/ADP a/DET average/ADJ pace/NOUN forward/ADV sway/VERB arm/NOUN and/CCONJ
@@ -567,12 +548,10 @@ Check the *count* of what survived a bulk load, not just that the load completed
 
 ## 16. Naming a limitation in a pre-registration is not the same as checking whether it disables the check
 
-**Status: VERIFIED in this repository, 2026-09-06 — this is a review-discipline trap, not a
-domain trap like the entries above, and it belongs here anyway because this project produced a
-documented instance of it (review SUP-20260906-37, on `docs/EXPERIMENT_LOG.md`'s E1A-power
-pre-registration).**
+**This is a review-discipline trap, not a domain trap like the entries above — it belongs here
+because it transfers to any pre-registered check, not just this project's own.**
 
-**The trap.** The E1A power check's pre-registration stated, in its own "Does NOT establish"
+**The trap.** An E1A power check's pre-registration stated, in its own "Does NOT establish"
 line, that it trained and evaluated on the same materialized subset, and characterized this as
 showing the architecture "*can* exploit text at this budget when the eval captions were also
 seen in training, which is a **necessary but weaker condition** than generalizing to held-out
@@ -611,10 +590,8 @@ is safely absorbed by a caveat; the second kind requires redesigning the check.
 
 ## 17. A stochastic arm's across-seed spread is treatment variance, not measurement noise
 
-**Status: VERIFIED in this repository, 2026-09-06 (review SUP-20260906-47, E1-pilot's
-random-window control) — the second time this exact pattern has surfaced (E0a flagged the same
-shape as its own likely explanation via MDM's `repeat_time` averaging, never fully confirmed
-there; this entry is the confirmed instance).**
+**This is the confirmed instance of a pattern flagged once before, via MDM's own `repeat_time`
+averaging, but never fully confirmed there.**
 
 **The trap.** Comparing a deterministic arm (e.g. a fixed truncation rule) against a stochastic
 arm (e.g. a randomly-placed window) by drawing the stochastic arm **once** and reseeding only the
@@ -653,12 +630,11 @@ symmetric and isn't.
 
 ## 18. A hypothesis and a success criterion are not a pre-registration without a power calculation
 
-**Status: VERIFIED in this repository, 2026-09-06 (review SUP-20260906-55, E1B) — a
-review-discipline trap, alongside §16 and §17, not a domain one.**
+**A review-discipline trap, alongside §16 and §17, not a domain one.**
 
-**The trap.** E1B was pre-registered in the sense this project had been using the word all day:
-a stated hypothesis ("E1B worse than E1A") and a stated success criterion ("by more than the
-seed-to-seed spread"), both written down in `REBUILD_SPEC.md` §6 before the run. That looked
+**The trap.** An A/B comparison (E1B) was pre-registered in the sense this project had been using
+the word all along: a stated hypothesis ("E1B worse than E1A") and a stated success criterion
+("by more than the seed-to-seed spread"), both written down before the run. That looked
 complete. It was not: nobody asked, before spending ~5 hours of CPU time across training and
 generation for both arms, **what sample size would be needed to detect the effect actually
 expected, and whether this run's planned n reached it.**
@@ -693,13 +669,12 @@ determines whether spending the compute is worthwhile in the first place.
 
 ## 19. A correct computation can still produce a display that supports the opposite conclusion
 
-**Status: VERIFIED in this repository, 2026-09-06 (Stage 5 demo work, review SUP-20260906-68) —
-the fourth review-discipline entry in this file, alongside §16-18, and like them more
+**The fourth review-discipline entry in this file, alongside §16-18, and like them more
 transferable than most of the domain findings above.**
 
-**The trap.** Two real bugs were caught in this project's own interactive demonstrator, in the
-same session, both by the same method: running the tool with a fresh, uncurated, real input
-rather than reading its code. In both cases, **the underlying computation was correct.** Only
+**The trap.** Two real bugs were caught in this project's own interactive demonstrator, both by
+the same method: running the tool with a fresh, uncurated, real input rather than reading its
+code. In both cases, **the underlying computation was correct.** Only
 what the interface chose to display, and how a viewer would read it, was wrong.
 
 **Instance one:** an embedding-based retriever was measured before shipping (per §18's own
@@ -743,16 +718,15 @@ naturally compare it to.
 
 ## 20. "I did not find X" is only "X does not exist" if the search was exhaustive
 
-**Status: VERIFIED in this repository, 2026-09-06 (`RESULTS.md`'s F1-F8 miss, review
-SUP-20260906-69) — the fifth review-discipline entry, alongside §16-19.**
+**The fifth review-discipline entry, alongside §16-19.**
 
 **The trap.** Writing `RESULTS.md`, a claim was needed about how many findings this project's
-forensics stage produced. `FORENSICS.md` was checked (Stage 1's own empirical write-up: F1-F4)
-and `LEDGER.md`'s audit of a later set of findings was checked (F6-F8). Neither mentioned an F5.
+forensics stage produced. `FORENSICS.md` was checked (its own empirical write-up: F1-F4) and a
+later, independent audit's findings were checked (F6-F8). Neither mentioned an F5.
 **Concluded: F5 was never assigned.** It was wrong — F5 (the original project's engineering
-state: monolithic notebook cells, triplicated classes, no seeds, hardcoded paths) was defined in
-`BRIEFING.md`, verified by direct code inspection during the original task specification, and was
-never in either of the two places actually searched.
+state: monolithic notebook cells, triplicated classes, no seeds, hardcoded paths) had been
+defined and verified by direct code inspection earlier still, in the original task
+specification, and was never in either of the two places actually searched.
 
 **Why this is a distinct failure from reusing a wrong number (§16, §18-19 catalogue variations on
 that instead).** A *presence* claim ("X is true") comes with a citation by construction — you
@@ -779,18 +753,18 @@ counterexample.
 
 ---
 
-**Second instance (2026-09-06), and this one cost two sessions.** The Stage 5 demo's live
-generation was recorded in the worker's ledger as "hung (near-0% CPU) for over 35 minutes after
-finishing its first sampling loop." The reviewing session then built its own detector to reproduce
-the hang — `find /var/folders -maxdepth 4 ... -name "*.mp4"` — watched CPU fall below 5% for 90
-seconds with no file found, and duly reported `HANG REPRODUCED`.
+**Second instance, and this one cost two separate checks.** A demo's live generation was first
+recorded as "hung (near-0% CPU) for over 35 minutes after finishing its first sampling loop." A
+second, independent check then built its own detector to try to reproduce the hang —
+`find /var/folders -maxdepth 4 ... -name "*.mp4"` — watched CPU fall below 5% for 90 seconds with
+no file found, and duly reported `HANG REPRODUCED`.
 
 Nothing was hung. Both generations had completed and both `.mp4` files had been written, valid and
 decodable. The real path was `.../t2p_demo_gen_*/full/samples_00_to_00.mp4` — **one directory
 deeper than `-maxdepth 4` reaches.** The process was idle because it was finished.
 
-Two independent sessions concluded "hung" from an absence of output that was really an absence of
-looking, and the second one *confirmed* the first by repeating its mistake in a different form.
+Two independent checks concluded "hung" from an absence of output that was really an absence of
+looking, and the second *confirmed* the first by repeating its mistake in a different form.
 A reproduction is only corroboration if the two attempts could have failed independently; here both
 inferred a negative from a search neither had validated could find a positive. **Before trusting a
 detector that reports absence, feed it a case you know is present.** Had the detector been run once
@@ -800,27 +774,26 @@ reported nothing then too — and the flaw would have surfaced in seconds.
 
 ## 21. A redaction cannot be documented by quotation
 
-**Status: VERIFIED in this repository, 2026-09-06 (the git-history identifier scrub, review
-SUP-20260906-50) — the sixth review-discipline entry, and the only one about how the record
-itself works rather than about how claims are checked.**
+**The sixth review-discipline entry, and the only one about how the record itself works rather
+than about how claims are checked.**
 
-**The trap.** Joel authorized scrubbing six literal identifying strings (a course code, an
-institution name, a group number, a compound archive path) out of this repository's git history.
-Documenting *that* the scrub happened is normal, expected practice — except a document describing
-a literal-string removal necessarily needs to name what was removed, and naming it means quoting
-it. **A ledger entry that quotes the six strings while describing their removal reintroduces
-every one of them into the current, public HEAD of the very repository the scrub was meant to
-clean** — committed normally (not as part of the history rewrite itself), so never touched by
-the rewrite, sitting in plain text on GitHub the moment it is pushed.
+**The trap.** A project authorized scrubbing six literal identifying strings (a course code, an
+institution name, a group number, a compound archive path) out of its git history. Documenting
+*that* the scrub happened is normal, expected practice — except a document describing a
+literal-string removal necessarily needs to name what was removed, and naming it means quoting
+it. **A record that quotes the six strings while describing their removal reintroduces every one
+of them into the current, public HEAD of the very repository the scrub was meant to clean** —
+committed normally (not as part of the history rewrite itself), so never touched by the rewrite,
+sitting in plain text on GitHub the moment it is pushed.
 
 **This happened twice, independently, within about an hour, which is the strongest evidence
-behind any of the six lessons in this section.** First in this project's own `LEDGER.md`: an
-entry documenting the scrub's replacement rules quoted the literal mapping verbatim. Caught,
-fixed. Then the exact same pattern turned up in the peer reviewing session's own finding about
-that first mistake — the review *warning that you cannot document a literal-string scrub using
-the literals* itself quoted the literals, in the same paragraph, into the same public repository.
-Two independent authors, warned by the same near-miss, made the identical mistake immediately
-after describing it.
+behind any of the six lessons in this section.** First, in a run log: an entry documenting the
+scrub's replacement rules quoted the literal mapping verbatim. Caught, fixed. Then the exact
+same pattern turned up in a second, independent check's own finding about that first mistake —
+the note *warning that you cannot document a literal-string scrub using the literals* itself
+quoted the literals, in the same paragraph, into the same public repository. Two independent
+authors, warned by the same near-miss, made the identical mistake immediately after describing
+it.
 
 **Why this forces a real exception to append-and-annotate.** Every other correction in this
 project preserves the original wrong text, marked superseded, because the original's wrongness is
@@ -846,44 +819,19 @@ record and is precisely backwards here.
 
 ## Review-discipline lessons (§16-21), gathered
 
-**Neither collaborator on this project was reliably right; the practice of re-verifying rather
-than trusting was.** Across one day of work between two independent sessions, each caught real
-errors in the other's output and, on inspection, in its own — and in more than one case a
-correction to a correction is what produced the number that finally held up. Every entry below
-was caught the same way: not by either party being careful in general, but by neither party
-accepting a claim, a correction, or an absence of a hit as settled until it was re-derived from
-source.
+**No single pass of this project's own work was reliably right; the practice of re-verifying
+rather than trusting was.** Real errors were caught in already-checked output more than once, and
+in more than one case a correction to a correction is what produced the number that finally held
+up. Every entry below was caught the same way: not by anyone being careful in general, but by
+nobody accepting a claim, a correction, or an absence of a hit as settled until it was re-derived
+from source.
 
-Six entries in this file are not about this project's own domain (motion generation, diffusion
+Sections §16-21 above are not about this project's own domain (motion generation, diffusion
 models, evaluation metrics) but about the process of producing and reviewing research work
-itself. Gathered here as one list because they transfer further than anything else in this
-document — they would apply to a different project in a different field unchanged. Cross-
-referenced from `RESULTS.md`.
-
-- **§16 — Naming a limitation in a pre-registration is not the same as checking whether it
-  disables the check.** A disclosed limitation can manufacture false comfort precisely because
-  disclosure looks like rigor.
-- **§17 — A stochastic arm's across-seed spread is treatment variance, not measurement noise.**
-  Reseeding a deterministic arm controls incidental variance; reseeding a stochastic one changes
-  the treatment itself. Averaging the wrong one produces a comparison that looks symmetric and
-  isn't.
-- **§18 — A hypothesis and a success criterion are not a pre-registration without a power
-  calculation.** "What would convince us" and "can this run possibly convince us at all" are
-  different questions, and only the second determines whether the run is worth its cost.
-- **§19 — A correct computation can still produce a display that supports the opposite
-  conclusion.** Static review checks the computation; only running the thing with real, varied,
-  uncurated input checks what the interface as a whole invites a reader to conclude.
-- **§20 — "I did not find X" is only "X does not exist" if the search was exhaustive.** An
-  absence claim's strength is bounded by its search scope, which is usually invisible in the
-  sentence stating the conclusion.
-- **§21 — A redaction cannot be documented by quotation.** Describe the shape of what was
-  removed, keep the literals outside version control, and accept that this one class of
-  correction must overwrite rather than annotate — the one lesson here about how the record
-  itself works, rather than how a claim gets checked.
-
-Each was found in this project by the same underlying practice: re-deriving a claim (one's own,
-or a peer's) from source before accepting it, rather than trusting that a plausible-looking
-result, an absent hit, or a clean run meant the work was done.
+itself, which is why they are grouped here — they transfer further than anything else in this
+document, and would apply to a different project in a different field unchanged. Each was caught
+by the same underlying practice: re-deriving a claim from source before accepting it, rather than
+trusting that a plausible-looking result, an absent hit, or a clean run meant the work was done.
 
 
 ---
@@ -892,19 +840,19 @@ result, an absent hit, or a clean run meant the work was done.
 
 **How it presented here.** Training on `--device mps` raised
 `TypeError: Cannot convert a MPS Tensor to float64 dtype`. This was reproduced deliberately rather
-than assumed, reported rather than silently worked around, and written up as D-24: *"Training is
+than assumed, reported rather than silently worked around, and written up as: *"Training is
 CPU-only. MPS is unusable for this codebase."* Every wall-clock estimate in the project was then
-computed from the CPU rate, and D-26 stopped an experiment partly because those estimates made it
-unaffordable.
+computed from the CPU rate, and at least one experiment was scoped down partly because those
+estimates made the larger version unaffordable.
 
 The reproduction was sound. The **generalisation from it was not.** "This code path fails on MPS
 as vendored" was written down as "MPS is unusable" — and then read by everything downstream as
 "this machine cannot do GPU training."
 
-**The tell that it was a generalisation, not a finding.** D-24 contained its own reversal clause,
-naming the fix and calling it *"a real option and it is not large."* The author of the constraint
-already knew it was probably removable and recorded that in the same breath as the constraint. The
-clause then sat untested for eight hours. **A reversal condition you can state precisely and
+**The tell that it was a generalisation, not a finding.** The write-up contained its own reversal
+clause, naming the fix and calling it *"a real option and it is not large."* Whoever wrote the
+constraint already knew it was probably removable and recorded that in the same breath as the
+constraint. The clause then sat untested for eight hours. **A reversal condition you can state precisely and
 cheaply test is not a caveat — it is an unrun experiment.** If you can name the test, the honest
 options are to run it or to say plainly that you chose not to and why.
 
@@ -928,7 +876,7 @@ change scope, budget, or a stopping rule, cost the smallest patch that would tes
 about fifteen minutes against a hundred projected hours.
 
 **And it was caught from outside.** No internal review pass surfaced this — the finding came from
-the author asking the obvious naive question ("MPS doesn't run here? what's going on?") that the
+someone asking the obvious naive question ("MPS doesn't run here? what's going on?") that the
 people deep in the work had stopped asking, because for them it had already been settled. Settled
 is precisely the state in which a premise stops being examined.
 
@@ -936,41 +884,42 @@ is precisely the state in which a premise stops being examined.
 
 ## 23. A reviewer's assurance that a check is redundant is a claim, not a clearance
 
-**How it presented here.** After the MPS float32 patch landed, the reviewing session wrote in
-SUP-20260906-79 that the end-to-end validation run the worker had queued was *"a weaker test than
-the E0a check you already passed — a full training run confounds device difference with seed
-variance... The E0a check already did that job properly."* The reasoning was sound on its face:
-E0a had passed on MPS with a device delta of 4e-8 against a seed delta of 2.7e-3, and a single
-training run genuinely cannot separate device from seed.
+**How it presented here.** After an MPS float32 patch landed, a review pass argued that the
+end-to-end validation run still queued was *"a weaker test than the check you already passed — a
+full training run confounds device difference with seed variance... that check already did that
+job properly."* The reasoning was sound on its face: the earlier check had passed on MPS with a
+device delta of 4e-8 against a seed delta of 2.7e-3, and a single training run genuinely cannot
+separate device from seed.
 
-**The worker ran it anyway, and it caught a second MPS bug.** `evaluator_wrapper.py`'s
+**The queued run went ahead anyway, and it caught a second MPS bug.** `evaluator_wrapper.py`'s
 `get_co_embeddings` / `get_motion_embeddings` carried the *same* cast-after-transfer defect as
-`_extract_into_tensor`. The E0a gate had not covered it, because **the E0a check and the E1
+`_extract_into_tensor`. The earlier check had not covered it, because **that check and this
 pipeline instantiate two different vendored evaluator classes.** Passing one class's MPS gate
-licensed nothing about the other's. Had the worker deferred, the bug would have surfaced later as
-corrupted numbers in an experiment rather than as a crash in a validation run.
+licensed nothing about the other's. Had the run been skipped on the reviewer's advice, the bug
+would have surfaced later as corrupted numbers in an experiment rather than as a crash in a
+validation run.
 
 There was a third gap in the same area that neither the finding nor the decision record mentioned:
 `dist_util.dev()` only ever returned `cuda` or `cpu`. Without an MPS branch, nothing could reach
 the patched diffusion code at all. **The prescription named one fix; three were needed.** A patch
 verified correct in isolation is not a patch verified sufficient in situ.
 
-**Why the reviewer's error was structurally predictable.** SUP-79 generalised from *one* validated
-path to a *different* path on the strength of the first one's clean result — which is landmine §22
-("a reproduced error is a fact about a configuration, not a property of the hardware") with its
-sign flipped. §22 is over-generalising a failure; this is over-generalising a success. Both come
-from treating a measured fact about one configuration as a property of the system. The clean E0a
-numbers made the reviewer *more* confident, not less, that further checking was waste — and
-confidence is precisely what removes the impulse to check.
+**Why the reviewer's error was structurally predictable.** The advice generalised from *one*
+validated path to a *different* path on the strength of the first one's clean result — which is
+landmine §22 ("a reproduced error is a fact about a configuration, not a property of the
+hardware") with its sign flipped. §22 is over-generalising a failure; this is over-generalising a
+success. Both come from treating a measured fact about one configuration as a property of the
+system. The clean earlier numbers made the reviewer *more* confident, not less, that further
+checking was waste — and confidence is precisely what removes the impulse to check.
 
-**Practice, for both roles.** For the producer: a reviewer's "this is redundant" carries no more
-authority than any other unverified claim, and costs nothing to disregard when the check is cheap
-and already queued. Run it and report the result — if the reviewer was right you have lost
-minutes; if wrong you have caught something no one was looking for. For the reviewer: **downgrade
-a test only when you can name what covers the gap it leaves.** SUP-79 asserted E0a "did that job
-properly" without checking whether the two paths shared an evaluator class. Naming the covering
-test is the discipline that would have exposed the gap before the advice was given, and it is the
-same discipline §16 demands of a blocker claim.
+**Practice, for both roles.** For whoever is doing the work: a reviewer's "this is redundant"
+carries no more authority than any other unverified claim, and costs nothing to disregard when
+the check is cheap and already queued. Run it and report the result — if the reviewer was right
+you have lost minutes; if wrong you have caught something no one was looking for. For the
+reviewer: **downgrade a test only when you can name what covers the gap it leaves.** The advice
+here asserted the earlier check "did that job properly" without checking whether the two paths
+shared an evaluator class. Naming the covering test is the discipline that would have exposed the
+gap before the advice was given, and it is the same discipline §16 demands of a blocker claim.
 
 **Cheap tests do not need a justification to run. They need one to skip.**
 
@@ -978,9 +927,9 @@ same discipline §16 demands of a blocker claim.
 
 ## 24. A value collapsing to zero does not mean its gradient collapses too — a correction to section 11's "no gradient pressure" claim
 
-**Status: VERIFIED (2026-09-07, `notebooks/06_cfg_training_loss_collapse.ipynb`). Corrects, does
-not retract, section 11 — the forward-value algebra in that entry is confirmed exactly; its
-interpretive claim about training-time incentive is not.**
+**Corrects, does not retract, section 11 — the forward-value algebra in that entry is confirmed
+exactly (`notebooks/06_cfg_training_loss_collapse.ipynb`); its interpretive claim about
+training-time incentive is not.**
 
 **The trap.** Section 11 argues, correctly, that `predicted = u + w*(c-u)` collapses to `u` alone
 whenever the network's conditioned and unconditioned forward passes agree (`c = u`), for any
@@ -1023,7 +972,7 @@ CFG belongs at inference time, not folded into the training loss — stands, unc
 still root-cause-grade. What changes is *why* it is fatal: not because the model faces zero
 incentive to use the caption (this project's own toy could not reproduce that claim in the one
 architecture it tried, a linear, additively-injected conditioning pathway structurally similar to
-MDM's own `embed_text` mechanism, `REBUILD_SPEC.md` line 109), but because the same combination
+MDM's own `embed_text` mechanism), but because the same combination
 formula that section 11 describes creates a guidance-scale-dependent instability that plausibly
 explains the tanh squash and gradient clipping the original team needed as compensating hacks.
 **The archived project's own reported Phase 3 loss (0.69, lowest of three phases) remains
@@ -1042,10 +991,10 @@ premise is still a claim, not a result, until it is measured.
 
 ## 25. Sorting an already-sorted array a second time can silently swap tied elements
 
-**Status: VERIFIED (2026-09-07, while building `notebooks/08_pytorch_mps_silent_failures.ipynb`).
-Corrects a claim in `notebooks/02_tmr_second_evaluator.ipynb` that had already been reviewed and
-closed twice (SUP-20260907-88, -92) — the fourth bug found in that notebook, and the second
-correction this project has made to its own already-accepted work.**
+**Found while building `notebooks/08_pytorch_mps_silent_failures.ipynb`. Corrects a claim in
+`notebooks/02_tmr_second_evaluator.ipynb` that had already seemed settled twice before — the
+fourth bug found in that notebook, and the second correction this project has made to its own
+already-accepted work.**
 
 **The trap.** `EvaluatorMDMWrapper.get_motion_embeddings(motions, m_lens)` sorts its input by
 descending length internally (a requirement of `pack_padded_sequence`) and returns embeddings in
@@ -1066,8 +1015,8 @@ silently landed at the wrong position.
 **Why it looked like something else entirely.** The resulting embedding mismatch was large per
 affected sample (max abs diff 1.13, on embeddings whose values commonly range in the tens) and
 was mistaken for a real property of the network — "motion embeddings are not
-batch-composition-invariant" (`notebooks/02`, following SUP-20260907-88's original framing).
-That framing was itself never re-tested against a *correctly called* baseline. Once tested
+batch-composition-invariant" (`notebooks/02`'s original framing). That framing was itself never
+re-tested against a *correctly called* baseline. Once tested
 directly — call the function once, invert that one sort, nothing else — encoding 128 motions in
 one call and encoding them in four batches of 32 produce **identical embeddings to float
 precision, for every sample.** The network was batch-composition-invariant the whole time; the
