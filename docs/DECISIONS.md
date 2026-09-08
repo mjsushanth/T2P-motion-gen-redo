@@ -20,12 +20,21 @@ A metric implementation that has never agreed with an external reference is an u
 instrument (`docs/LANDMINES.md` §10). Gate: reproduce one published HumanML3D figure to a stated
 tolerance, or explicitly downgrade every number to internally-comparable-only.
 **Rejected:** unit tests alone — they prove self-consistency, not correctness of protocol.
-**Status:** ground-truth R-Precision reproduces a published reference to 0.06σ, which is the
-property every internal comparison in this project actually depends on. The stricter version of
-this gate — reproducing MDM's own published FID on its own checkpoint — did not succeed at any
-sample size this hardware could afford (a full-scale replication would cost roughly 5 CPU-hours;
-the full 20-replication protocol roughly 100). Every number from the generation-comparison work
-onward is labelled internally-comparable-only for exactly this reason.
+**Status:** partially met, R-Precision half now satisfied at full scale, FID half still open.
+Ground-truth R-Precision reproduces a published reference to 0.06σ, which is the property every
+internal comparison in this project actually depends on. `docs/EXPERIMENT_DESIGN_E3.md` §9.6 adds
+a second, generated-motion reproduction: this project's harness scores the released MDM checkpoint
+at 0.6172 (n=4,640) against the paper's own 0.611±.007 — +0.87σ, inside ordinary sampling noise,
+on a checkpoint this project did not train. That is the gate's R-Precision half met at generation
+scale, not just on ground truth. The stricter remaining piece — reproducing MDM's own published
+FID on its own checkpoint — did not succeed at any sample size this hardware could afford (a
+full-scale replication would cost roughly 5 CPU-hours; the full 20-replication protocol roughly
+100), and remains open. Numbers from the generation-comparison work onward stay labelled
+internally-comparable-only specifically on the FID axis; the R-Precision axis no longer needs that
+downgrade for this checkpoint.
+**Would close the FID half if:** the ~5 CPU-hour single-run replication (or the full 20-rep
+protocol) is actually spent and lands within the paper's own reported spread — this has not been
+attempted, only priced.
 **Would reverse if:** a published number turns out unreproducible for a reason other than sample
 size, in which case the downgrade path is stated even more broadly.
 

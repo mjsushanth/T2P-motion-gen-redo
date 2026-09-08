@@ -288,3 +288,44 @@ going forward. The 0.7578 figure was independently cross-checked to the digit ag
 measurement and treated as validated at the time -- it agreed with the *wrong* thing to agree
 with, which is itself worth remembering: a cross-check against a small-sample number confirms
 consistency between two samples, not that either one is close to the population value.
+
+### 9.6 A second, larger result: this reproduces a published external number
+
+E3's own comparison in §9.1 is internal -- spatial vs. non-spatial, both measured by this
+project's own pipeline. Separately, and worth stating on its own: **E3's overall figure also
+reproduces MDM's own published number.**
+
+| | Guo R-Precision-top3 | n | SE (binomial) |
+|---|---:|---:|---:|
+| MDM, published (`LANDSCAPE.md` line 47) | 0.611 ± .007 | (paper's own protocol) | .007 (paper's own) |
+| MDM, this project's harness (E3, overall) | 0.6172 | 4,640 | 0.0072 |
+
+Difference: +0.0062, against a combined SE of ~0.0072-0.010 depending on which SE is taken as
+authoritative -- **+0.62 to +0.87σ either way**, comfortably inside ordinary sampling noise. This
+project's own evaluation pipeline, scoring the same released checkpoint the paper reports, on the
+full 4,640-caption test-eval pool, lands on the paper's own number without having trained anything.
+That is a genuine harness-validation result, independent of and in addition to the spatial null
+in §9.1-9.4: it is evidence about *this project's measurement stack*, not about this checkpoint's
+conditioning behavior. See `docs/DECISIONS.md` D-03 for what this changes about that gate's status.
+
+**A related question, worth closing out precisely rather than loosely: was the superseded n=128
+figure (0.7578, §9.5) ever a plausible reading of the *published* 0.611, on its own terms?**
+Comparing 0.7578 against 0.611 needs the standard error of *the measurement that produced 0.7578*
+-- i.e. the SE at n=128, not the tighter SE E3 achieved at n=4,640. Using the correct, matching SE:
+
+```
+SE at n=128, using the published p=0.611:  sqrt(0.611 * 0.389 / 128) ≈ 0.0431
+z = (0.7578 - 0.611) / 0.0431 ≈ 3.41σ
+```
+
+That is a real discrepancy (roughly a 1-in-1,500 two-tailed tail event) -- consistent with §9.5's
+own conclusion that 0.7578 was a small-sample outlier, not a trustworthy figure for this checkpoint.
+**It is not 20+ sigma.** Reusing E3's own tighter n=4,640 SE (≈0.0072) against the n=128 figure's
+discrepancy gives (0.7578-0.611)/0.0072 ≈ 20.5 -- a number that looks far more dramatic and is
+*wrong*, for the same reason this project's own FID "rough floor" sanity check briefly looked
+broken earlier in this document's history (§9.3): dividing a measurement's own discrepancy by a
+different measurement's tighter uncertainty always inflates the apparent significance. The
+correct, matching-SE answer is ~3.4σ. Both readings support the same conclusion -- 0.7578 was not
+a good estimate of this checkpoint -- but only one of them is an admissible statistic, and it is
+worth being precise about which, in a document that exists specifically to catch this class of
+mistake.

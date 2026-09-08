@@ -90,6 +90,12 @@ never pasted in from a prior run. Ten questions asked and answered so far.
     is no measured gap at the output for a fix to close. A four-hour experiment retired a much
     larger one.
 
+    The same run did something else worth stating on its own: its overall score, **0.6172**,
+    reproduces MDM's own published Guo R-Precision-top3 of **0.611±.007** — **+0.87σ**, on the same
+    released checkpoint, without training anything. That is direct evidence this project's own
+    measurement stack can be trusted, not just this checkpoint's conditioning behavior. Details in
+    `docs/EXPERIMENT_DESIGN_E3.md` §9.6.
+
 Full index with figures and status: **[notebooks/README.md](notebooks/README.md)**.
 
 ---
@@ -138,7 +144,7 @@ findings, because a project that only reports what worked cannot be checked.
 
 | Question | Where it stands |
 |---|---|
-| Can this project trust its own scoring? | Yes — validated against a second, independent evaluator |
+| Can this project trust its own scoring? | Yes — a second independent evaluator, and a reproduced published number at full scale (0.87σ) |
 | Is the text encoder's spatial-language weakness real? | Yes — measured, and confirmed not to be a wiring artifact |
 | Is the one training bug that could have doomed the original approach understood? | Yes — reproduced and explained directly, not just described |
 | Does the evaluation split hold up under scrutiny? | Checked for hidden bias before being used for anything |

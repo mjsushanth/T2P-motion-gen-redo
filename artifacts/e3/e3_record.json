@@ -184,5 +184,15 @@
       },
       "rough_floor_estimate_not_a_validated_law": 0.23230605738575982
     }
+  },
+  "published_reproduction": {
+    "note": "MDM published Guo R-Precision-top3 (LANDSCAPE.md line 47, paper own table)",
+    "published_value": 0.611,
+    "published_se": 0.007,
+    "measured_value": 0.6172413793103448,
+    "measured_n": 4640,
+    "measured_se_binomial": 0.0072,
+    "z_sigma": 0.87,
+    "interpretation": "This project harness reproduces the published figure to within ordinary sampling noise, on the same released checkpoint, without training. See docs/EXPERIMENT_DESIGN_E3.md section 9.6 and docs/DECISIONS.md D-03."
   }
 }

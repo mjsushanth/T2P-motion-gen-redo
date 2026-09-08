@@ -17,6 +17,11 @@ Both headline metrics work the same way underneath. There is a **trained pair of
    a motion   ──► [motion encoder] ──►  a 512-number vector
 ```
 
+<p align="center">
+  <img src="assets/metrics_embedding_space.png" width="700"
+       alt="Captions and motions encoded into one space; each caption sits close to its own motion and far from others">
+</p>
+
 They were trained together so that **a motion and its own caption land close together**, and
 mismatched pairs land far apart. That is the whole trick. Once you have it:
 
@@ -95,6 +100,24 @@ decoys** drawn from other samples. Encode all 32. Rank them by distance to the m
 - **top-1**: was the correct caption ranked #1?
 - **top-3**: was it in the top 3?
 
+```
+   one generated motion   ──►  [motion encoder]  ──►   ●
+   32 candidate captions  ──►  [text encoder]    ──►   ■ ■ ■ … ■
+     (its own + 31 decoys)
+
+   rank all 32 by distance to ● :
+
+     1.  ■  "a person jogs on the spot"          decoy
+     2.  ■  "a person walks forward"          ◄── the correct one
+     3.  ■  "a person steps backward"            decoy
+     ─────────────────────────────────────────── top-3 cut
+     4.  ■  …
+     ⋮
+    32.  ■  …
+
+   top-1 → miss.    top-3 → hit.
+```
+
 Average over many motions. **top-3 is the one everyone reports.**
 
 ### Why 32, and why it is load-bearing
@@ -123,11 +146,21 @@ MDM's own evaluation script carries the line:
 | chance (32 candidates) | **0.094** | a model that has learned nothing |
 | our model, 3,000 steps | **0.297** | 3.2× chance — it learned *something* |
 | MDM (published) | **0.611** | a properly trained model |
+| MDM (this project, measured) | **0.6172** | this project's own harness, same released checkpoint, n=4,640 |
 | real human motion | **0.797** | the ceiling; even real data isn't 1.0 |
 
 **Why real data doesn't score 1.0.** Captions are ambiguous. "A person walks forward" describes
 thousands of motions in the dataset. Some decoys genuinely match the motion as well as its own
 caption does. **This ceiling is a property of language, not a flaw in the metric.**
+
+**The measured row above is a harness-validation result, not just a table entry.** This project's
+own pipeline, scoring the same released MDM checkpoint the paper reports, on the full 4,640-caption
+test-eval pool, landed at 0.6172 against the paper's 0.611±.007 — a difference of **+0.87σ**, using
+the standard error at this sample size (`sqrt(0.611*0.389/4640) ≈ 0.0072`, matching the paper's own
+quoted ±.007). That is inside ordinary sampling noise: this pipeline reproduces a published,
+external number on a checkpoint it did not train. See `docs/EXPERIMENT_DESIGN_E3.md` §9.6 and
+`docs/DECISIONS.md` D-03 for the full account, including how an earlier n=128 measurement of this
+same checkpoint (0.7578) was *not* a plausible reproduction and why.
 
 ### Where it breaks
 
@@ -150,6 +183,14 @@ means summarising each with two things:
 - **μ (mu)** — the mean. Where the cloud's centre sits. A 512-number vector.
 - **Σ (Sigma)** — the covariance. The cloud's *shape*: how spread out, in which directions,
   and which dimensions move together. **A 512 × 512 matrix — 262,144 numbers.**
+
+In one dimension the whole idea is visible at a glance — a generated distribution can be wrong by
+sitting in the **wrong place**, or by having the **wrong spread**, and FID charges you for both:
+
+<p align="center">
+  <img src="assets/metrics_frechet_1d.png" width="760"
+       alt="Two ways a generated distribution differs from real: shifted mean, or matching mean with much wider spread">
+</p>
 
 Then:
 
@@ -186,6 +227,17 @@ Our results:
 number was fabricated by the estimator. Nothing was wrong with the data.
 
 ### The mechanism: rank deficiency
+
+<p align="center">
+  <img src="../notebooks/04_eigenvalue_spectrum.png" width="700"
+       alt="Eigenvalues of a 512x512 covariance estimated from 128 samples: real spread for 127 directions, then a vertical fall to numerical zero">
+</p>
+
+The picture above is the whole problem. Those are the eigenvalues of a 512×512 covariance estimated
+from 128 samples — the spread the estimate believes exists in each direction. It falls off a cliff
+at exactly **127**, and every direction beyond it reads as *perfectly flat*. Not flat because the
+data is flat; flat because 128 points cannot outline more than 127 directions of spread.
+
 
 Estimating a 512×512 covariance from n samples, the sample covariance has **rank at most n−1**.
 
