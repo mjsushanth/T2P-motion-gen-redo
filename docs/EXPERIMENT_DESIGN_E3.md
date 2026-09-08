@@ -1,6 +1,7 @@
 # EXPERIMENT_DESIGN_E3 — does CLIP's spatial deficit actually reach generated motion?
 
-**Status: DESIGN ONLY as of this section. Nothing has been run yet at the time this is written.**
+**Status: RUN AND SCORED (2026-09-08).** Sections 1-8 below are the design as pre-registered,
+unchanged from before the run. Results are in **section 9**.
 
 ## 1. The question
 
@@ -145,3 +146,81 @@ than any effect worth caring about once real variance is accounted for (e.g. if 
 retrieval outcomes turn out far more correlated within a batch than the independent-Bernoulli
 assumption behind §4's formula assumes) — in which case this design's own numbers, not a
 qualitative impression, are what say so.
+
+---
+
+## 9. Results
+
+**Generated:** 4,640 samples (145 full batches of 32; the eval pool's own remainder of 8 was
+dropped, same batch-of-32 convention used throughout this project), 4.03 hours wall-clock,
+matching the ~4.07h estimate to within 1%. Split: **2,708 spatial (58.4%) / 1,932 non-spatial**
+— consistent with notebook 05's own 58.3% corpus-wide rate to 0.1 point; the earlier concern that
+E3's population might run more spatial than notebook 05's (from the 450 multi-caption entries)
+did not hold up once the full run completed and is not carried forward.
+
+### 9.1 R-Precision — the decisive comparison
+
+| top-3 | spatial (n=2,708) | non-spatial (n=1,932) | gap | combined SE | σ | 3σ threshold |
+|---|---:|---:|---:|---:|---:|---:|
+| Guo | 0.5971 | 0.5901 | +0.0070 | 0.0146 | +0.48σ | 0.0439 |
+| TMR | 0.6998 | 0.7260 | -0.0263 | 0.0134 | -1.95σ | 0.0403 |
+
+**Neither evaluator clears the pre-registered 3σ threshold, and the two evaluators disagree even
+on the *sign* of the (statistically insignificant) gap** — Guo reads spatial very slightly ahead,
+TMR reads non-spatial ahead by a larger but still sub-threshold margin. Per §6's pre-registered
+interpretation, this is the **"no difference, beyond the MDE" outcome**: the embedding-space
+spatial deficit notebooks 01/01b measured (Cohen's d=+0.995 on CLIP's own embeddings) does **not**
+show up as a resolvable generation-level R-Precision gap at this checkpoint's operating range,
+under either evaluator, at this experiment's power (MDE 0.039 spatial / 0.046 non-spatial, a
+~4.4x tighter floor than every prior generation-side comparison in this project). Reported with
+the same prominence as a positive result would have received, per the design's own commitment.
+
+Top-1/top-2 show the same pattern (largest single gap: TMR top-2, non-spatial ahead by 0.046,
+still at the edge of that subset's own MDE, not clearing it).
+
+### 9.2 Length terciles
+
+Spatial terciles (mean caption length 7.4 / 12.5 / 23.0 words) show Guo top-3 rising with length
+(0.509 → 0.587 → 0.598) while TMR top-3 is non-monotonic (0.623 → 0.699 → 0.622). Non-spatial
+terciles (5.9 / 8.8 / 16.0 words) show the opposite pattern for TMR (falling: 0.738 → 0.753 →
+0.678) and are roughly flat for Guo. Per-tercile n (~640-900) carries an MDE of ~0.07-0.08 —
+comparable to or larger than every tercile-to-tercile swing observed. **No tercile pattern here
+clears its own noise floor**; reported as a secondary, inconclusive observation, not a finding.
+
+### 9.3 FID — secondary, with floors, per §5's own caution
+
+| subset | n (gen / gt) | generated-vs-real FID | real-vs-real floor (n/side) | rough 1/n estimate |
+|---|---|---:|---:|---:|
+| overall | 4,640 / 4,640 | 0.484 | 0.096 (n=2,320) | 0.094 |
+| spatial | 2,708 / 2,757 | 0.649 | 0.179 (n=1,378) | 0.159 |
+| non-spatial | 1,932 / 1,883 | 0.437 | 0.257 (n=941) | 0.232 |
+
+**Pipeline sanity check (per §5):** each subset's own real-vs-real floor lands within 2-13% of
+the rough 1/n estimate at that same per-side n — consistent with a working pipeline, not a red
+flag. (An earlier draft of this table divided the rough estimate by the full subset n rather than
+the per-side n the floor is actually measured at, which made the two numbers look ~2x apart; that
+was a bug in this notebook's own arithmetic, not a pipeline problem, caught and fixed before
+being reported here.)
+
+**Raw cross-subset FID comparison is invalid and not attempted**: spatial's generated-vs-real FID
+(0.649) sits at 3.6x its own floor; non-spatial's (0.437) sits at 1.7x its own floor. Whether that
+ratio-to-own-floor difference reflects anything real is not established by this design (FID is
+secondary here, R-Precision is decisive) — noted as a secondary, exploratory observation only.
+
+### 9.4 What this establishes
+
+**The embedding-space spatial deficit measured in notebooks 01/01b does not propagate into a
+resolvable generation-level R-Precision gap on this checkpoint, at this experiment's power.**
+This is a genuine null, not an underpowered non-result: the design's own MDE (0.039-0.046) is
+tight enough that a deficit anywhere near the embedding-space effect size would very likely have
+shown up. Per §2's own reasoning, this bears directly on `docs/EXPERIMENT_DESIGN_E2.md`: a
+text-encoder adapter aimed at closing a generation-level spatial gap would be repairing a defect
+that, at this checkpoint's scale, does not measurably reach the output — E2 is not automatically
+well-motivated by this result the way a positive finding here would have made it.
+
+**What this does not rule out:** a larger, better-trained model might show a gap this severely
+undertrained checkpoint (0.63% of MDM's published training budget) cannot resolve or does not
+exhibit at all; the tercile analysis (§9.2) is underpowered to detect a length-interacting effect
+even if one exists; and TMR's own -1.95σ reading, while not clearing the pre-registered threshold,
+is the largest single number in this table and is not nothing -- a repeat at this same power on a
+better-trained checkpoint would be the natural next check before concluding this generalizes.

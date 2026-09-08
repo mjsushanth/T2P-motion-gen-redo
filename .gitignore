@@ -35,3 +35,9 @@ artifacts/demo/embedding_retrieval_cache.pkl
 # read by Claude Code tooling from the project root, so it stays in place on disk -- but it is
 # process/workflow instruction, not project documentation, so it is not published
 /CLAUDE.md
+
+# E3's raw generated-motion cache (~915MB at n=4640, one batch of 32 per .npz) -- regenerable
+# from scripts/e3_generate.py against the same checkpoint and seed; e3_record.json (the actual
+# scored results) is the small, committed artifact that matters
+artifacts/e3/batches/
+artifacts/e3/_smoketest/

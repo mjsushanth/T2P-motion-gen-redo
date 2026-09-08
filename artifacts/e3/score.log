@@ -1,0 +1,201 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading cached generated batches...
+4640 generated samples loaded, motion shape (4640, 196, 263)
+Loading Evaluation Model Wrapper (Epoch 28) Completed!!
+Embedding text (Guo)...
+Embedding motions (Guo, batches of 32, single-sort-and-invert)...
+Guo embeddings ready (145 full batches of 32, 0 leftover samples excluded from R-Precision, same convention as every other R-Precision number in this project)
+Loading TMR...
+Embedding motions + text (TMR)...
+Loading weights:   0%|          | 0/100 [00:00<?, ?it/s]Loading weights: 100%|██████████| 100/100 [00:00<00:00, 12431.62it/s]
+Spatial: 2708, non-spatial: 1932 (58.4% spatial)
+Embedding real ground-truth motions (Guo) for FID...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+Ground truth: 4640 real motions (2757 spatial, 1883 non-spatial)
+{
+  "note": "generated_vs_real_fid is NOT directly comparable across subsets of different size -- FID's estimator bias grows as n shrinks, so a smaller subset shows a higher FID for that reason alone, independent of model quality. real_vs_real_floor (measured directly for that same subset, at that subset's own n, 30 disjoint-halves trials) is reported alongside every number specifically so this cannot be misread as a quality difference. Only R-Precision is decisive for the spatial-vs-non-spatial comparison this experiment exists to make.",
+  "overall": {
+    "label": "overall",
+    "n_generated": 4640,
+    "n_ground_truth": 4640,
+    "generated_vs_real_fid": 0.4838043316514842,
+    "real_vs_real_floor": {
+      "n_per_side": 2320,
+      "mean": 0.09569600329179764,
+      "std": 0.03377686119445656,
+      "trials": 30
+    },
+    "rough_floor_estimate_not_a_validated_law": 0.04711206896551724
+  },
+  "spatial": {
+    "label": "spatial",
+    "n_generated": 2708,
+    "n_ground_truth": 2757,
+    "generated_vs_real_fid": 0.6491243812250787,
+    "real_vs_real_floor": {
+      "n_per_side": 1378,
+      "mean": 0.17911312320078185,
+      "std": 0.06434409542192865,
+      "trials": 30
+    },
+    "rough_floor_estimate_not_a_validated_law": 0.07928908233587233
+  },
+  "non_spatial": {
+    "label": "non_spatial",
+    "n_generated": 1932,
+    "n_ground_truth": 1883,
+    "generated_vs_real_fid": 0.4369017001363602,
+    "real_vs_real_floor": {
+      "n_per_side": 941,
+      "mean": 0.25725815560169424,
+      "std": 0.116972190239489,
+      "trials": 30
+    },
+    "rough_floor_estimate_not_a_validated_law": 0.11609134360063728
+  }
+}
+{
+  "overall": {
+    "label": "overall",
+    "n": 4640,
+    "guo_r_precision": [
+      0.3252155172413793,
+      0.5081896551724138,
+      0.6172413793103448
+    ],
+    "tmr_r_precision": [
+      0.4857758620689655,
+      0.6450431034482759,
+      0.7286637931034483
+    ],
+    "mean_caption_words": 12.607327586206896
+  },
+  "spatial": {
+    "label": "spatial",
+    "n": 2708,
+    "guo_r_precision": [
+      0.30654761904761907,
+      0.48549107142857145,
+      0.5970982142857143
+    ],
+    "tmr_r_precision": [
+      0.4445684523809524,
+      0.6037946428571429,
+      0.6997767857142857
+    ],
+    "mean_caption_words": 14.30797636632201
+  },
+  "non_spatial": {
+    "label": "non_spatial",
+    "n": 1932,
+    "guo_r_precision": [
+      0.3026041666666667,
+      0.4739583333333333,
+      0.5901041666666667
+    ],
+    "tmr_r_precision": [
+      0.4947916666666667,
+      0.6494791666666667,
+      0.7260416666666667
+    ],
+    "mean_caption_words": 10.22360248447205
+  },
+  "spatial_terciles": [
+    {
+      "label": "spatial_tercile_0",
+      "n": 902,
+      "guo_r_precision": [
+        0.24776785714285715,
+        0.38504464285714285,
+        0.5089285714285714
+      ],
+      "tmr_r_precision": [
+        0.37611607142857145,
+        0.5279017857142857,
+        0.6227678571428571
+      ],
+      "mean_caption_words": 7.351441241685144
+    },
+    {
+      "label": "spatial_tercile_1",
+      "n": 902,
+      "guo_r_precision": [
+        0.3080357142857143,
+        0.46763392857142855,
+        0.5870535714285714
+      ],
+      "tmr_r_precision": [
+        0.42745535714285715,
+        0.6015625,
+        0.6986607142857143
+      ],
+      "mean_caption_words": 12.51441241685144
+    },
+    {
+      "label": "spatial_tercile_2",
+      "n": 904,
+      "guo_r_precision": [
+        0.3013392857142857,
+        0.47879464285714285,
+        0.5982142857142857
+      ],
+      "tmr_r_precision": [
+        0.3783482142857143,
+        0.5323660714285714,
+        0.6216517857142857
+      ],
+      "mean_caption_words": 23.038716814159294
+    }
+  ],
+  "non_spatial_terciles": [
+    {
+      "label": "non_spatial_tercile_0",
+      "n": 644,
+      "guo_r_precision": [
+        0.2796875,
+        0.4453125,
+        0.571875
+      ],
+      "tmr_r_precision": [
+        0.4484375,
+        0.6296875,
+        0.7375
+      ],
+      "mean_caption_words": 5.894409937888199
+    },
+    {
+      "label": "non_spatial_tercile_1",
+      "n": 644,
+      "guo_r_precision": [
+        0.2890625,
+        0.4484375,
+        0.54375
+      ],
+      "tmr_r_precision": [
+        0.4984375,
+        0.6640625,
+        0.753125
+      ],
+      "mean_caption_words": 8.773291925465838
+    },
+    {
+      "label": "non_spatial_tercile_2",
+      "n": 644,
+      "guo_r_precision": [
+        0.284375,
+        0.465625,
+        0.56875
+      ],
+      "tmr_r_precision": [
+        0.415625,
+        0.590625,
+        0.678125
+      ],
+      "mean_caption_words": 16.003105590062113
+    }
+  ]
+}
+Saved: ../../artifacts/e3/e3_record.json

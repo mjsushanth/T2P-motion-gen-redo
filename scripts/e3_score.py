@@ -286,7 +286,11 @@ def main():
         rng = np.random.RandomState(0)
         floor = fid_disjoint_halves(gt_motion_emb[gt_idx], n_trials=30, rng=rng)
         gen_vs_real = fid_generated_vs_real(guo_motion_emb[gen_idx], gt_motion_emb[gt_idx])
-        rough_floor = FID_ROUGH_CONST / len(gt_idx) if gt_idx else None
+        # Rough estimate must use the SAME n the floor is actually measured at (n_per_side, one
+        # half of the subset), not the full subset's own n -- an earlier version of this divided
+        # by the full subset n here, silently comparing two numbers computed at different n.
+        n_per_side = floor["n_per_side"] if floor else None
+        rough_floor = FID_ROUGH_CONST / n_per_side if n_per_side else None
         return {
             "label": label, "n_generated": len(gen_idx), "n_ground_truth": len(gt_idx),
             "generated_vs_real_fid": gen_vs_real,
