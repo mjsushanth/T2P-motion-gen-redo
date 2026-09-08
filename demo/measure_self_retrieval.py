@@ -1,14 +1,14 @@
-"""SUP-20260906-60/61/62: measures the real self-retrieval effect for the demo's new headline --
+"""Measures the real self-retrieval effect for the demo's headline --
 "a full caption finds its own motion N% of the time; truncated, it finds it M% of the time" --
 with BOTH retrievers (TF-IDF and the embedding retriever) over the SAME sample, so which one
 leads the demo is chosen on stated, measured grounds, not on whichever looked better.
 
-The director's own SUP-61 measured this premise with TF-IDF over HumanML3D's own tags (78.3%
-full self-retrieval -> 55.0% truncated, n=300) specifically to check the premise before building
-on it. This script independently re-verifies that TF-IDF number (not just quoting it) and
-compares it against the embedding retriever on the identical sample, using HumanML3D's own real
-tags for truncation (not spaCy) so this measurement is independent of SUP-57's separate
-spaCy-agreement question.
+An earlier measurement of this premise, using TF-IDF over HumanML3D's own tags, found 78.3% full
+self-retrieval -> 55.0% truncated (n=300). This script independently re-verifies that TF-IDF
+number (not just quoting it) and compares it against the embedding retriever on the identical
+sample, using HumanML3D's own real tags for truncation (not spaCy) so this measurement is
+independent of the separate spaCy-agreement question checked in
+`validate_truncation_agreement.py`.
 """
 import glob
 import json

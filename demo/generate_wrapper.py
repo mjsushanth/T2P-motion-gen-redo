@@ -1,16 +1,22 @@
 """Thin wrapper around MDM's own sample/generate.py -- reuses its main() directly rather than
-reimplementing generation+rendering, per this project's standing rule (wrap vendored machinery,
-do not reimplement it). Produces one rendered .mp4 per call, using MDM's released checkpoint
-(MIT-licensed, already verified in E0b) -- generation quality is real because the model is real;
-this demo is about conditioning, not about our own (severely undertrained, 0.63% of MDM's
-training budget) model.
+reimplementing generation+rendering (wrap vendored machinery, do not reimplement it). Produces
+one rendered .mp4 per call, using MDM's released checkpoint (MIT-licensed, already verified in
+E0b) -- generation quality is real because the model is real; this demo is about conditioning,
+not about our own (severely undertrained, 0.63% of MDM's training budget) model.
 
-Device: whatever `dist_util.dev()` resolves to -- CPU or MPS, not chosen here (SUP-20260906-80).
-D-24 ("MPS is unusable") is REVERSED by D-27/D-28: the same `_extract_into_tensor` and
-`evaluator_wrapper.py` patches that make E1A/E1B trustworthy on MPS apply here unchanged, since
-this wrapper calls the same vendored generation code. Full 1000 diffusion timesteps (no
-respacing), consistent with every other generation call this project has made (E0b, E1A, E1B) --
-not a novel, unverified speedup path, just the same call on whichever device `dist_util` picks.
+Device: whatever `dist_util.dev()` resolves to -- CPU or MPS, not chosen here. An early
+assumption that MPS was unusable for this project turned out to be wrong: the same
+`_extract_into_tensor` and `evaluator_wrapper.py` patches that make training/evaluation
+trustworthy on MPS elsewhere in this project apply here unchanged, since this wrapper calls the
+same vendored generation code. Full 1000 diffusion timesteps (no respacing), consistent with
+every other generation call this project has made -- not a novel, unverified speedup path, just
+the same call on whichever device `dist_util` picks.
+
+Timing (MPS): two independent, isolated click-to-video measurements (single browser client,
+otherwise-idle server, verified via lsof before each click), both measured from each rendered
+.mp4's own mtime against the UI click timestamp -- 10.3s then 11.0s, and separately 4.8s then
+10.0s -- roughly 5-11s per call, not the "several minutes" this took on CPU. The run-to-run
+spread is real, not rounding noise; report a range, not a single number.
 """
 import os
 import sys

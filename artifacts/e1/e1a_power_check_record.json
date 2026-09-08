@@ -62,7 +62,7 @@
     "L_conv_reference_mean": 0.0563,
     "fraction_using_final_step": 0.616,
     "fraction_using_avg_last_4": 0.661,
-    "note": "per SUP-20260906-42: this is a floor-detector (did training happen at all), not a quality predictor -- the R-Precision gate above is what decides this check, this number is context only"
+    "note": "This is a floor-detector (did training happen at all), not a quality predictor -- the R-Precision gate above is what decides this check, this number is context only"
   },
-  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37) -- an above-chance result here reflects held-out generalisation, not memorisation of the training captions/motions."
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets) -- an above-chance result here reflects held-out generalisation, not memorisation of the training captions/motions."
 }

@@ -1,5 +1,4 @@
-"""Stage 5 demonstrator (SUP-20260906-43, redesigned per SUP-20260906-60/61/62):
-demonstrates the FINDING, not the model.
+"""Stage 5 demonstrator: demonstrates the FINDING, not the model.
 
 Headline (instant, no generation): type a caption, watch the original failed course project's
 own truncation rule chop it, then see the nearest REAL motion each version retrieves. Both panes
@@ -8,16 +7,16 @@ them *is* the information truncation destroyed. This visualises the actual measu
 (caption truncation costs retrieval accuracy) rather than an unresolvable generation comparison.
 
 Retrieval uses TF-IDF, not the evaluator's own text-to-motion embedding space -- checked, not
-assumed (review SUP-20260906-62, `demo/measure_self_retrieval.py`): the embedding retriever's
-full-corpus self-retrieval collapses to ~1% (its encoder was trained to discriminate among
-32 candidates, not ~8,000), while TF-IDF finds a caption's own true motion 74.7% of the time
-(full) / 51.7% (truncated), independently re-measured against the director's own 78.3%/55.0%.
-TF-IDF wins on stated, measured grounds, not because it looked better going in.
+assumed (`demo/measure_self_retrieval.py`): the embedding retriever's full-corpus self-retrieval
+collapses to ~1% (its encoder was trained to discriminate among 32 candidates, not ~8,000), while
+TF-IDF finds a caption's own true motion 74.7% of the time (full) / 51.7% (truncated),
+independently re-measured against an earlier measurement's 78.3%/55.0%. TF-IDF wins on stated,
+measured grounds, not because it looked better going in.
 
 Secondary, below the fold, behind its own button: generation via MDM's own released checkpoint
-(MIT-licensed, already verified in E0b) -- illustrative only, explicitly not evidential
-(`docs/DECISIONS.md` D-26: the relative quality of the two generated panes cannot be attributed
-to truncation at this project's affordable sample size).
+(MIT-licensed, already verified in E0b) -- illustrative only, explicitly not evidential: the
+relative quality of the two generated panes cannot be attributed to truncation at this project's
+affordable sample size.
 
 Run: python app.py   (from this directory; needs the mjs_mlcvdl_unified_m5 conda env active)
 """
@@ -46,7 +45,7 @@ TF-IDF retrieval, independently re-verified against the original measurement):**
 **Truncating the caption to the original failed course project's own rule changed which real
 motion got retrieved in 34.7% of cases.** That is **the same underlying effect, measured a
 different way**, as this project's headline retrieval-space finding (R-Precision-top3 drops
-0.8013 → 0.6563, ~9x the measured noise floor, `docs/EXPERIMENT_LOG.md`'s E1-pilot) — lexical
+0.8013 → 0.6563, ~9x the measured noise floor, from the E1-pilot) — lexical
 retrieval and the validated embedding space are different mechanisms, but both show shortening
 the description makes it stop finding the right motion. **No embeddings, no metric jargon: type
 a caption, watch it happen (or not — on any single caption, roughly half the time truncation
@@ -71,7 +70,7 @@ reported, neither is claimed to be the other.
 """
 
 GENERATION_MD = """
-### Illustrative only — not evidential (`docs/DECISIONS.md` D-26)
+### Illustrative only — not evidential
 
 Generation uses **MDM's own released checkpoint** (MIT license, GuyTevet/motion-diffusion-model)
 — not a model trained by this project. This project's own model is severely undertrained
@@ -80,11 +79,14 @@ finding fairly if shown here.
 
 **The relative quality of the two panes below cannot be attributed to truncation** — that
 comparison was tested directly (E1B) and found a bounded null at this project's affordable
-sample size (`docs/DECISIONS.md` D-28: effects ≥0.175 excluded at 3σ). The retrieval panes above
-are this demo's actual evidence; the panes below just show what a real generator does with each
-caption. **Each generation takes about 10 seconds** (MPS, `docs/DECISIONS.md` D-27/D-28 — this
-was several minutes on CPU before MPS training/generation was validated; measured directly,
-click to rendered video, not assumed from the batch-32 rate elsewhere in this project).
+sample size (effects ≥0.175 excluded at 3σ). The retrieval panes above are this demo's actual
+evidence; the panes below just show what a real generator does with each caption. **Each
+generation takes roughly 5-11 seconds** (MPS — two independent, isolated click-to-video
+measurements on an otherwise-idle server: 10.3s + 11.0s (21.3s total) and, separately,
+4.8s + 10.0s (14.8s total); this was several minutes on CPU before MPS training/generation was
+validated. Both measured directly from file mtimes against the click timestamp, not assumed from
+the batch-32 rate elsewhere in this project — the spread between runs is real, not a rounding
+difference).
 """
 
 
@@ -152,7 +154,7 @@ def run_retrieval(caption: str):
         f"{cut_display}\n\n"
         f"{fallback_note}\n\n{outcome_note}"
     )
-    # Similarity scores deliberately omitted (review SUP-20260906-68): TF-IDF cosine similarity
+    # Similarity scores deliberately omitted: TF-IDF cosine similarity
     # is not comparable between the full and truncated queries -- a shorter query mechanically
     # scores higher (fewer terms left unmatched in the query vector), independent of whether it
     # found the right motion. Displaying both numbers side by side invited exactly the wrong
@@ -166,7 +168,7 @@ def run_retrieval(caption: str):
 
 
 def run_generation(caption: str, seed: int):
-    """Computes its own truncated caption (SUP-20260906-80): this button used to take
+    """Computes its own truncated caption: this button used to take
     truncated_caption from a gr.State that only run_retrieval ever populated, so clicking
     "Also generate" without first clicking "Show what gets retrieved" silently generated the
     SAME caption for both panels -- two identical videos under contrasting labels, the opposite
@@ -222,7 +224,7 @@ with gr.Blocks(title="T2P-motion-gen-redo -- caption truncation demonstrator") a
     gr.Markdown(GENERATION_MD)
     with gr.Row():
         seed_box = gr.Number(label="Seed", value=10, precision=0, scale=1)
-        generate_btn = gr.Button("Also generate (~10s each, MPS)", scale=1)
+        generate_btn = gr.Button("Also generate (~5-11s each, MPS)", scale=1)
     generation_note_md = gr.Markdown()
     with gr.Row():
         with gr.Column():

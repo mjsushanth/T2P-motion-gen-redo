@@ -117,5 +117,5 @@
   "r_precision_top3_e1b": 0.34375,
   "r_precision_top3_ground_truth": 0.7950431034482759,
   "fid_e1b_vs_ground_truth": 8.340228902393221,
-  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets, per review SUP-20260906-37)."
+  "note": "trained on split=train, evaluated on split=test (disjoint materialized subsets)."
 }

@@ -1,4 +1,4 @@
-"""SUP-20260906-57: the demo's truncation (demo/truncate.py, spaCy POS-tagging on free text)
+"""The demo's truncation (demo/truncate.py, spaCy POS-tagging on free text)
 must be validated against the truncation actually measured in the E1-pilot
 (scripts/e1_pilot_caption_truncation.py, HumanML3D's own pre-tagged captions) -- otherwise the
 demo could show a rule nobody measured. Runs both over the same real HumanML3D captions and

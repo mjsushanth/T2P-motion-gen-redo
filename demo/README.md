@@ -1,19 +1,17 @@
 # Stage 5 demonstrator — caption truncation, made visible
 
-Demonstrates this project's actual finding (`docs/EXPERIMENT_LOG.md`'s E1-pilot: caption
-truncation costs measurable text-motion alignment, ~9-17x its own noise floor) rather than this
-project's own model, which is severely undertrained (`docs/DECISIONS.md` D-24) and would
-misrepresent the finding if shown as the point of the demo. Design rationale in full:
-`reviews/REVIEW_QUEUE.md` SUP-20260906-43.
+Demonstrates this project's actual finding (the E1-pilot: caption truncation costs measurable
+text-motion alignment, ~9-17x its own noise floor) rather than this project's own model, which is
+severely undertrained (`docs/DECISIONS.md` D-24) and would misrepresent the finding if shown as
+the point of the demo.
 
 ## What it shows
 
-**Redesigned per review SUP-20260906-60/61/62** — the original design led with two *generated*
-panes (full vs. truncated caption), which invited exactly the overclaim the interface's own
-caveat forbade: that comparison was tested (E1B) and found statistically unresolvable at any
-affordable sample size (`docs/DECISIONS.md` D-26). Showing it prominently, next to prose
-explaining it can't be trusted, meant the most salient thing on the page contradicted the text
-under it. The headline now visualises the effect that **is** measured, instead.
+Leading with two *generated* panes (full vs. truncated caption) would invite an overclaim this
+page explicitly disowns elsewhere: that comparison was tested (E1B) and found statistically
+unresolvable at any affordable sample size (`docs/DECISIONS.md` D-26). Showing it prominently,
+next to prose explaining it can't be trusted, would mean the most salient thing on the page
+contradicted the text under it. The headline instead visualises the effect that **is** measured.
 
 Type any motion caption. **Headline (instant, no generation, no GPU wait):**
 1. Applies the **original failed course project's own caption-truncation rule** (faithfully
@@ -40,7 +38,7 @@ distribution), not a broken demo.
 ## Requirements
 
 - The `mjs_mlcvdl_unified_m5` conda environment (torch, numpy, scikit-learn already present),
-  plus this directory's own pinned extras (`demo/requirements.txt`, per SUP-20260906-59):
+  plus this directory's own pinned extras (`demo/requirements.txt`):
   ```bash
   conda activate mjs_mlcvdl_unified_m5
   pip install -r demo/requirements.txt
@@ -74,7 +72,7 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
   affordable sample size (`docs/DECISIONS.md` D-26). They are demoted below the fold and labelled
   illustrative-only for exactly this reason. The demo's actual evidence is the retrieval headline.
 - **The retrieval baseline is TF-IDF, not the evaluator's own text-to-motion embedding space —
-  checked, not assumed** (review SUP-20260906-58/62, `demo/measure_self_retrieval.py`): an
+  checked, not assumed** (`demo/measure_self_retrieval.py`): an
   embedding retriever was built first, on the reasoning that it uses the same validated space
   R-Precision itself relies on. Measured against TF-IDF on the identical 300-caption sample, its
   full-corpus self-retrieval rate collapsed to ~1% (TF-IDF: 74.7%) — diagnosed directly, not
@@ -89,7 +87,7 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
   in the codebase and available for a future rung where the corpus is small enough for it to
   matter, but is not currently used by `app.py`.
 - **The demo's truncation was validated against the one actually measured, not assumed to match**
-  (`validate_truncation_agreement.py`, review SUP-20260906-57): run over 8,962 real HumanML3D
+  (`validate_truncation_agreement.py`): run over 8,962 real HumanML3D
   captions, the spaCy-based rule used here agrees with the tag-based rule the E1-pilot actually
   measured on **93.8%** of captions (punctuation-normalized comparison — the raw agreement rate,
   52.5%, is inflated apart mostly by whitespace/punctuation tokenization differences, not by
@@ -111,18 +109,18 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
   directly, not reimplemented) for single-caption generation + rendering.
 - `render_real_motion.py` — renders an already-stored real HumanML3D motion (for the retrieval
   pane), reusing MDM's own decode path (`recover_from_ric`) and renderer (`plot_3d_motion`).
-- `retrieval.py` — the TF-IDF nearest-neighbour baseline; what `app.py` actually uses, per
-  SUP-20260906-62's measurement (see Known limitations above).
+- `retrieval.py` — the TF-IDF nearest-neighbour baseline; what `app.py` actually uses (see
+  Known limitations above for the measurement that decided this).
 - `retrieval_embedding.py` — text-to-motion embedding retrieval via the evaluator's own encoder;
-  built to test whether it beats TF-IDF (per SUP-58), measured to not generalize to full-corpus
-  retrieval at this scale, kept for future use rather than deleted.
+  built to test whether it beats TF-IDF, measured to not generalize to full-corpus retrieval at
+  this scale, kept for future use rather than deleted.
 - `measure_self_retrieval.py` — measures, over the same 300-caption sample, how often each
-  retriever finds a caption's own true motion, full vs. truncated (SUP-20260906-60/61/62); this
-  is the comparison that decided TF-IDF over the embedding retriever, and the source of the
-  74.7%/51.7% numbers on the demo's headline.
+  retriever finds a caption's own true motion, full vs. truncated; this is the comparison that
+  decided TF-IDF over the embedding retriever, and the source of the 74.7%/51.7% numbers on the
+  demo's headline.
 - `validate_truncation_agreement.py` — measures how often `truncate.py`'s spaCy-based rule
-  agrees with the tag-based rule the E1-pilot actually measured (SUP-20260906-57); result:
-  93.8% punctuation-normalized agreement over 8,962 real captions.
+  agrees with the tag-based rule the E1-pilot actually measured; result: 93.8%
+  punctuation-normalized agreement over 8,962 real captions.
 - `_mpl_moviepy_compat.py` — a small compatibility shim (documented in its own docstring) for a
   real version mismatch between this environment's matplotlib and the old `moviepy` API MDM's
   vendored renderer expects; does not touch vendored code or downgrade shared dependencies.

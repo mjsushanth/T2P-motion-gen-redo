@@ -1,6 +1,6 @@
 {
   "experiment": "E0b_v2",
-  "description": "Second independent run, same setup as E0b (n=128, 1 replication), this time caching the generated motions/metadata and running length/caption diagnostics per review SUP-20260906-21. Generated motions cached to e0b_generated_cache/ for future re-analysis without regenerating.",
+  "description": "Second independent run, same setup as E0b (n=128, 1 replication), this time caching the generated motions/metadata and running length/caption diagnostics. Generated motions cached to e0b_generated_cache/ for future re-analysis without regenerating.",
   "num_samples_limit": 128,
   "replication_times": 1,
   "guidance_param": 2.5,
@@ -25,7 +25,7 @@
     "fid": 1.3997
   },
   "comparison_to_v1_run": {
-    "note": "v1 and v2 differ slightly in exact numbers (e.g. GT R-Prec-top3 0.7969 vs 0.8125), plausibly because v2's added diagnostic gt_loader iteration consumed random state differently before gt_loader's own shuffle=True draw, changing batch composition slightly between runs. The QUALITATIVE pattern is stable across both independent runs: generated R-Precision-top3 (v1: 0.7578, v2: 0.7578 -- identical) well above the published 0.611, generated FID (v1: 1.0731, v2: 1.3997 -- both far above) well above the published 0.544. This stability across two independent runs further rules out single-replication noise as the explanation (consistent with review SUP-20260906-22's point that the author's own 20-replication spread, 0.5323-0.7114, does not reach either of our values)."
+    "note": "v1 and v2 differ slightly in exact numbers (e.g. GT R-Prec-top3 0.7969 vs 0.8125), plausibly because v2's added diagnostic gt_loader iteration consumed random state differently before gt_loader's own shuffle=True draw, changing batch composition slightly between runs. The QUALITATIVE pattern is stable across both independent runs: generated R-Precision-top3 (v1: 0.7578, v2: 0.7578 -- identical) well above the published 0.611, generated FID (v1: 1.0731, v2: 1.3997 -- both far above) well above the published 0.544. This stability across two independent runs further rules out single-replication noise as the explanation (consistent with a separately reported 20-replication spread, 0.5323-0.7114, which does not reach either of our values)."
   },
   "reference_paper_fid": {"value": 0.544, "ci": 0.044, "tolerance_pct5": [0.5168, 0.5712]},
   "verdict": "FAIL, both runs. Leading cheap hypotheses (length distribution, caption duplication, caption-motion pairing) all ruled out. Remaining candidate: this project's 128-sample subset was selected as the first rows in HF streaming order, not a random draw from the full ~4384-sequence test set -- not yet directly tested."

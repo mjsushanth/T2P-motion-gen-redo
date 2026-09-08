@@ -1,4 +1,4 @@
-# Pinned demo-specific requirements, per review SUP-20260906-59 -- "someone else can run it"
+# Pinned demo-specific requirements -- "someone else can run it"
 # fails at the first hurdle without these. Assumes the base mjs_mlcvdl_unified_m5 environment
 # (torch, numpy, scikit-learn already present) is already active; these are the packages this
 # demo needed on top of it, with the exact versions verified to work together in this project.

@@ -1,4 +1,4 @@
-"""Nearest-neighbour retrieval baseline, per SUP-20260906-43: "just look it up" is what a
+"""Nearest-neighbour retrieval baseline: "just look it up" is what a
 sceptical viewer silently thinks when shown a generated motion; showing the actual nearest
 real-motion match answers that objection directly instead of ducking it.
 
