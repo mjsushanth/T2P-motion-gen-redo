@@ -4,7 +4,7 @@ vendored architecture on this machine, BEFORE any E1 arm is scaffolded or run.
 
 Not a training run: no checkpoint is produced, no result is claimed. This only
 answers "how long would training actually take," measured before committing to
-a training budget rather than assumed (`docs/DECISIONS.md` D-23).
+a training budget rather than assumed.
 
 Reuses MDM's own train_args() parser (sys.argv construction, like the E0b driver
 reused evaluation_parser()) so every hyperparameter is MDM's real default, not a

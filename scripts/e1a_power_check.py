@@ -1,9 +1,10 @@
 """E1A power check -- its chance threshold and pass/fail criterion were fixed before this was run.
 
 Trains MDM's real architecture from scratch for a small number of steps (E1A: full caption,
-full-sequence target -- the control arm of the redesigned E1 ladder, `docs/DECISIONS.md` D-23),
+full-sequence target -- the control arm of the redesigned A/B/C conditioning-mismatch ladder),
 then generates and evaluates R-Precision-top3 against the chance threshold fixed in advance
-(3/32 = 0.09375, per `docs/DECISIONS.md` D-25's R-Precision-decisive regime for E1/E2).
+(3/32 = 0.09375, per this project's own R-Precision-decisive regime for small-sample rungs like
+E1/E2).
 
 Not the E1 result itself -- a cheap (~1.9h training + ~0.65h generation/eval) check for whether
 this training budget gives E1's A-vs-B comparison any power at all, before spending the full

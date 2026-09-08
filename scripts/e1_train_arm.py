@@ -1,6 +1,6 @@
 """E1 arm trainer -- generalizes scripts/e1a_power_check.py to run either E1A (control: full
 caption throughout) or E1B (first-action-clause truncation applied to BOTH training captions and
-generation-conditioning captions, per docs/DECISIONS.md D-23's redesigned A/B/C ladder).
+generation-conditioning captions, per the redesigned A/B/C conditioning-mismatch ladder).
 
 --arm a: full caption -> full sequence (the control; E1A's power check already produced one real
          result this way, R-Precision-top3=0.2969 vs 0.7950 ground truth).
@@ -13,7 +13,7 @@ generation-conditioning captions, per docs/DECISIONS.md D-23's redesigned A/B/C 
          is left with FULL captions unchanged, same as every other arm run in this project.
 
 Both arms train on the disjoint materialized TRAIN split and evaluate on the materialized TEST
-split (`docs/DECISIONS.md` D-25) -- no memorisation confound.
+split -- no memorisation confound.
 
 Includes the diversity_times off-by-one fix (found via E1A-power's own crash on it):
 diversity_times must be < the generated set size, not <=.
@@ -295,8 +295,7 @@ def main():
         "arm": my_args.arm,
         "description": ("Control: full caption -> full sequence throughout." if my_args.arm == "a"
                         else "Truncated (first-action-clause) caption -> full sequence, "
-                             "truncation applied to both training and generation-conditioning, "
-                             "per docs/DECISIONS.md D-23."),
+                             "truncation applied to both training and generation-conditioning."),
         "num_training_steps": my_args.num_steps,
         "seed": my_args.seed,
         "train_split": my_args.train_split,

@@ -2,16 +2,16 @@
 
 Demonstrates this project's actual finding (the E1-pilot: caption truncation costs measurable
 text-motion alignment, ~9-17x its own noise floor) rather than this project's own model, which is
-severely undertrained (`docs/DECISIONS.md` D-24) and would misrepresent the finding if shown as
-the point of the demo.
+severely undertrained (3,000 steps, 0.63% of a competitive training budget) and would
+misrepresent the finding if shown as the point of the demo.
 
 ## What it shows
 
 Leading with two *generated* panes (full vs. truncated caption) would invite an overclaim this
 page explicitly disowns elsewhere: that comparison was tested (E1B) and found statistically
-unresolvable at any affordable sample size (`docs/DECISIONS.md` D-26). Showing it prominently,
-next to prose explaining it can't be trusted, would mean the most salient thing on the page
-contradicted the text under it. The headline instead visualises the effect that **is** measured.
+unresolvable at any affordable sample size. Showing it prominently, next to prose explaining it
+can't be trusted, would mean the most salient thing on the page contradicted the text under it.
+The headline instead visualises the effect that **is** measured.
 
 Type any motion caption. **Headline (instant, no generation, no GPU wait):**
 1. Applies the **original failed course project's own caption-truncation rule** (faithfully
@@ -69,8 +69,8 @@ dishonest about what a laptop-scale, CPU-only reproduction can offer.
 
 - **The two *generated* panes' relative quality cannot be attributed to truncation** at this
   project's scale — that comparison (E1B) was run and found statistically unresolvable at any
-  affordable sample size (`docs/DECISIONS.md` D-26). They are demoted below the fold and labelled
-  illustrative-only for exactly this reason. The demo's actual evidence is the retrieval headline.
+  affordable sample size. They are demoted below the fold and labelled illustrative-only for
+  exactly this reason. The demo's actual evidence is the retrieval headline.
 - **The retrieval baseline is TF-IDF, not the evaluator's own text-to-motion embedding space —
   checked, not assumed** (`demo/measure_self_retrieval.py`): an
   embedding retriever was built first, on the reasoning that it uses the same validated space

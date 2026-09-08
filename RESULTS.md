@@ -148,8 +148,8 @@ retrieved in 34.7% of cases — independently reproduced by a second measurement
 
 ## 2. What was NOT established
 
-**D-03 (the requirement that this project's evaluation harness reproduce a published *generated-
-model* number, not just a ground-truth one) is UNRESOLVED.** §1.2 validates the harness against
+**The requirement that this project's evaluation harness reproduce a published *generated-model*
+number, not just a ground-truth one, is UNRESOLVED.** §1.2 validates the harness against
 real motions; reproducing MDM's own published FID score on its own released checkpoint did not
 succeed at any sample size this hardware could afford. From this project's own measured
 generation rate (~39 minutes per 128 samples on this CPU): **a single full-scale replication

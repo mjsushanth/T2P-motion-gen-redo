@@ -3,12 +3,12 @@
 > **The governing rule of this codebase:** **notebooks are narrative, scripts are machinery.**
 > The predecessor project violated this so completely that its entire system lived in four
 > notebook cells of 44k, 46k, 52k and 101k characters, with three near-duplicate copies of the
-> same classes in one file. See `docs/DECISIONS.md` D-15.
+> same classes in one file.
 
 An earlier plan for this repository proposed a conventional `src/`+`tests/`+`configs/` package
 layout. That plan was superseded: the deliverable format that actually shipped is executed Jupyter
-notebooks, each one self-contained and re-derivable from its own cells (`docs/DECISIONS.md` D-29).
-What follows describes what is actually here.
+notebooks, each one self-contained and re-derivable from its own cells. What follows describes
+what is actually here.
 
 ```
 T2P-Reboot/

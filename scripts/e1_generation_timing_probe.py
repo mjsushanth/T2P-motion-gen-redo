@@ -1,4 +1,4 @@
-"""D-27 step 3 -- time MDM generation (the E1 cost-dominant term) on CPU vs MPS.
+"""Time MDM generation (the E1 cost-dominant term) on CPU vs MPS.
 
 Not a quality check: the model is freshly initialized, never trained. Generation wall-clock
 time depends on architecture, batch size, and diffusion step count, not on the model's weights,
@@ -105,7 +105,7 @@ def main():
           f"{generation_wall_clock_s / NUM_SAMPLES_LIMIT:.2f}s/sample")
 
     result = {
-        "experiment": "D-27 step 3 -- generation timing probe",
+        "experiment": "generation timing probe (CPU vs MPS)",
         "device_requested": DEVICE_REQUEST,
         "device_resolved": str(device),
         "seed": SEED,

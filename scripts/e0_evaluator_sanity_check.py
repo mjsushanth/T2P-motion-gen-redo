@@ -1,7 +1,7 @@
-"""E0 -- validate the vendored Guo et al. evaluation harness (docs/DECISIONS.md D-03 gate).
+"""E0 -- validate the vendored Guo et al. evaluation harness before trusting any number it produces.
 
-Sanity check, NOT the final D-03 result: since no generative model exists yet in this
-repository, this cannot reproduce a published *generated-model* FID (e.g. MDM's 0.544). What it
+Sanity check, NOT the full harness-validation result: since no generative model exists yet in
+this repository, this cannot reproduce a published *generated-model* FID (e.g. MDM's 0.544). What it
 CAN do is confirm the harness produces sane numbers on real data: split real HumanML3D test-split
 motions into two disjoint subsets, treat one as "reference" and one as "candidate" exactly as
 `final_evaluations.py`'s own `evaluate_fid` does, and check FID is small (real vs real) and
@@ -45,7 +45,7 @@ MAX_MOTION_LEN_FILTER = 200
 N_SAMPLES = 6000  # exceeds the test split's actual size (~4384 seqs) -- uses the whole split
 R_PRECISION_BATCH_SIZE = 32  # matches the paper's protocol: 1 correct + 31 distractors per batch
 SEED = int(os.environ.get("E0_SEED", "0"))
-DEVICE = os.environ.get("E0_DEVICE", "cpu")  # D-27: set to "mps" to re-check the CPU reference band
+DEVICE = os.environ.get("E0_DEVICE", "cpu")  # set to "mps" to re-check against the CPU reference band
 
 
 def build_opt(device: torch.device) -> Namespace:

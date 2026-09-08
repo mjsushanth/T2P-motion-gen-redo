@@ -1,5 +1,5 @@
 {
-  "experiment": "D-27 step 3 -- generation timing probe",
+  "experiment": "generation timing probe (CPU vs MPS)",
   "device_requested": "cpu",
   "device_resolved": "cpu",
   "seed": 10,

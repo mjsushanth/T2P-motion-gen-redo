@@ -12,9 +12,9 @@ below, so a train materialization never overwrites an existing test one or vice 
     <out_dir>/Mean.npy, Std.npy          -- official HumanML3D normalization stats (copied)
 
 Added --split (default "test", unchanged from the original test-only version) to also
-materialize a train subset (`docs/DECISIONS.md` D-25): the E1A power check must train on train
-and evaluate on test, not train-on-test, or a memorisation confound makes an above-chance
-R-Precision uninformative about whether the model generalised at all.
+materialize a train subset: the E1A power check must train on train and evaluate on test, not
+train-on-test, or a memorisation confound makes an above-chance R-Precision uninformative about
+whether the model generalised at all.
 Train ids are prefixed "train_sample######" (test ids stay the original unprefixed
 "sample######" for backward compatibility with the already-materialized test subset) so the two
 splits' files never collide in the shared new_joint_vecs/ and texts/ directories.

@@ -2,7 +2,8 @@
 
 **Status: DESIGN ONLY. Nothing in this document has been run.** Written before any budget is
 spent, per this project's own standing rule (an earlier experiment died partly because its design
-was written after its budget was assumed — `docs/DECISIONS.md` D-23, `docs/LANDMINES.md` §18).
+was written after its budget was assumed, and a tautological comparison was designed before the
+data existed to notice — `docs/LANDMINES.md` §18).
 
 **The evidence this design rests on, all already established, none re-asserted here without a
 pointer:**
@@ -177,9 +178,9 @@ the full subset, which pushes the actually-detectable effect size up from this f
 plainly in §7, not hidden in this table.
 
 **If the honest MDE at the affordable n turns out larger than any effect worth finding, that is a
-legitimate, useful conclusion — the one an earlier experiment reached too late
-(`docs/DECISIONS.md` D-24/D-27/D-28) — and this design is pre-committing to say so plainly if it
-happens, not to quietly lower the bar.**
+legitimate, useful conclusion — the one an earlier experiment reached too late, after already
+spending the compute — and this design is pre-committing to say so plainly if it happens, not to
+quietly lower the bar.**
 
 ## 6. Pre-registered failure / abandonment conditions
 

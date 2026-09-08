@@ -1,7 +1,7 @@
 """E1-pilot -- zero-training measurement of E1B's caption-truncation effect.
 
-Reuses the already-validated evaluator (docs/DECISIONS.md D-03: ground-truth R-Precision
-reproduces the published reference to 0.06 sigma) to measure directly how much text-motion
+Reuses the already-validated evaluator (ground-truth R-Precision reproduces the published
+reference to 0.06 sigma) to measure directly how much text-motion
 retrieval signal the ORIGINAL project's own caption-truncation rule destroys -- same real test
 motions, same evaluator, only the caption/token pairing changes between the two arms. No
 training, no generation, no model at all.
