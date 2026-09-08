@@ -1,6 +1,6 @@
-"""Bootstrap error bar on E3's overall generated-vs-real FID, requested by peer review
-(SUP-20260908-13): a single FID with no replication variance cannot be compared to MDM's
-published 0.544+-.044 (a 20-replication figure) without one. No regeneration needed -- embeds
+"""Bootstrap error bar on E3's overall generated-vs-real FID: a single FID with no replication
+variance cannot be compared to MDM's published 0.544+-.044 (a 20-replication figure) without
+one. No regeneration needed -- embeds
 the same cached batches scripts/e3_generate.py produced (once) via the Guo evaluator, then
 resamples both the generated and ground-truth embedding pools with replacement at their own
 n=4,640 to get a distribution of FID values.
