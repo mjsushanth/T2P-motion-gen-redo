@@ -30,8 +30,8 @@ never pasted in from a prior run. Nine questions asked and answered so far.
    alone. A fact about the metric, not about the motion.
 
 3. **[Does a second, independent evaluator agree with the primary one?](notebooks/02_tmr_second_evaluator.ipynb)**
-   Eventually, yes — but only after **four separate silent bugs** were found and fixed (one after
-   this notebook had already been reviewed and closed twice), moving the primary evaluator's score
+   Eventually, yes — but only after **four separate silent bugs** were found and fixed (one only
+   after the analysis had already seemed finished), moving the primary evaluator's score
    from **0.352 to an exact 0.7578** — matching this project's own independently recorded target
    to the digit. Before the fixes the two evaluators looked *uncorrelated* (r = −0.006);
    afterwards they agree moderately (r = 0.328). Trusting a single evaluator without a cross-check
@@ -71,7 +71,7 @@ never pasted in from a prior run. Nine questions asked and answered so far.
 9. **[What do PyTorch and Apple's MPS backend get silently wrong, if you don't know to check?](notebooks/08_pytorch_mps_silent_failures.ipynb)**
    A craft notebook, not a motion one: nine real specimens — a broadcasting bug that trains
    anyway, a device-selection function that silently falls back to CPU, a fourth bug in the
-   evaluator notebook above (#3) that two rounds of review had missed — each shown wrong-way-
+   evaluator notebook above (#3) found only while building this one — each shown wrong-way-
    next-to-right-way, with the five habits that would have caught every one of them.
 
 Full index with figures and status: **[notebooks/README.md](notebooks/README.md)**.
@@ -86,8 +86,6 @@ searchable, dated, and meant to be read by whoever picks this up next:
 - **`docs/LANDMINES.md`** — a running catalogue of traps that produce a plausible wrong answer
   with no error message, each one caught and documented so it isn't repeated.
 - **`docs/DECISIONS.md`** — every non-obvious design choice, with the reasoning behind it.
-- **`docs/EXPERIMENT_LOG.md`** — every experiment run, including the ones that resolved to "not
-  enough evidence either way" rather than a convenient story.
 - **`docs/GLOSSARY.md`** — every term and acronym, defined once, the first time it appears.
 - **`docs/EXPERIMENT_DESIGN_E2.md`** — the next experiment, fully specified and pre-registered
   before any of it runs: fixing CLIP's spatial blindness with a small adapter, tested against a
@@ -135,10 +133,7 @@ findings, because a project that only reports what worked cannot be checked.
 
 ## Going deeper
 
-- **`docs/00_START_HERE.md`** — five-minute orientation for anyone new to this repo.
-- **`REBUILD_SPEC.md`** — the architecture and experiment plan.
 - **`LANDSCAPE.md`** / **`POSITIONING.md`** — where this sits relative to published work.
-- **`LEDGER.md`** — the complete, append-only log of every unit of work behind all of the above.
 
 ## Hardware
 
