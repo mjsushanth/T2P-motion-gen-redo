@@ -1,9 +1,20 @@
 # EXPERIMENT_DESIGN_E2 — pre-registered design for a spatial-conditioning repair experiment
 
-**Status: DESIGN ONLY. Nothing in this document has been run.** Written before any budget is
-spent, per this project's own standing rule (an earlier experiment died partly because its design
-was written after its budget was assumed, and a tautological comparison was designed before the
-data existed to notice — `docs/LANDMINES.md` §18).
+**Status: SUPERSEDED, not run, kept as a record.** This design's motivation was: notebooks 01 and
+01b established that CLIP's text encoder under-separates spatial language in embedding space, and
+this asked whether a small trained adapter could repair that. `docs/EXPERIMENT_DESIGN_E3.md` later
+asked a logically prior question — does that embedding-space deficit actually reach generated
+motion at all? — and found no: spatial-vs-non-spatial R-Precision is a null under two evaluators,
+inside a pre-registered noise floor, at this checkpoint. **There is no measured output-side gap
+for an adapter to close, so this design is no longer well-motivated as written.** Kept in full
+below rather than deleted: a pre-registered design that a later, cheaper experiment made
+unnecessary is part of this project's record, not clutter, and the reasoning here would still
+apply directly if a future, larger-budget checkpoint reopened the question E3 closed for this one.
+
+**Original status line, for the record: DESIGN ONLY. Nothing in this document has been run.**
+Written before any budget is spent, per this project's own standing rule (an earlier experiment
+died partly because its design was written after its budget was assumed, and a tautological
+comparison was designed before the data existed to notice — `docs/LANDMINES.md` §18).
 
 **The evidence this design rests on, all already established, none re-asserted here without a
 pointer:**
