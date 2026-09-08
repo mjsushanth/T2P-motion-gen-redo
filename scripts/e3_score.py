@@ -9,6 +9,19 @@ own training normalization; both evaluators expect raw HumanML3D features), the 
 and-invert calling convention for get_motion_embeddings from docs/LANDMINES.md section 25 (no
 external pre-sort), and the same spatial-term list notebooks 01/05 established.
 
+FID per subset is NOT directly comparable across subsets of different size: notebook 04 showed
+FID's covariance-estimator bias grows as n shrinks (dramatically so once n<d=512, a qualitatively
+different rank-deficient regime, not just a biased one). A larger subset will show a lower FID
+than a smaller one for this reason alone, with no difference in what is being measured. A rough
+1/n scaling was fit from notebook 04's own two measurements (n=1024, n=2000) and agreed to 0.5%
+between those two points, but an independent check here across more n values (128/1024/2000/2320)
+found the same n*floor product ranging 212-264 -- a real ~20% spread, not a tight law -- so it is
+reported only as an order-of-magnitude sanity check, not trusted quantitatively. What each subset
+actually gets, and what is trustworthy, is its own real-vs-real floor (disjoint halves of real
+ground-truth motions for that same subset, at that subset's own n, measured directly rather than
+extrapolated) reported alongside the generated-vs-real FID -- never a bare number meant to be
+compared across subsets.
+
 Run from third_party/motion-diffusion-model/:
     cd third_party/motion-diffusion-model
     PYTHONPATH=. python3 ../../scripts/e3_score.py --gen-dir ../../artifacts/e3 --out-json ../../artifacts/e3/e3_record.json
@@ -61,6 +74,58 @@ def length_terciles(indices, captions):
     third = n // 3
     groups = [word_counts[:third], word_counts[third:2 * third], word_counts[2 * third:]]
     return [[i for i, _ in g] for g in groups]
+
+
+def embed_ground_truth_guo(guo_eval, batch_size=32):
+    """Embeds every real (caption, motion) pair in HumanML3D's test split -- the same 4,648-entry
+    pool scripts/e3_generate.py drew its captions from -- through the Guo evaluator, for use as
+    the real side of FID. Uses hml_mode='gt' (the same convention e0b/e1 scripts already use for
+    FID ground truth): Text2MotionDatasetV2's own __getitem__ already returns pre-wrapped word
+    embeddings/pos-onehots/sent_len and a real motion already in the evaluator's own expected
+    normalization (T2M's own mean/std, not MDM's training normalization) -- no denormalization
+    step needed here, unlike the generated motions above."""
+    from data_loaders.get_data import get_dataset_loader
+
+    gt_loader = get_dataset_loader(name="humanml", batch_size=batch_size, num_frames=None,
+                                    split="test", hml_mode="gt")
+    captions, motion_embs = [], []
+    with torch.no_grad():
+        for word_emb, pos_ohot, caption, sent_len, motion, m_length, _tokens in gt_loader:
+            emb_t = guo_eval.text_encoder(word_emb.float(), pos_ohot.float(), sent_len)  # noqa: F841 (unused, kept for parity/clarity)
+            bsz = motion.shape[0]
+            align_idx = np.argsort(m_length.numpy())[::-1].copy()
+            inv = np.argsort(align_idx)
+            emb_m = guo_eval.get_motion_embeddings(motion.float(), m_length)[inv]
+            motion_embs.append(emb_m.numpy())
+            captions.extend(list(caption))
+    motion_embs = np.concatenate(motion_embs, axis=0)
+    return motion_embs, captions
+
+
+def fid_disjoint_halves(embeddings, n_trials, rng):
+    """Real-vs-real FID floor at n=len(embeddings)//2 per side -- same methodology as
+    notebooks/04's own fid_between_random_disjoint_halves."""
+    from data_loaders.humanml.utils.metrics import calculate_activation_statistics, calculate_frechet_distance
+    n_total = embeddings.shape[0]
+    half = n_total // 2
+    if half < 2:
+        return None
+    fids = []
+    for _ in range(n_trials):
+        idx = rng.choice(n_total, size=2 * half, replace=False)
+        idx_a, idx_b = idx[:half], idx[half:]
+        mu_a, cov_a = calculate_activation_statistics(embeddings[idx_a])
+        mu_b, cov_b = calculate_activation_statistics(embeddings[idx_b])
+        fids.append(calculate_frechet_distance(mu_a, cov_a, mu_b, cov_b))
+    return {"n_per_side": int(half), "mean": float(np.mean(fids)), "std": float(np.std(fids)),
+            "trials": n_trials}
+
+
+def fid_generated_vs_real(gen_embeddings, real_embeddings):
+    from data_loaders.humanml.utils.metrics import calculate_activation_statistics, calculate_frechet_distance
+    mu_g, cov_g = calculate_activation_statistics(gen_embeddings)
+    mu_r, cov_r = calculate_activation_statistics(real_embeddings)
+    return float(calculate_frechet_distance(mu_g, cov_g, mu_r, cov_r))
 
 
 def r_precision_batches(text_emb, motion_emb, distance, batch_size=32, top_k=3):
@@ -202,6 +267,48 @@ def main():
     print(f"Spatial: {len(spatial_idx)}, non-spatial: {len(nonspatial_idx)} "
           f"({100*len(spatial_idx)/n_gen:.1f}% spatial)")
 
+    print("Embedding real ground-truth motions (Guo) for FID...")
+    gt_motion_emb, gt_captions = embed_ground_truth_guo(guo_eval)
+    gt_spatial_idx = [i for i, c in enumerate(gt_captions) if is_spatial(c)]
+    gt_nonspatial_idx = [i for i, c in enumerate(gt_captions) if not is_spatial(c)]
+    print(f"Ground truth: {len(gt_captions)} real motions "
+          f"({len(gt_spatial_idx)} spatial, {len(gt_nonspatial_idx)} non-spatial)")
+
+    # Rough ballpark only, NOT a validated law: a 2-point fit from notebooks/04's own n=1024
+    # (0.214) and n=2000 (0.109) measurements agreed to 0.5% on n*floor (~218-219), but an
+    # independent check here (50 trials, independent seeds, n=128/1024/2000/2320) found n*floor
+    # ranging 212-264 -- a ~20% spread, not a tight constant. Reported as an order-of-magnitude
+    # sanity check only; the actually-trustworthy number for each subset is its own directly
+    # measured real_vs_real_floor below, not this extrapolation.
+    FID_ROUGH_CONST = 218.6
+
+    def fid_report(gen_idx, gt_idx, label):
+        rng = np.random.RandomState(0)
+        floor = fid_disjoint_halves(gt_motion_emb[gt_idx], n_trials=30, rng=rng)
+        gen_vs_real = fid_generated_vs_real(guo_motion_emb[gen_idx], gt_motion_emb[gt_idx])
+        rough_floor = FID_ROUGH_CONST / len(gt_idx) if gt_idx else None
+        return {
+            "label": label, "n_generated": len(gen_idx), "n_ground_truth": len(gt_idx),
+            "generated_vs_real_fid": gen_vs_real,
+            "real_vs_real_floor": floor,
+            "rough_floor_estimate_not_a_validated_law": rough_floor,
+        }
+
+    fid_results = {
+        "note": "generated_vs_real_fid is NOT directly comparable across subsets of different "
+                "size -- FID's estimator bias grows as n shrinks, so a smaller subset shows a "
+                "higher FID for that reason alone, independent of model quality. "
+                "real_vs_real_floor (measured directly for that same subset, at that subset's "
+                "own n, 30 disjoint-halves trials) is reported alongside every number "
+                "specifically so this cannot be misread as a quality difference. Only "
+                "R-Precision is decisive for the spatial-vs-non-spatial comparison this "
+                "experiment exists to make.",
+        "overall": fid_report(list(range(n_gen)), list(range(len(gt_captions))), "overall"),
+        "spatial": fid_report(spatial_idx, gt_spatial_idx, "spatial"),
+        "non_spatial": fid_report(nonspatial_idx, gt_nonspatial_idx, "non_spatial"),
+    }
+    print(json.dumps(fid_results, indent=2))
+
     def score_subset(idx, label):
         te_guo, me_guo = guo_text_emb[idx], guo_motion_emb[idx]
         te_tmr, me_tmr = tmr_text_lat[idx], tmr_motion_lat[idx]
@@ -231,6 +338,7 @@ def main():
                             "no training, full HumanML3D test split generated once.",
             "n_generated": n_gen,
             "results": results,
+            "fid_results": fid_results,
         }, f, indent=2)
     print("Saved:", my_args.out_json)
 
