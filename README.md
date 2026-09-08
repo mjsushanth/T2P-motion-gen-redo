@@ -10,26 +10,44 @@ the notebooks below.
 
 ---
 
-## The notebooks — the core of this project
+## Experiments, analyses and measurements
 
-Every notebook answers exactly one question, end to end: the question, the intuition behind it,
-the measurement, and what it means — with every number computed live in the notebook itself,
-never pasted in from a prior run. Ten questions asked and answered so far.
+Each one takes a single question end to end — the intuition, the measurement, what it means —
+with every number computed live in the notebook that reports it, never pasted from a prior run.
 
 <p align="center">
   <img src="notebooks/03_skeleton_side_by_side.png" alt="A subtly wrong pose decode looks fine as a tangle of lines, and unmistakably wrong once rendered as a skeleton" width="720">
 </p>
 
-1. **[Does a subtly wrong way of reading 3D pose data look fine, or does it show?](notebooks/03_263d_representation_and_f1_bug.ipynb)**
+1. **Experiment — [does the text encoder's spatial weakness reach the generated motion?](docs/EXPERIMENT_DESIGN_E3.md)**
+   The dataset's captions are human-written, and many of them give directions: *left*, *right*,
+   *forward*, *behind*. Scanning all 4,640 test captions for those words splits them into a
+   **spatial half (2,708)** and a **non-spatial half (1,932)** — the split is a property of the
+   captions, not something imposed on the data.
+
+   That split is worth making because #5 and #6 below show the text encoder cannot reliably tell
+   "left" from "right" in its own vector space. If that mattered, motion generated from spatially
+   worded captions should come out measurably worse. So: generate all 4,640, score each half, compare.
+
+   The metric is **R-Precision** — given a generated motion, can the evaluator pick its own caption
+   out of 32 candidates? It is a per-sample ranking, so it is not distorted by the two halves being
+   different sizes, the way a distribution-level score like FID would be. One confound is controlled
+   explicitly: spatial captions run **41% longer** (14.4 words against 10.2), and longer captions
+   give a matcher more to work with, so the halves are also compared within caption-length terciles.
+
+   **The answer is no.** Under two independent evaluators the gap sits inside the noise floor, and
+   the two disagree about its direction — which is what a non-effect looks like.
+
+2. **Analysis — [does a subtly wrong way of reading 3D pose data look fine, or does it show?](notebooks/03_263d_representation_and_f1_bug.ipynb)**
    It looks completely fine — until you check that a bone's length stays constant across frames.
    The wrong decode fails that check by five orders of magnitude.
 
-2. **[Is a standard motion-quality score (FID) trustworthy at small sample sizes?](notebooks/04_fid_covariance_rank_deficiency.ipynb)**
+3. **Measurement — [is a standard motion-quality score (FID) trustworthy at small sample sizes?](notebooks/04_fid_covariance_rank_deficiency.ipynb)**
    No. Comparing real data against *equally real* data should score ~0; at 128 samples per side
    it scores **1.577**, falling to **0.109** at 2,000 — a **14x** swing driven by sample size
    alone. A fact about the metric, not about the motion.
 
-3. **[Does a second, independent evaluator agree with the primary one?](notebooks/02_tmr_second_evaluator.ipynb)**
+4. **Measurement — [does a second, independent evaluator agree with the primary one?](notebooks/02_tmr_second_evaluator.ipynb)**
    Eventually, yes — but only after **four separate silent bugs** were found and fixed (one only
    after the analysis had already seemed finished), moving the primary evaluator's score
    from **0.352 to an exact 0.7578** — matching this project's own independently recorded target
@@ -38,33 +56,33 @@ never pasted in from a prior run. Ten questions asked and answered so far.
    would have shipped an exactly backwards conclusion.
 
    *Later superseded by its own follow-up:* that reconciliation ran on 128 samples. A 4,640-sample
-   run (#10 below) scored the same checkpoint at **0.6172** — the small sample had been a lucky
+   run (#1 above) scored the same checkpoint at **0.6172** — the small sample had been a lucky
    draw. Both numbers are correct about what they measured; only the larger one is a good estimate.
 
-4. **[Does the text encoder actually understand spatial language — "left," "right," "behind"?](notebooks/01_clip_spatial_blindness.ipynb)**
+5. **Measurement — [does the text encoder actually distinguish "left," "right," "behind"?](notebooks/01_clip_spatial_blindness.ipynb)**
    No. Sentences differing only by *left* vs *right* sit measurably closer together than sentences
    differing by a comparable non-spatial word — **Cohen's d = 0.995**, n = 40 per group, clearing
    correction for multiple comparisons. And **57.6%** of this dataset's 24,503 captions contain
    spatial vocabulary. Not a rare edge case.
 
-5. **[Is that blind spot caused by how the model reads CLIP's output, or is it inside CLIP itself?](notebooks/01b_pooling_probe.ipynb)**
+6. **Measurement — [is that blind spot in how the model reads CLIP's output, or inside CLIP itself?](notebooks/01b_pooling_probe.ipynb)**
    Inside CLIP itself. The gap is **wider** in CLIP's per-token features (+0.111) than in the
    pooled vector the model actually reads (+0.027) — so the obvious cheap fix, "stop pooling,"
    would not fix it. A negative result that saved the cost of finding out the expensive way.
 
-6. **[Before comparing "spatial" vs. "non-spatial" captions, is that comparison even fair?](notebooks/05_spatial_subset_split.ipynb)**
+7. **Analysis — [before comparing spatial and non-spatial captions, is that comparison fair?](notebooks/05_spatial_subset_split.ipynb)**
    Not without care. Spatial captions run **41% longer** (14.38 vs 10.19 words, d = 0.592) — a
    difference that could easily be mistaken for a spatial-language effect. Found before any
    training run, at the cost of one notebook.
 
-7. **[Could one specific training bug have quietly taught a model to ignore text completely?](notebooks/06_cfg_training_loss_collapse.ipynb)**
+8. **Experiment — [could one training bug quietly teach a model to ignore text entirely?](notebooks/06_cfg_training_loss_collapse.ipynb)**
    Yes — demonstrated directly on a rebuilt version of the bug. The conditioning pathway never
    grows, and the broken objective converges to a **lower** training loss (0.090) than the correct
    one (~0.3), because it has a degenerate solution that ignores the text entirely. **The loss
    curve looks better while the model learns to ignore you** — exactly why a loss curve alone is
    never a result.
 
-8. **[When two results differ by a handful of samples, is that a real effect?](notebooks/07_why_six_samples_is_not_a_finding.ipynb)**
+9. **Analysis — [when two results differ by a handful of samples, is that a real effect?](notebooks/07_why_six_samples_is_not_a_finding.ipynb)**
    No. Rerunning the identical setup with **only the random seed changed** reproduces the same
    "effect" exactly: 38/128 vs 44/128, the same six-sample gap, from nothing but chance.
 
@@ -72,29 +90,12 @@ never pasted in from a prior run. Ten questions asked and answered so far.
   <img src="notebooks/07_circularity_trap.png" alt="Required sample size explodes as the assumed effect size shrinks — the smaller the effect you assume, the more data you need to detect it" width="640">
 </p>
 
-9. **[What do PyTorch and Apple's MPS backend get silently wrong, if you don't know to check?](notebooks/08_pytorch_mps_silent_failures.ipynb)**
+10. **Practice notebook — [deep-dive and learning notes on PyTorch and Apple's MPS backend](notebooks/08_pytorch_mps_silent_failures.ipynb)**
    A craft notebook, not a motion one: nine real specimens — a broadcasting bug that trains
    anyway, a device-selection function that silently falls back to CPU, a fourth bug in the
-   evaluator notebook above (#3) found only while building this one — each shown wrong-way-
+   evaluator notebook above (#4) found only while building this one — each shown wrong-way-
    next-to-right-way, with the five habits that would have caught every one of them.
 
-10. **[Does the text encoder's spatial weakness actually reach the generated motion?](docs/EXPERIMENT_DESIGN_E3.md)**
-    **No — and that is the most useful result here.** #4 and #5 showed the encoder cannot separate
-    "left" from "right". This asked whether that survives into the motion a model actually produces,
-    by generating **all 4,640 test captions** and scoring the spatial and non-spatial halves
-    separately. Under *both* evaluators the gap sits inside the noise floor, and the two evaluators
-    disagree about its **sign** — which is what noise looks like. Pre-registered before the run,
-    including the commitment to report a null as prominently as a finding.
-
-    The consequence: a planned follow-up to *fix* the encoder is now poorly motivated, because there
-    is no measured gap at the output for a fix to close. A four-hour experiment retired a much
-    larger one.
-
-    The same run did something else worth stating on its own: its overall score, **0.6172**,
-    reproduces MDM's own published Guo R-Precision-top3 of **0.611±.007** — **+0.87σ**, on the same
-    released checkpoint, without training anything. That is direct evidence this project's own
-    measurement stack can be trusted, not just this checkpoint's conditioning behavior. Details in
-    `docs/EXPERIMENT_DESIGN_E3.md` §9.6.
 
 Full index with figures and status: **[notebooks/README.md](notebooks/README.md)**.
 
