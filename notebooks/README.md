@@ -39,11 +39,16 @@ undocumented, and no notebook below should be read as implying official acquisit
   evaluator (TMR) agree with this project's primary one (Guo et al.)?* **Yes, once four real bugs
   were found and fixed** (wrong tokenization, a double-sort that silently swapped a handful of
   tied-length embeddings, missing evaluator-specific normalization; see `docs/LANDMINES.md` §25) —
-  Guo R-Precision-top3 lands at an exact 0.7578, matching this project's own prior target to the
-  digit; TMR also at 0.7578; per-sample correlation between the two evaluators rises from -0.006 to
-  0.328 across the four fixes. The double-sort bug also explains an earlier, incorrect impression
-  that Guo's motion embeddings were sensitive to which other motions shared their batch — they
-  aren't; fixing the sort makes the pipeline as batch-invariant as the text side always was.
+  at this notebook's own n=128, Guo R-Precision-top3 landed at an exact 0.7578, matching this
+  project's own prior target to the digit, and TMR also at 0.7578; per-sample correlation between
+  the two evaluators rises from -0.006 to 0.328 across the four fixes. The double-sort bug also
+  explains an earlier, incorrect impression that Guo's motion embeddings were sensitive to which
+  other motions shared their batch — they aren't; fixing the sort makes the pipeline as
+  batch-invariant as the text side always was. **A later, much larger measurement
+  (`docs/EXPERIMENT_DESIGN_E3.md`, n=4,640) found the exact evaluator agreement above was a
+  property of the small sample: Guo settles at 0.6172, TMR at 0.7287 — a real 0.111 gap, not a
+  match — and 0.6172 at n=4,640 is this project's best estimate of this checkpoint's Guo
+  R-Precision-top3 going forward, not 0.7578.**
 
 ## 3. The conditioning finding
 

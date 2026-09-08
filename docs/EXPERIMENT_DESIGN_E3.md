@@ -265,6 +265,23 @@ tightly reshuffling estimates the fixed sample's own gap. Both readings point th
 resolvable spatial-vs-non-spatial effect, and that conclusion does not depend on how the 4,640
 samples happen to be grouped into batches.
 
+**A specific trap worth naming, because the number sits right next to the correct one.** The 20
+shuffled trials permit a paired comparison of the spatial-minus-non-spatial gap across trials:
+mean 0.0158, std 0.0086 across trials, giving a paired t=8.26 (p<0.001) -- verified directly, a
+real, correctly-computable number. **Reporting that as evidence of significance would be wrong.**
+All 20 trials share the same fixed 4,640 samples and differ only in batch assignment, so that
+paired standard error captures batch-reassignment variance only, not the sampling variance of
+which captions and generations this represents -- it answers "is this gap stable across
+re-batchings of this exact sample" (yes, essentially by construction, since the underlying
+2,708/1,932 split never changes), not "is this gap real in the population the sample was drawn
+from." The correct uncertainty is the binomial one already used above (combined SE 0.0146, gap
+0.0158 giving z≈1.08 using the shuffled-mean gap as the point estimate) -- comfortably inside
+noise either way, but for the right reason. **General form, worth keeping for the next time this
+pattern shows up:** resampling that permutes structure while holding the underlying sample fixed
+measures robustness to that structure, never sampling uncertainty in the population the sample
+represents -- a significance test built on such trials inflates apparent confidence, roughly by
+the square root of the trial count.
+
 **Consequence for `docs/DECISIONS.md` and future generation-side comparisons:** this project's
 Guo R-Precision-top3 for this checkpoint should be cited as ~0.617 (n=4,640), not 0.7578 (n=128),
 going forward. The 0.7578 figure was independently cross-checked to the digit against an earlier
