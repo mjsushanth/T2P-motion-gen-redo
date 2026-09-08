@@ -1,12 +1,17 @@
-# T2P-Reboot — text-to-motion generation, built around measurement
+# T2P-Reboot — taking a text-to-motion pipeline apart
 
-Given a sentence like *"a person walks forward, then turns left,"* generate a 3D human motion
-sequence that matches it. This project is a ground-up rebuild of that problem, with one rule
-above all others: **no claim of quality without a number to back it, and no number without the
-code that produced it sitting right next to the claim.**
+Text-to-motion models turn a sentence — *"a person walks forward, then turns left"* — into a 3D
+human motion sequence. **This repository does not build one.** It takes an existing pipeline
+apart: a released model, the benchmark it is scored on, and a course project that failed on both.
 
-That discipline is the actual product here, as much as any model. It shows up most clearly in
-the notebooks below.
+The work is diagnostic. What was actually broken in that failed implementation. What the standard
+metrics can and cannot see at the sample sizes people really use. Where the conditioning signal is
+lost before the generator reads a single number. Whether any of it agrees with the published
+literature.
+
+Everything examined here shares one property: **it produced plausible numbers and no error
+message.** Hence the rule throughout — no claim without a number, and no number without the code
+that produced it sitting beside the claim.
 
 ---
 
@@ -134,7 +139,7 @@ Integrity is strongly corroborated — ground-truth scores reproduce the publish
 **provenance is undocumented**, which is a different claim from "verified source." Low practical
 risk for private study; it would need resolving before publication or redistribution.
 
-**Some findings are negative, and they are kept.** The pooling probe (#5) set out to confirm a
+**Some findings are negative, and they are kept.** The pooling probe (#6) set out to confirm a
 cheap fix and refuted it instead. An earlier experiment was closed as underpowered rather than
 written up as a result. Those are recorded in the same place and the same detail as the positive
 findings, because a project that only reports what worked cannot be checked.
