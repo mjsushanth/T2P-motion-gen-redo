@@ -21,17 +21,34 @@ instrument (`docs/LANDMINES.md` §10). Gate: reproduce one published HumanML3D f
 tolerance, or explicitly downgrade every number to internally-comparable-only.
 **Rejected:** unit tests alone — they prove self-consistency, not correctness of protocol.
 **Status:** partially met, R-Precision half now satisfied at full scale, FID half still open.
-Ground-truth R-Precision reproduces a published reference to 0.06σ, which is the property every
-internal comparison in this project actually depends on. `docs/EXPERIMENT_DESIGN_E3.md` §9.6 adds
-a second, generated-motion reproduction: this project's harness scores the released MDM checkpoint
-at 0.6172 (n=4,640) against the paper's own 0.611±.007 — +0.87σ, inside ordinary sampling noise,
-on a checkpoint this project did not train. That is the gate's R-Precision half met at generation
-scale, not just on ground truth. The stricter remaining piece — reproducing MDM's own published
-FID on its own checkpoint — did not succeed at any sample size this hardware could afford (a
-full-scale replication would cost roughly 5 CPU-hours; the full 20-replication protocol roughly
-100), and remains open. Numbers from the generation-comparison work onward stay labelled
-internally-comparable-only specifically on the FID axis; the R-Precision axis no longer needs that
-downgrade for this checkpoint.
+**Primary evidence, and the harder check:** `docs/EXPERIMENT_DESIGN_E3.md` §9.1/§9.6 — this
+project's harness scores the released MDM checkpoint's *generated* motion at 0.6172 (n=4,640)
+against the paper's own published 0.611±.007 — +0.87σ, inside ordinary sampling noise, on a
+checkpoint this project did not train. This is the decisive version of the gate: it validates
+evaluator + checkpoint loading + generation + scoring end to end, not only the evaluator's ability
+to encode already-correct motion.
+**Supporting, ground-truth-only:** `artifacts/e0/e0b_mdm_reproduction_record.json` (E0b, n=128)
+measured ground-truth R-Precision-top3 at 0.7969, against the released checkpoint's own bundled
+20-replication log
+(`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/eval_humanml_trans_enc_512_000475000_gscale2.5_wo_mm.log`,
+which reports 0.7977, CInterval 0.0022, over 20 replications) — a difference of 0.0008, well
+inside that reference's own reported interval. (An earlier "0.06σ" figure for this same comparison
+could not be independently re-derived from these two numbers under a standard SE calculation and
+is not repeated here as a checked fact — the raw values above are what is verified.)
+**A ground-truth measurement that does NOT match, and why it is not a contradiction:** this
+project also holds `artifacts/e0/e0_evaluator_sanity_check_record_seed0.json` (E0a, n=2,080
+disjoint subset), which measured ground-truth R-Precision-top3 at 0.7202 — several σ from 0.797
+under a naive binomial SE. Traced to source: E0a's script (`scripts/e0_evaluator_sanity_check.py`)
+hand-builds its own config `Namespace` and data-loading path from scratch; that reconstruction had
+a bug not present in E0b's script (`scripts/e0b_mdm_reproduction.py`), which calls MDM's own
+upstream `get_dataset_loader`/`evaluation_parser` directly instead of reconstructing them. E0b's
+number is why this gate cites E0b, not E0a, as ground-truth support — E0a's miss is an artifact of
+that script's own hand-rolled loader, not evidence the ground-truth quantity itself is unstable.
+**The stricter remaining piece** — reproducing MDM's own published FID on its own checkpoint — did
+not succeed at any sample size this hardware could afford (a full-scale replication would cost
+roughly 5 CPU-hours; the full 20-replication protocol roughly 100), and remains open. Numbers from
+the generation-comparison work onward stay labelled internally-comparable-only specifically on the
+FID axis; the R-Precision axis no longer needs that downgrade for this checkpoint.
 **Would close the FID half if:** the ~5 CPU-hour single-run replication (or the full 20-rep
 protocol) is actually spent and lands within the paper's own reported spread — this has not been
 attempted, only priced.
