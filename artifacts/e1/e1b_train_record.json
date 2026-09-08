@@ -1,7 +1,7 @@
 {
   "experiment": "E1B",
   "arm": "b",
-  "description": "Truncated (first-action-clause) caption -> full sequence, truncation applied to both training and generation-conditioning, per docs/DECISIONS.md D-23.",
+  "description": "Truncated (first-action-clause) caption -> full sequence, truncation applied to both training and generation-conditioning.",
   "num_training_steps": 3000,
   "seed": 10,
   "train_split": "train",

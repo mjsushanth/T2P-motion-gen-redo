@@ -8,10 +8,10 @@ discipline as `primary_source/PATCHES.md` and `../text-to-motion/PATCHES.md`.
 
 `Rotation2xyz.__init__` unconditionally instantiated a real SMPL body model
 (`self.smpl_model = SMPL().eval().to(device)`), which requires `body_models/smpl/SMPL_NEUTRAL.pkl`
--- a gated asset requiring account registration at smpl.is.tue.mpg.de (SMPL's own licence,
-`LANDSCAPE.md` §4.1). This project's non-commercial research/education use is explicitly
-permitted by that licence (D-20), but registering an account is a step only Joel can take
-personally, not something this session does on his behalf.
+-- a gated asset requiring personal account registration at smpl.is.tue.mpg.de (SMPL's own
+licence, `LANDSCAPE.md` §4.1). This project's non-commercial research/education use is explicitly
+permitted by that licence, but the registration step requires a real person's own account and
+cannot be done automatically on their behalf.
 
 **This submodule is not needed for this project's use case.** `MDM`'s constructor always builds
 `Rotation2xyz` regardless of dataset, but it is only ever exercised when converting *rotation*-

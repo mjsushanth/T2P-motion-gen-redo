@@ -1,4 +1,4 @@
-# Vendored: EricGuo5513/text-to-motion (the D-03 evaluation harness)
+# Vendored: EricGuo5513/text-to-motion (this project's evaluation harness)
 
 Fetched verbatim from `github.com/EricGuo5513/text-to-motion` (default branch, 2026-09-06).
 This is the actual evaluator behind every published HumanML3D number in `LANDSCAPE.md` §1.3 —
