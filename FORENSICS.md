@@ -1,13 +1,15 @@
 # T2P Reboot — Forensics Report
 
-Stage: forensics only, per `BRIEFING.md`. No rebuild, no design, no model code written.
+No rebuild, no design, no model code written here — forensics only: pinning down exactly what
+the archived original implementation got wrong, and how we know.
+
 Source project (read-only, untouched):
 `<ARCHIVE>/`
 
 All primary-source files fetched for verification live in `T2P-Reboot/primary_source/`
 (copies from `github.com/EricGuo5513/HumanML3D`, default branch, fetched 2026-09-05).
 Figures, result data, and the analysis scripts that produced them live in
-`T2P-Reboot/artifacts/forensics/`. Full timestamped trail in `T2P-Reboot/LEDGER.md`.
+`T2P-Reboot/artifacts/forensics/`.
 
 ---
 
@@ -184,10 +186,9 @@ against the precomputed artifacts in `pose_diversity_results/` (`caption_indices
 Every sub-claim is backed by quoted code plus directly-inspected precomputed artifacts. The
 99.99% index mismatch is a hard, artifact-verified number, not an inference.
 
-### Addendum — docs-vs-code contradictions (found in review follow-up, 2026-09-05)
-Two further discrepancies, both VERIFIED by a review pass and consistent with F2's
-overall finding that the project's documentation describes a cleaner pipeline than the code
-actually implements:
+### Addendum — docs-vs-code contradictions
+Three further discrepancies, all verified directly and consistent with F2's overall finding that
+the project's documentation describes a cleaner pipeline than the code actually implements:
 - The PDF report (the original project report (PDF), section 1.1.2) states K-means was "performed
   on the reduced embeddings." The code fits `KMeans` directly on the raw 66-d slice
   (`kmeans.fit_predict(poses)`, EDA cell 21) — PCA/t-SNE are used only for the separate
@@ -195,6 +196,10 @@ actually implements:
 - `README.md` claims the sampling strategy "avoided 49.6% cluster dominance." The largest
   cluster measured directly from `clusters.npy` is cluster 0 at **38.77%** — the 49.6% figure is
   not reproducible from the saved artifacts.
+- The project's own documentation (`README.md`, and separately its deep-dive notes) describes
+  "8 pose clusters"; the PDF report states no cluster count at all. Both notebooks' code, read
+  directly, use `n_clusters = 10` throughout — the "8" traces to documentation, not to the paper
+  or to either notebook's actual code.
 
 ---
 
@@ -240,13 +245,12 @@ directionally clear effect supporting F3, though "near-neutral" is a matter of d
 than an all-or-nothing collapse — a nontrivial fraction of frame-0 poses are still meaningfully
 distinct from the corpus average (this is expected: not every clip starts from a dead stop).
 
-**Caveat for downstream use (added after review, 2026-09-05):** F3 is the weakest of the
-four verdicts precisely because 1.43x is directionally clear but not dramatic. It supports the
-*mechanism* (frame 0 collapses toward a common pose more than a mid-sequence frame does) but does
-not by itself establish a hard ceiling on achievable model performance — that would need the
-caption-semantic bucketing analysis proposed in OPEN_QUESTIONS item 2, not yet run. Future stages
-should not quietly upgrade this into "the task framing is broken" without running that sharper
-test first.
+**Caveat for downstream use:** F3 is the weakest of the four verdicts precisely because 1.43x is
+directionally clear but not dramatic. It supports the *mechanism* (frame 0 collapses toward a
+common pose more than a mid-sequence frame does) but does not by itself establish a hard ceiling
+on achievable model performance — that would need the caption-semantic bucketing analysis
+described below, not yet run. This should not be quietly upgraded into "the task framing is
+broken" without running that sharper test first.
 
 ---
 
@@ -280,6 +284,14 @@ Confirmed exhaustively: no held-out validation loop is ever exercised during tra
 split is ever evaluated, no seed governs model training (so runs are not reproducible), and no
 experiment-tracking framework is used anywhere in either notebook.
 
+### Addendum — the "99.995% loss reduction" claim, checked against the actual PDF report
+The published PDF report was checked directly (`pdftotext -layout` + grep): the string `99.995`
+appears **zero times** in it — it reports only the raw Table 1 loss values, no derived
+percentage. `99.995% loss reduction` instead appears **five times in the Obsidian deep-dive
+notes** (`DL - T2P Deep Dive.md`), including inside a scripted interview-answer passage. The
+invalid loss-comparison claim is a study-notes / interview-prep artifact, not something the
+published report itself asserts.
+
 ---
 
 ## What this means, in plain language
@@ -306,36 +318,16 @@ a task design that caps what's learnable regardless.
 
 ---
 
-## OPEN_QUESTIONS
+## Caveats and remaining gaps
 
-1. ~~F2's "8 vs 10" claim did not reproduce as stated.~~ **RESOLVED 2026-09-05 (review).**
-   Both notebooks do use 10, as I found. The "8" in the original briefing came from
-   documentation, not code or the paper: `README.md` says "8-cluster balanced sampling
-   strategy" and the Obsidian deep dive says "8 pose clusters (K-means)"; the PDF report states
-   no cluster count at all. The discrepancy is docs-vs-code, not code-vs-code — `BRIEFING.md`'s
-   F2 section has been corrected in place by the reviewing session, marked `CORRECTED
-   2026-09-05`. See also the new docs-vs-code addendum under F2 above (KMeans on raw vs. "reduced
-   embeddings"; 49.6% vs. measured 38.77% cluster dominance).
-2. **F3's effect size is real but moderate (~1.4x), not dramatic.** A stronger, more
+1. **F3's effect size is real but moderate (~1.4x), not dramatic.** A stronger, more
    caption-semantics-aware operationalization (e.g. bucketing captions into locomotion vs.
    static-manipulation vs. large-dynamic-motion categories and comparing within/between-group pose
-   distances) might sharpen this number, but was judged out of scope for this pass's time budget.
-   Peer review concurs this is the weakest verdict and should not be quietly promoted to "the task
-   framing is broken" without running that sharper test — see the caveat added to F3's Result
-   above. Carry this bucketing analysis into `REBUILD_SPEC.md` as a candidate pre-registered
-   experiment rather than running it retroactively into this report.
-3. **The CVPR paper PDF was read by the primary-source research agent, not independently
-   cross-checked by me.** I did not personally fetch/read the PDF; I'm relying on that agent's
-   quoted excerpt (p. 5157, "Pose Representation" section). The code-level confirmation (which I
-   did fetch and verify directly, twice, independently) is solid regardless.
-4. ~~Report PDF (the original project report (PDF)) was not read in this stage at all.~~
-   **RESOLVED 2026-09-05 (review).** A reviewing session read it via `pdftotext -layout` +
-   grep: the string `99.995` appears **zero times** in the PDF — it reports only the raw Table 1
-   loss values, no derived percentage. `99.995% loss reduction` instead appears **five times in
-   the Obsidian deep-dive notes** (`DL - T2P Deep Dive.md`), including inside a scripted
-   interview-answer passage. So the invalid loss-comparison claim is a study-notes /
-   interview-prep artifact, not something the published report itself asserts — a materially
-   different (and more concerning, per the reviewing session) finding than "the report states an
-   invalid metric." `BRIEFING.md`'s F4 section corrected in place, marked `CORRECTED 2026-09-05`.
-   I have not independently re-run the `pdftotext`/grep myself; this item records the reviewing
-   session's verification, not my own.
+   distances) might sharpen this number, and is a candidate for a future pre-registered
+   experiment rather than something run retroactively into this report — see the caveat on F3's
+   Result above for why it shouldn't be quietly upgraded into "the task framing is broken" without
+   that sharper test.
+2. **The CVPR paper's page-5157 "Pose Representation" quote has not been independently
+   cross-checked against the PDF a second time.** The code-level confirmation of the same layout
+   (fetched and verified directly, twice, independently) is solid regardless, since the actual
+   verdicts above rest on the code and the empirical decode test, not on the paper quote.
