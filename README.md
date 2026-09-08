@@ -14,7 +14,7 @@ the notebooks below.
 
 Every notebook answers exactly one question, end to end: the question, the intuition behind it,
 the measurement, and what it means — with every number computed live in the notebook itself,
-never pasted in from a prior run. Nine questions asked and answered so far.
+never pasted in from a prior run. Ten questions asked and answered so far.
 
 <p align="center">
   <img src="notebooks/03_skeleton_side_by_side.png" alt="A subtly wrong pose decode looks fine as a tangle of lines, and unmistakably wrong once rendered as a skeleton" width="720">
@@ -36,6 +36,10 @@ never pasted in from a prior run. Nine questions asked and answered so far.
    to the digit. Before the fixes the two evaluators looked *uncorrelated* (r = −0.006);
    afterwards they agree moderately (r = 0.328). Trusting a single evaluator without a cross-check
    would have shipped an exactly backwards conclusion.
+
+   *Later superseded by its own follow-up:* that reconciliation ran on 128 samples. A 4,640-sample
+   run (#10 below) scored the same checkpoint at **0.6172** — the small sample had been a lucky
+   draw. Both numbers are correct about what they measured; only the larger one is a good estimate.
 
 4. **[Does the text encoder actually understand spatial language — "left," "right," "behind"?](notebooks/01_clip_spatial_blindness.ipynb)**
    No. Sentences differing only by *left* vs *right* sit measurably closer together than sentences
@@ -73,6 +77,18 @@ never pasted in from a prior run. Nine questions asked and answered so far.
    anyway, a device-selection function that silently falls back to CPU, a fourth bug in the
    evaluator notebook above (#3) found only while building this one — each shown wrong-way-
    next-to-right-way, with the five habits that would have caught every one of them.
+
+10. **[Does the text encoder's spatial weakness actually reach the generated motion?](docs/EXPERIMENT_DESIGN_E3.md)**
+    **No — and that is the most useful result here.** #4 and #5 showed the encoder cannot separate
+    "left" from "right". This asked whether that survives into the motion a model actually produces,
+    by generating **all 4,640 test captions** and scoring the spatial and non-spatial halves
+    separately. Under *both* evaluators the gap sits inside the noise floor, and the two evaluators
+    disagree about its **sign** — which is what noise looks like. Pre-registered before the run,
+    including the commitment to report a null as prominently as a finding.
+
+    The consequence: a planned follow-up to *fix* the encoder is now poorly motivated, because there
+    is no measured gap at the output for a fix to close. A four-hour experiment retired a much
+    larger one.
 
 Full index with figures and status: **[notebooks/README.md](notebooks/README.md)**.
 
@@ -127,7 +143,8 @@ findings, because a project that only reports what worked cannot be checked.
 | Is the one training bug that could have doomed the original approach understood? | Yes — reproduced and explained directly, not just described |
 | Does the evaluation split hold up under scrutiny? | Checked for hidden bias before being used for anything |
 | Is a fix for the spatial-language weakness designed? | Yes — pre-registered, not yet run |
-| Has a full training run happened? | Not yet — deliberately, until the above was settled |
+| Does the encoder's spatial weakness reach the generated motion? | No — measured on 4,640 samples, null under two evaluators |
+| Has a full training run happened? | Not yet — deliberately, and the result above removes the main reason to run one |
 
 ---
 
