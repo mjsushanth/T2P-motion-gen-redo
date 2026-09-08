@@ -357,9 +357,33 @@ recomputing FID each trial:
 The two point estimates differ by 0.0020 (~0.4% relative) despite being computed from identical
 cached motions -- a small residual, most likely floating-point ordering sensitivity in the
 covariance/Frechet-distance computation given the two scripts embed in slightly different code
-paths, not investigated further since it is far smaller than anything below. **The published
-figure (0.544) falls inside the bootstrap 95% CI, and is 0.77 bootstrap-std from the point
-estimate** -- not distinguishable from this project's own measurement under this uncertainty.
+paths, not investigated further since it is far smaller than anything below.
+
+**The bootstrap mean is not the estimate to use, and is not used here.** Resampling with
+replacement duplicates motions and shrinks effective diversity, biasing FID upward by
+construction -- this run's bootstrap mean (0.5375) sits 0.0517 above its own point estimate
+(0.4858), which is that bias, not a second measurement. The point estimate (0.4858) is the
+number compared against published; the bootstrap std (0.0755) is used only as a dispersion
+estimate, not the bootstrap mean as a center.
+
+**Sizing the claim precisely, using the point estimate plus/minus twice the bootstrap std as the
+accepted interval:** [0.335, 0.637]. The published figure (0.544) falls inside it, comfortably.
+**The correct statement is "not distinguishable from the published figure under an uncertainty
+this test cannot tighten" -- not "reproduced."** That distinction matters because the interval is
+wide: +/-15.5% around the point estimate, against R-Precision's +/-1.2% (0.6172 +/- 0.0071,
+§9.6). The two halves of this gate are not the same kind of evidence:
+
+| | value +/- uncertainty | relative window | verdict |
+|---|---|---|---|
+| R-Precision (§9.6) | 0.6172 ± 0.0071 | ±1.2% | tight match |
+| FID (this section) | 0.4858 ± 0.0755 | ±15.5% | non-rejection, not a tight match |
+
+A test with a ±15.5% window has correspondingly low power: E3's FID would have read as "not
+distinguishable from published" for almost any true value the paper might have reported in
+roughly [0.335, 0.637], and the true window is wider still once genuine between-replication
+variance (not available from this bootstrap, see point 1 below) is admitted. Worth having, and
+not the same strength of claim as the R-Precision result -- lead with R-Precision wherever both
+are cited together.
 
 **What this is not, stated as plainly as the result itself.** Three things this bootstrap does
 NOT establish:
@@ -384,16 +408,25 @@ NOT establish:
    difference that happens to read low. Reading it as "this project beat the published number" is
    not supported by this evidence and is not claimed here.
 
-**What a real closing measurement would cost, in terms this project can now state precisely.**
-E3's one generation replication (4,640 samples) measured **4.03h wall-clock on MPS**
-(`artifacts/e3/generate.log`) -- not the pre-MPS CPU estimate D-03 previously carried. A
-20-replication protocol comparable to the paper's own would need roughly 19 more full
-generation runs at that same measured cost: **~76h of additional MPS compute**, not attempted.
-That is the actual, current price of closing this gate's FID half -- see `docs/DECISIONS.md`
-D-03 for the updated statement.
+**What would actually tighten this, and what it would cost.** The bootstrap above cannot supply
+what is missing (point 1) -- only independent regenerations, with different sampled noise, can
+give a real between-replication spread of the kind the paper's own ±0.044 measures. At the
+measured **4.03h wall-clock on MPS** per full-scale replication (`artifacts/e3/generate.log`),
+**three total replications cost ~12.1h of MPS compute** (one already exists; ~8.1h of
+additional compute for two more independent runs) and would yield a genuine, small
+between-replication spread -- a real tightening of the FID half, not another bootstrap. A full
+20-replication protocol matching the paper's own would cost roughly 19 more runs beyond the one
+that exists: **~76h of additional MPS compute**. Both figures are recorded here as the priced
+cost of closing this gate, not as work undertaken -- whether 3 replications (a cheap, honest
+partial tightening) or the full 20 is worth spending against other candidate work is the
+author's own call, not this session's; noted as the next candidate experiment for this gate,
+not launched. See `docs/DECISIONS.md` D-03 for the updated statement.
 
-**Net reading:** this bootstrap is a real, useful data point -- it rules out "the gap is huge and
-obviously a broken pipeline," since the published figure sits comfortably inside a reasonable
-uncertainty band for a single measurement at this n. It does not rule in a reproduction, for the
-three reasons named above. Recorded as suggestive-but-inconclusive, not as a second reproduction
-alongside §9.6's R-Precision result.
+**Net reading, stated as a verdict rather than left open-ended:** **non-rejection achieved,
+tight reproduction not achieved.** This bootstrap rules out "the gap is huge and obviously a
+broken pipeline" -- the published figure sits inside a reasonable, if wide, uncertainty band for
+a single measurement at this n. It does not establish a reproduction to any tight tolerance, for
+the three reasons named above, chief among them that the interval able to say so is ±15.5%, not
+R-Precision's ±1.2%. Recorded as suggestive-but-inconclusive, not as a second reproduction
+alongside §9.6's R-Precision result -- and not to be cited later as "E3 reproduced the published
+FID" without this section's own caveats attached.

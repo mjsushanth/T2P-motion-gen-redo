@@ -212,6 +212,14 @@
     ],
     "published_within_bootstrap_ci95": true,
     "published_minus_point_in_bootstrap_std": 0.7706176986561921,
-    "interpretation": "The published FID falls inside this project own bootstrap 95% CI and within 0.77 bootstrap-std of the point estimate -- not distinguishable from the published figure under this uncertainty. This is NOT a formal reproduction: the bootstrap resamples this projects own single fixed generation and fixed reference pool (no new generation), so it estimates stability under resampling of these two pools, not the paper own between-replication variance (independent generations and reference draws), which this project cannot supply after the fact from one generation run. A genuine 20-replication comparison would need ~19 additional full generation runs at the measured single-replication cost of 4.03h MPS wall-clock (artifacts/e3/generate.log) -- roughly 76h of additional MPS compute, not attempted. See docs/EXPERIMENT_DESIGN_E3.md section 9.7 and docs/DECISIONS.md D-03."
+    "interpretation": "Not distinguishable from the published figure under an uncertainty this test cannot tighten (accepted interval [0.335, 0.637], a +-15.5% window around the point estimate, vs R-Precision +-1.2%). This is a non-rejection, not a tight reproduction -- the two halves of D-03 are not the same strength of evidence; lead with R-Precision wherever both are cited. The bootstrap mean (0.5375) is biased upward by resampling-with-replacement (duplicated motions shrink effective diversity) and is NOT used as the estimate; the point estimate (0.4858) plus twice the bootstrap std is used instead to size the accepted interval. What would actually tighten this: independent regenerations with different sampled noise, the quantity the paper own 20-replication CI actually measures -- 3 total replications (2 more beyond this one) would cost ~8.1h of additional MPS compute at the measured 4.03h/run (artifacts/e3/generate.log) and yield a genuine between-replication spread; the full 20-replication protocol would cost ~76h additional. Both priced as the next candidate experiment for this gate, not undertaken -- the author own call whether either is worth spending. See docs/EXPERIMENT_DESIGN_E3.md section 9.7 and docs/DECISIONS.md D-03.",
+    "bootstrap_mean_is_biased_upward_not_used_as_estimate": true,
+    "accepted_interval_point_est_plus_minus_2std": [
+      0.33474737696039825,
+      0.6368498621081596
+    ],
+    "relative_window_pct": 15.5,
+    "r_precision_relative_window_pct_for_comparison": 1.2,
+    "verdict": "non-rejection achieved, tight reproduction not achieved"
   }
 }
