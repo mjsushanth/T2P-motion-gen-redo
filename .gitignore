@@ -27,3 +27,11 @@ third_party/TMR/models/
 # regenerable demo retrieval cache (17MB, rebuilt automatically from the materialized corpus +
 # evaluator on first run if missing -- same convention as dataset/t2m_test.npy)
 artifacts/demo/embedding_retrieval_cache.pkl
+
+# internal working files (run ledger, review queue, supervisor prompts, guidance drafts) --
+# kept locally, not published; the repo stays a record of the work, not of the process
+/internal/
+
+# read by Claude Code tooling from the project root, so it stays in place on disk -- but it is
+# process/workflow instruction, not project documentation, so it is not published
+/CLAUDE.md
