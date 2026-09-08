@@ -1,10 +1,8 @@
 # EXPERIMENT_DESIGN_E2 — pre-registered design for a spatial-conditioning repair experiment
 
 **Status: DESIGN ONLY. Nothing in this document has been run.** Written before any budget is
-spent, per this project's own standing rule (E1 died partly because its design was written after
-its budget was assumed — `docs/DECISIONS.md` D-23, `docs/LANDMINES.md` §18). Author-directed via
-the reviewing session (2026-09-07), no sign-off required to write this; sign-off *is* required
-before any arm below actually runs.
+spent, per this project's own standing rule (an earlier experiment died partly because its design
+was written after its budget was assumed — `docs/DECISIONS.md` D-23, `docs/LANDMINES.md` §18).
 
 **The evidence this design rests on, all already established, none re-asserted here without a
 pointer:**
@@ -31,9 +29,9 @@ pointer:**
 spatially-worded captions, without degrading performance on everything else?**
 
 This is not "train a better text-to-motion model." It is a narrow, falsifiable question about one
-specific, already-measured deficit, on a pretrained checkpoint, with a small modification — matching
-the strategic direction already settled (pretrained checkpoint + modification, never from scratch;
-`LEDGER.md` Item 67's own note on the relayed strategic context).
+specific, already-measured deficit, on a pretrained checkpoint, with a small modification —
+matching this project's own settled direction of pretrained checkpoint + modification, never
+training from scratch.
 
 ## 2. Arms
 
@@ -95,9 +93,8 @@ arms — four numbers, not two:
 | baseline | R-Precision-top3, spatial | R-Precision-top3, non-spatial |
 | treatment (adapter) | R-Precision-top3, spatial | R-Precision-top3, non-spatial |
 
-**Nobody in the literature reports this split** (`guidance/RESEARCH_E_novel_directions.md`
-confirms it) — every published text-to-motion evaluation reports one aggregate R-Precision
-number. Reporting the spatial and non-spatial subsets separately, for the same model, is the
+**Nobody in the literature reports this split** — every published text-to-motion evaluation
+reports one aggregate R-Precision number. Reporting the spatial and non-spatial subsets separately, for the same model, is the
 actual contribution of this design, independent of which way the treatment arm's result lands.
 
 **The confound control, made concrete (per notebook 05's own finding, not just acknowledged):**
@@ -109,8 +106,8 @@ set's own word-count distribution) and report R-Precision per tercile per subset
 a warning sign, not a confirmation** — a real spatial-conditioning effect should show up across
 length terciles, not concentrate in the one where the confound is strongest.
 
-**Report both the raw (unmatched) and the length-matched comparison, not the matched one alone**
-(per SUP-20260907-95's review of notebook 05, accepted). The reviewer's argument: if longer
+**Report both the raw (unmatched) and the length-matched comparison, not the matched one alone.**
+The argument for this: if longer
 captions make retrieval *easier* (more distinctive text should be less confusable with other
 candidates in the same batch), the length confound would push the spatial subset's raw
 R-Precision *up*, working against — not for — a hypothesis of spatial deficit. On that
@@ -128,13 +125,13 @@ as a byproduct of computing R-Precision, no new generation needed) — so the di
 confound is measured from this project's own data rather than assumed from either side's
 intuition.
 
-**How to read the unmatched result, either way the untested premise resolves** (the reviewer's
+**How to read the unmatched result, either way the untested premise resolves** (an
 asymmetric-interpretation argument, made explicit and bidirectional rather than assuming one
 direction):
 
 | if the length-correlation check (above) finds... | ...then an unmatched spatial deficit is | ...and an unmatched null/advantage is |
 |---|---|---|
-| length **helps** retrieval (reviewer's premise) | conservative — held despite a length advantage; already believable without matching | uninterpretable — could be the confound, not a real absence of deficit |
+| length **helps** retrieval | conservative — held despite a length advantage; already believable without matching | uninterpretable — could be the confound, not a real absence of deficit |
 | length **hurts** retrieval (the truncation counter-argument) | uninterpretable — could be the confound doing the work, not a real deficit | conservative — held despite a length disadvantage; already believable without matching |
 | no correlation either way | either unmatched result is directly interpretable; the matched split becomes a robustness check, not a requirement |  |
 
@@ -159,8 +156,8 @@ notebooks 01/01b (those measure CLIP *embedding* separation, cosine similarity o
 minimal pairs — not R-Precision on real generated motions, which is two representational steps
 downstream and not guaranteed to move by a comparable amount, or at all).
 
-**Binomial floor, using the same formula this project already validated in D-28/`docs/LANDMINES.md`
-§18** (`n = z² · 2p(1-p) / delta²`, p≈0.35 — this project's own severely-undertrained-checkpoint
+**Binomial floor, using the same formula this project already validated (`docs/LANDMINES.md`
+§18)** (`n = z² · 2p(1-p) / delta²`, p≈0.35 — this project's own severely-undertrained-checkpoint
 R-Precision-top3 baseline, per E0b/notebook 02, not the published-frontier 0.76 a fully-trained
 checkpoint would use):
 
@@ -180,22 +177,24 @@ the full subset, which pushes the actually-detectable effect size up from this f
 plainly in §7, not hidden in this table.
 
 **If the honest MDE at the affordable n turns out larger than any effect worth finding, that is a
-legitimate, useful conclusion — the one E1 reached too late (`docs/DECISIONS.md` D-26/D-28) — and
-this design is pre-committing to say so plainly if it happens, not to quietly lower the bar.**
+legitimate, useful conclusion — the one an earlier experiment reached too late
+(`docs/DECISIONS.md` D-24/D-27/D-28) — and this design is pre-committing to say so plainly if it
+happens, not to quietly lower the bar.**
 
 ## 6. Pre-registered failure / abandonment conditions
 
 Stated before any run, so a disappointing result cannot be re-narrated afterward:
 
 1. **Non-spatial R-Precision drops by more than the seed-to-seed spread already characterized for
-   this checkpoint** (D-28: same-arm seed variance alone can equal 0.047 R-Precision-top3 points
-   at n=128) — if the treatment arm's non-spatial score drops by more than this floor, **abandon
+   this checkpoint** (same-arm seed variance alone can equal 0.047 R-Precision-top3 points at
+   n=128) — if the treatment arm's non-spatial score drops by more than this floor, **abandon
    the adapter design regardless of what happens on the spatial subset.** A model that trades
    non-spatial competence for spatial competence has not fixed anything.
 2. **The spatial-subset improvement, if any, is smaller than the pre-registered MDE at the actual
    affordable n (§7).** A numerically-higher spatial R-Precision that sits inside the binomial
-   noise floor is not a finding — report it as indistinguishable from noise, exactly as D-26/D-28
-   already established this project will do rather than over-read a favorable-looking number.
+   noise floor is not a finding — report it as indistinguishable from noise, exactly as this
+   project's own earlier stopping decisions already established it will do, rather than over-read
+   a favorable-looking number.
 3. **The spatial-subset improvement is concentrated in one caption-length tercile that also
    happens to be where the length confound (§3) is strongest.** This is the specific signature of
    a confounded result and is treated as inconclusive, not as evidence for the adapter, until a
@@ -207,22 +206,21 @@ Stated before any run, so a disappointing result cannot be re-narrated afterward
 
 ## 7. Compute plan
 
-**Corrected (2026-09-07, author-directed, relayed via the director): E2 runs on this machine,
-not Kaggle.** The earlier version of this section costed E2 against Kaggle's free tier and
-treated this machine's own measured rate as a lower-bound translation toward unmeasured GPU
-hardware. The author's own question, relayed exactly: why leave a validated instrument for an
-unvalidated one? This machine has already paid, three times over, to close a silent-failure
-surface on the MPS path (D-27/D-28, `docs/LANDMINES.md` §7; the E0a device-parity gate, 4e-8
-device delta against a 2.7e-3 seed-noise floor) — moving to Kaggle would mean re-establishing the
-dataset, re-running that gate on unfamiliar hardware, and re-opening exactly the class of defect
-this project has spent the most effort eliminating, to chase a hypothetical GPU speedup nobody
-has measured. **Kaggle is the contingency if E2 grows past what this machine affords, not the
-plan.**
+**This design runs on this machine, not Kaggle.** An earlier version of this section costed it
+against Kaggle's free tier and treated this machine's own measured rate as a lower-bound
+translation toward unmeasured GPU hardware. The better question: why leave a validated instrument
+for an unvalidated one? This machine has already paid, three times over, to close a
+silent-failure surface on the MPS path (`docs/LANDMINES.md` §7, §22-23; the evaluator-sanity
+device-parity gate, 4e-8 device delta against a 2.7e-3 seed-noise floor) — moving to Kaggle would
+mean re-establishing the dataset, re-running that gate on unfamiliar hardware, and re-opening
+exactly the class of defect this project has spent the most effort eliminating, to chase a
+hypothetical GPU speedup nobody has measured. **Kaggle is the contingency if this design grows
+past what this machine affords, not the plan.**
 
-**Every number below is this project's own directly measured local rate (D-27/D-28: 3.15
-s/sample, batch 32, 1000 diffusion steps, `trans_enc` 17.9M-param architecture, the same
-architecture this design reuses unchanged) — not a translation to different hardware, so none of
-the GPU-generation-rate uncertainty the earlier version of this section carried applies anymore.**
+**Every number below is this project's own directly measured local rate (3.15 s/sample, batch 32,
+1000 diffusion steps, `trans_enc` 17.9M-param architecture, the same architecture this design
+reuses unchanged) — not a translation to different hardware, so none of the GPU-generation-rate
+uncertainty the earlier version of this section carried applies anymore.**
 
 - **Adapter training (the cheap part).** A single linear layer, a few thousand synthetic pairs, a
   contrastive loss with no motion data involved at all — a small classification-scale training
@@ -230,7 +228,7 @@ the GPU-generation-rate uncertainty the earlier version of this section carried 
   actual run, not assumed, before committing to a specific n of synthetic pairs. Expected to be
   minutes, not hours, given the parameter count involved (a single linear layer, not the 17.9M
   diffusion model).
-- **Generation (the expensive part, per D-28's own finding for this exact architecture).**
+- **Generation (the expensive part, per this project's own measured rate for this exact architecture).**
   - **The affordable design** (§5's own MDE table: ~338 samples/arm/subset detects the pilot's
     hypothesis-motivated effect at 3σ): 338 samples × 2 subsets (spatial, non-spatial) × 2 arms
     (baseline, treatment) = 1,352 generations × 3.15 s/sample ≈ **1.2 hours, one sitting, on this
@@ -244,9 +242,9 @@ the GPU-generation-rate uncertainty the earlier version of this section carried 
     project has already been checked against.
 - **Total estimated compute for this design as specified: 1.2-7.3 hours depending on which n is
   chosen, entirely on this machine, in one sitting or one overnight run.** Kaggle's free tier
-  (~30 GPU-hours/week, P100/T4x2, 9-hour session cap — `LEDGER.md` Item 67, still UNVERIFIED
-  against Kaggle's own current documentation) remains a documented fallback only if a future,
-  larger version of this design outgrows what a single local run affords.
+  (~30 GPU-hours/week, P100/T4x2, 9-hour session cap — still UNVERIFIED against Kaggle's own
+  current documentation) remains a documented fallback only if a future, larger version of this
+  design outgrows what a single local run affords.
 
 ## 8. What this design does not claim
 
@@ -256,10 +254,9 @@ the GPU-generation-rate uncertainty the earlier version of this section carried 
   this project's own generation quality — only that it is one specific, already-measured,
   cheaply-testable deficit worth checking before any larger, more expensive intervention.
 - It does not authorize itself to run. This document is the design; running any arm of it still
-  requires the same sign-off every other training run in this project requires, per
-  `CLAUDE.md`'s own standing authorization scope.
+  requires the same sign-off every other training run in this project requires.
 
 **Would reverse if:** the power calculation (§5), once affordable n is actually measured on this
 machine (§7), shows an MDE larger than any effect size worth caring about — in which case this
-design should be shelved with that conclusion stated plainly, the same way D-26/D-28 shelved E1B's
-generation-side comparison, rather than run anyway "to see."
+design should be shelved with that conclusion stated plainly, the same way an earlier experiment's
+generation-side comparison was shelved, rather than run anyway "to see."
