@@ -329,3 +329,71 @@ correct, matching-SE answer is ~3.4σ. Both readings support the same conclusion
 a good estimate of this checkpoint -- but only one of them is an admissible statistic, and it is
 worth being precise about which, in a document that exists specifically to catch this class of
 mistake.
+
+### 9.7 A comparison against the published FID -- with a bootstrap error bar, and explicit limits
+
+§9.3's overall generated-vs-real FID (0.484) was never put beside MDM's published FID (0.544,
+CI half-width 0.044 over 20 replications, `LANDSCAPE.md` line 47) anywhere in this document --
+an oversight caught the same way the R-Precision reproduction was initially missed (§9.6): two
+real numbers, in two different files, nobody had opened side by side. Doing so now, with the
+three caveats this comparison actually needs stated up front rather than implied.
+
+**The comparison needs an error bar first.** A single FID computed from one fixed generation and
+one fixed reference pool has no variance information on its own -- it cannot be judged "close to"
+or "far from" a 20-replication published figure without one. `scripts/e3_fid_bootstrap.py`
+re-embeds the same cached generated motions and the same ground-truth pool (no regeneration),
+then resamples both pools independently, with replacement, at their own n=4,640, 1,000 times,
+recomputing FID each trial:
+
+| | value |
+|---|---:|
+| point estimate (this script's own re-embedding) | 0.4858 |
+| point estimate (originally reported, §9.3) | 0.4838 |
+| bootstrap mean (1,000 trials) | 0.5375 |
+| bootstrap std | 0.0755 |
+| bootstrap 95% CI | [0.403, 0.698] |
+| published (paper's own 20-replication figure) | 0.544 ± .044 |
+
+The two point estimates differ by 0.0020 (~0.4% relative) despite being computed from identical
+cached motions -- a small residual, most likely floating-point ordering sensitivity in the
+covariance/Frechet-distance computation given the two scripts embed in slightly different code
+paths, not investigated further since it is far smaller than anything below. **The published
+figure (0.544) falls inside the bootstrap 95% CI, and is 0.77 bootstrap-std from the point
+estimate** -- not distinguishable from this project's own measurement under this uncertainty.
+
+**What this is not, stated as plainly as the result itself.** Three things this bootstrap does
+NOT establish:
+
+1. **This is not the paper's own replication variance.** The paper's ±.044 comes from 20
+   independent generation runs (different sampled noise, different diffusion trajectories) and
+   a fixed reference protocol. This project's bootstrap resamples *the same fixed 4,640
+   generated motions and the same fixed 4,640 real motions* -- it measures how much the FID
+   estimate itself wobbles when its own two fixed pools are resampled, not how much a genuinely
+   independent regeneration would move it. These are related but different quantities; the
+   bootstrap CI is a lower bound on the true between-replication spread, not a substitute for it.
+2. **The reference protocol may differ.** FID is acutely sensitive to which real motions form
+   the reference set and how many (`docs/LANDMINES.md` §14). This project's ground-truth pool
+   (`embed_ground_truth_guo`, the 4,648-entry eval-mode pool) was not verified to match MDM's own
+   published-run reference construction sample-for-sample -- only shown consistent with this
+   project's own pre-existing `fixed_gt_reference.npz` cache (§0 setup, prior work). A protocol
+   mismatch, not model quality, could account for some or all of the 0.058 gap.
+3. **The direction is not evidence of a better model.** This project's point estimate (0.484-
+   0.486) sits *below* the published 0.544 -- nominally "better." Given a bootstrap std of 0.076,
+   being 0.058 below published is well inside one standard deviation and carries no directional
+   signal: it is equally consistent with a true match, a genuinely better result, or a protocol
+   difference that happens to read low. Reading it as "this project beat the published number" is
+   not supported by this evidence and is not claimed here.
+
+**What a real closing measurement would cost, in terms this project can now state precisely.**
+E3's one generation replication (4,640 samples) measured **4.03h wall-clock on MPS**
+(`artifacts/e3/generate.log`) -- not the pre-MPS CPU estimate D-03 previously carried. A
+20-replication protocol comparable to the paper's own would need roughly 19 more full
+generation runs at that same measured cost: **~76h of additional MPS compute**, not attempted.
+That is the actual, current price of closing this gate's FID half -- see `docs/DECISIONS.md`
+D-03 for the updated statement.
+
+**Net reading:** this bootstrap is a real, useful data point -- it rules out "the gap is huge and
+obviously a broken pipeline," since the published figure sits comfortably inside a reasonable
+uncertainty band for a single measurement at this n. It does not rule in a reproduction, for the
+three reasons named above. Recorded as suggestive-but-inconclusive, not as a second reproduction
+alongside §9.6's R-Precision result.

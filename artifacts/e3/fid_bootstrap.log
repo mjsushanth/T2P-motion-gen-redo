@@ -1,0 +1,26 @@
+Loading cached generated batches...
+4640 generated samples loaded, motion shape (4640, 196, 263)
+Loading Evaluation Model Wrapper (Epoch 28) Completed!!
+Embedding generated motions (Guo, batches of 32, single-sort-and-invert)...
+Generated embeddings: (4640, 512)
+Embedding ground-truth motions (Guo) for FID...
+Reading ././dataset/humanml_opt.txt
+Loading dataset t2m ...
+Loading motions from cache file [./dataset/t2m_test.npy]...
+Pointer Pointing at 0
+Ground-truth embeddings: (4640, 512)
+Bootstrapping FID (1000 trials, resampling both sides with replacement)...
+{
+  "point_estimate_fid": 0.48579861953427894,
+  "n_gen": 4640,
+  "n_real": 4640,
+  "n_trials": 1000,
+  "bootstrap_mean": 0.5373517271905947,
+  "bootstrap_std": 0.07552562128694036,
+  "bootstrap_ci95": [
+    0.4032950629483043,
+    0.6984514322984807
+  ],
+  "seed": 0
+}
+Saved to ../../artifacts/e3/fid_bootstrap.json

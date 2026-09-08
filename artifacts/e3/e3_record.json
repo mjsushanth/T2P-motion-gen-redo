@@ -194,5 +194,24 @@
     "measured_se_binomial": 0.0072,
     "z_sigma": 0.87,
     "interpretation": "This project harness reproduces the published figure to within ordinary sampling noise, on the same released checkpoint, without training. See docs/EXPERIMENT_DESIGN_E3.md section 9.6 and docs/DECISIONS.md D-03."
+  },
+  "published_fid_comparison": {
+    "note": "MDM published Guo FID, generated-vs-real (LANDSCAPE.md line 47, paper own table, 20-replication protocol)",
+    "published_value": 0.544,
+    "published_ci_half_width_20rep": 0.044,
+    "measured_value_e3_record": 0.4838043316514842,
+    "measured_n": 4640,
+    "bootstrap_source": "artifacts/e3/fid_bootstrap.json (independent re-embedding + resampling, seed 0, 1000 trials)",
+    "bootstrap_point_estimate": 0.48579861953427894,
+    "bootstrap_point_estimate_note": "differs from measured_value_e3_record by 0.0020 (~0.4% relative), a small residual not further investigated -- both computed from the same cached motions, likely floating-point ordering sensitivity in the covariance/Frechet-distance computation, not a data or protocol discrepancy",
+    "bootstrap_mean": 0.5373517271905947,
+    "bootstrap_std": 0.07552562128694036,
+    "bootstrap_ci95": [
+      0.4032950629483043,
+      0.6984514322984807
+    ],
+    "published_within_bootstrap_ci95": true,
+    "published_minus_point_in_bootstrap_std": 0.7706176986561921,
+    "interpretation": "The published FID falls inside this project own bootstrap 95% CI and within 0.77 bootstrap-std of the point estimate -- not distinguishable from the published figure under this uncertainty. This is NOT a formal reproduction: the bootstrap resamples this projects own single fixed generation and fixed reference pool (no new generation), so it estimates stability under resampling of these two pools, not the paper own between-replication variance (independent generations and reference draws), which this project cannot supply after the fact from one generation run. A genuine 20-replication comparison would need ~19 additional full generation runs at the measured single-replication cost of 4.03h MPS wall-clock (artifacts/e3/generate.log) -- roughly 76h of additional MPS compute, not attempted. See docs/EXPERIMENT_DESIGN_E3.md section 9.7 and docs/DECISIONS.md D-03."
   }
 }

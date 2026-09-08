@@ -44,14 +44,27 @@ a bug not present in E0b's script (`scripts/e0b_mdm_reproduction.py`), which cal
 upstream `get_dataset_loader`/`evaluation_parser` directly instead of reconstructing them. E0b's
 number is why this gate cites E0b, not E0a, as ground-truth support — E0a's miss is an artifact of
 that script's own hand-rolled loader, not evidence the ground-truth quantity itself is unstable.
-**The stricter remaining piece** — reproducing MDM's own published FID on its own checkpoint — did
-not succeed at any sample size this hardware could afford (a full-scale replication would cost
-roughly 5 CPU-hours; the full 20-replication protocol roughly 100), and remains open. Numbers from
-the generation-comparison work onward stay labelled internally-comparable-only specifically on the
-FID axis; the R-Precision axis no longer needs that downgrade for this checkpoint.
-**Would close the FID half if:** the ~5 CPU-hour single-run replication (or the full 20-rep
-protocol) is actually spent and lands within the paper's own reported spread — this has not been
-attempted, only priced.
+**The stricter remaining piece** — reproducing MDM's own published FID (0.544±.044, 20
+replications) on its own checkpoint — remains open, and its cost is now known precisely rather
+than priced pre-MPS: E3's one full-scale generation replication (4,640 samples) measured **4.03h
+wall-clock on MPS** (`artifacts/e3/generate.log`), so a 20-replication protocol comparable to the
+paper's own would need roughly 19 more such runs — **~76h of additional MPS compute** — not the
+earlier pre-MPS CPU estimate ("~5 CPU-hours... roughly 100") this line previously carried. A
+related, weaker data point exists at zero additional generation cost: `docs/EXPERIMENT_DESIGN_E3.md`
+§9.7 bootstrap-resampled E3's own single-replication FID (point estimate 0.484-0.486) and found
+the published 0.544 sits inside the resulting 95% CI [0.403, 0.698], 0.77 bootstrap-std from the
+point estimate. **This does not close the gate** — a bootstrap over one fixed generation and one
+fixed reference pool measures resampling stability, not the paper's own between-replication
+variance from independent generations, and the reference-construction protocol was never verified
+to match the paper's sample-for-sample. It is reported as suggestive-not-contradictory, not as a
+second reproduction. Numbers from the generation-comparison work onward stay labelled
+internally-comparable-only specifically on the FID axis; the R-Precision axis no longer needs that
+downgrade for this checkpoint.
+**Would close the FID half if:** the ~76h-MPS 20-replication protocol (or a smaller number of
+additional independent generation runs, enough to estimate genuine between-replication variance
+directly rather than via bootstrap) is actually spent and lands within the paper's own reported
+spread — this has not been attempted, only priced, and the bootstrap result above is not a
+substitute for it.
 **Would reverse if:** a published number turns out unreproducible for a reason other than sample
 size, in which case the downgrade path is stated even more broadly.
 
