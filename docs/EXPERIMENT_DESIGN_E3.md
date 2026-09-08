@@ -25,19 +25,34 @@ optional caution; it is what makes E2's own result interpretable either way it l
 
 ## 3. Design
 
-**Generate:** all 4,198 HumanML3D test-split captions, once each, with the released checkpoint
-(`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/model000475000.pt`), fixed seed,
-guidance scale 2.5, 1,000 diffusion steps (no respacing) — the exact same generation convention
-every other number in this project has used (E0b, E1A, E1B). No training, no new model, no
-adapter.
+**Generate:** every entry in HumanML3D's standard test-split evaluation pool, once each, with
+the released checkpoint (`checkpoints/mdm/humanml-encoder-512/humanml_trans_enc_512/
+model000475000.pt`), fixed seed, guidance scale 2.5, 1,000 diffusion steps (no respacing) — the
+exact same generation convention every other number in this project has used (E0b, E1A, E1B). No
+training, no new model, no adapter.
+
+**A population correction made before running, not after:** the design originally assumed 4,198
+samples, matching notebook 05's direct read of `test.txt` (one entry per unique sequence). The
+actual evaluation-mode data loader — the same one E0b, E1A, and E1B already draw their own
+R-Precision numbers from, just truncated to n=128 there — draws from a cached pool of **4,648**
+entries: the same 4,198 base sequences plus 450 extra entries for sequences that have more than
+one annotated caption (each extra entry letter-prefixed to stay a distinct dataset key, standard
+HumanML3D convention). Restricting generation to an arbitrary 4,198-entry prefix of this pool
+would be a new, one-off population no other number in this project uses. Generating the full,
+standard 4,648-entry pool instead keeps this measurement on the exact same population every
+other evaluation number here already stands on. **The spatial/non-spatial split is therefore
+computed fresh from whichever captions actually get generated (§3 below), not assumed to
+reproduce notebook 05's exact 2,448/1,750 counts** — those counts remain correct for their own
+4,198-sequence population; this experiment's own realized counts are reported as measured.
 
 **Score with both evaluators this project has working and cross-checked (notebook 02):** Guo's
 R-Precision (euclidean ranking, its own published convention) and TMR's (cosine ranking, its
 own). Batches of 32 for both, matching the field's own protocol.
 
 **Report separately, not pooled:**
-- the spatial subset (2,448 captions, per notebook 05's own split of the official test set)
-- the non-spatial subset (1,750 captions)
+- the spatial subset (~2,700 captions expected, scaling notebook 05's 58.3% test-split rate to
+  4,648 — the realized count is reported directly, not assumed)
+- the non-spatial subset (~1,940 captions expected, same scaling)
 - both subsets further split into caption-length terciles, computed once from each subset's own
   word-count distribution (same convention as `docs/EXPERIMENT_DESIGN_E2.md` §3) — because
   notebook 05 already found spatial captions run 41% longer on average (14.38 vs 10.19 words,
@@ -54,9 +69,12 @@ range, z=3 for a 3σ threshold):
 | n | MDE (3σ) |
 |---:|---:|
 | 128 (every prior generation run this project has done) | 0.179 |
-| 2,448 (spatial subset) | 0.041 |
-| 1,750 (non-spatial subset) | 0.048 |
-| 816 (one length tercile within the spatial subset, 2,448/3) | 0.071 |
+| ~2,700 (expected spatial subset) | 0.039 |
+| ~1,940 (expected non-spatial subset) | 0.046 |
+| ~900 (one length tercile within the spatial subset, ~2,700/3) | 0.068 |
+
+(Recomputed once the realized subset sizes are known, in the results themselves — these are
+the pre-run estimates the design is committing to, not the final reported numbers.)
 
 A **~4.4x** improvement in resolving power over every generation-side comparison this project
 has run so far (E1A vs E1B included). Effects that were invisible at n=128 all session become
@@ -96,19 +114,21 @@ floor curve rather than trusted on the strength of a bigger n alone.
 
 ## 7. Compute
 
-**~3.67 hours** at this project's own directly measured local rate (3.15 s/sample, batch 32,
+**~4.07 hours** at this project's own directly measured local rate (3.15 s/sample, batch 32,
 1,000 diffusion steps, `trans_enc` 17.9M-param architecture — the same rate `docs/
-EXPERIMENT_DESIGN_E2.md` §7 derived and used): 4,198 samples × 3.15 s/sample ≈ 13,224s ≈ 3.67h.
-**This machine, not Kaggle** — same reasoning as E2 §7: this machine has already closed every
-silent-failure surface on the MPS path that a fresh Kaggle environment would reopen, for a
+EXPERIMENT_DESIGN_E2.md` §7 derived and used), revised up from the original 3.67h estimate to
+match the corrected 4,648-sample population (§3): 4,648 samples × 3.15 s/sample ≈ 14,641s ≈
+4.07h. **This machine, not Kaggle** — same reasoning as E2 §7: this machine has already closed
+every silent-failure surface on the MPS path that a fresh Kaggle environment would reopen, for a
 hypothetical speedup nobody has measured there.
 
-All 4,198 generated motions held in memory at once are small: (4198, 196, 263) float32 ≈ 0.87 GB
+All 4,648 generated motions held in memory at once are small: (4648, 196, 263) float32 ≈ 0.96 GB
 — comfortably resident, no disk round-trip needed during scoring. **Generation itself is
 checkpointed incrementally to disk, one batch of 32 at a time**, independent of the in-memory
 scoring step: an interrupted run resumes from the last completed batch rather than losing the
-whole 3.67 hours, since the generation loop and the batch-caching are the same operation, not an
-afterthought bolted on top.
+whole ~4-hour run, since the generation loop and the batch-caching are the same operation, not
+an afterthought bolted on top. A 32-batch smoke test (n=64, two batches) was run first and timed
+at 3.22 s/sample -- within noise of the 3.15 s/sample this estimate assumes.
 
 ## 8. What this does not claim
 
