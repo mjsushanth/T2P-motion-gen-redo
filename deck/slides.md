@@ -80,7 +80,7 @@ A model that produces plausible output and raises no exception cannot be judged 
 
 ::right::
 
-<img src="/img/03_skeleton_comparison_stacked.png" alt="Two frames, well separated in time: the wrong slice decode stays an incoherent tangle at both, the correct decode is a recognizable human figure whose pose visibly changes between them">
+<img src="/img/03_skeleton_comparison_stacked.png" alt="Two frames, well separated in time: the original decode stays an incoherent tangle at both, the dataset's own decode is a recognizable human figure whose pose visibly changes between them">
 
 <!--
 deck/PRESENTER_NOTES.md: "17 pipeline and metric failure modes -- docs/LANDMINES.md, S1-15
@@ -103,14 +103,25 @@ scoped to "figures the worker made" missed it. Below the 240px floor at this dec
 35%-column width (peer-verified ~193px predicted, ~171px measured on the live deck at an
 emulated viewport). Regenerated as a column-friendly, near-square comparison
 (deck/img/03_skeleton_comparison_stacked.png, deck/img/make_fig03_skeleton_stacked.py,
-0.825 aspect, measured directly from the saved file after a tight-bbox-crop iteration, not
-assumed from the requested figsize) -- 2 rows (frames, the widest available temporal
-separation from the original 4-point strip, not reduced to 1) x 2 columns (wrong slice |
-correct decode), preserving the "incoherent over TIME, not a single bad pose" argument
-rather than the peer's literal single-frame suggestion. notebooks/03_skeleton_side_by_side.png
-itself and its generating notebook cell (03_263d_representation_and_f1_bug.ipynb, cell
-af057b27) are untouched -- this is a separate, deck-only asset, not an edit to the
-notebook's own primary record.
+0.925 aspect after a label-wording fix below, measured directly from the saved file after a
+tight-bbox-crop iteration, not assumed from the requested figsize) -- 2 rows (frames, the
+widest available temporal separation from the original 4-point strip, not reduced to 1) x 2
+columns (the original decode | the dataset's own decode), preserving the "incoherent over
+TIME, not a single bad pose" argument rather than the peer's literal single-frame
+suggestion. notebooks/03_skeleton_side_by_side.png itself and its generating notebook cell
+(03_263d_representation_and_f1_bug.ipynb, cell af057b27) are untouched -- this is a
+separate, deck-only asset, not an edit to the notebook's own primary record.
+
+Labels fixed 2026-09-16, caught by the planner against two rules already in force for this
+deck: the panels originally read "wrong slice [:66]" (violates DECK_PLAN.md S2's binding
+no-"wrong"/"failed"/"broken" rule about the predecessor) and the title carried the source
+filename (sample004077.npy) with "recover_from_ric" as a panel label (violates house-style
+rule 3: no internal filenames or function names on a face). Relabelled to "the original
+decode" / "the dataset's own decode" and a filename-free title -- same argument, same
+geometry, nothing evaluative or internal left on the face. Provenance, for the record
+rather than the face: sample004077.npy, frames 38 and 130 of that sequence; left panel is
+motion[:, :66] reshaped naively (the predecessor's own method); right panel is
+recover_from_ric from third_party/motion-diffusion-model's own motion_process.py, unmodified.
 -->
 
 ---

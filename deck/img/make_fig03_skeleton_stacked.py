@@ -107,11 +107,16 @@ for row, frame_idx in enumerate(strip_frames):
     pad = 0.15 * (allpts.max() - allpts.min())
     lims = (allpts.min() - pad, allpts.max() + pad)
 
-    draw_skeleton_2d(axes[row, 0], W, "#c44e52", f"wrong slice [:66]\nframe {frame_idx}", lims)
-    draw_skeleton_2d(axes[row, 1], C, "#4c72b0", f"recover_from_ric\nframe {frame_idx}", lims)
+    # Labels fixed 2026-09-16 per DECK_PLAN.md S2 (no "wrong"/"failed"/"broken" on a face --
+    # this project's own binding editorial rule, which the first version of this figure
+    # broke) and house-style rule 3 (no internal filenames or function names on a face --
+    # sample004077.npy and recover_from_ric are provenance, not slide content). Both moved
+    # to the presenter notes in deck/slides.md instead of being dropped.
+    draw_skeleton_2d(axes[row, 0], W, "#c44e52", f"the original decode\nframe {frame_idx}", lims)
+    draw_skeleton_2d(axes[row, 1], C, "#4c72b0", f"the dataset's own decode\nframe {frame_idx}", lims)
 
-fig.suptitle(f"{example_file}, {len(strip_frames)} frames across the sequence -- frontal (x-y) "
-             f"view, shared scale per frame, equal aspect", y=1.02, fontsize=11)
+fig.suptitle(f"Two frames from one motion sequence -- frontal (x-y) view, shared scale per "
+             f"frame, equal aspect", y=1.02, fontsize=11)
 plt.tight_layout()
 out_path = os.path.join(os.path.dirname(__file__), "03_skeleton_comparison_stacked.png")
 plt.savefig(out_path, dpi=130, bbox_inches="tight")
