@@ -80,7 +80,7 @@ A model that produces plausible output and raises no exception cannot be judged 
 
 ::right::
 
-<img src="/img/03_skeleton_side_by_side.png" alt="Skeleton decoded correctly next to the same motion decoded with the wrong slice, side by side">
+<img src="/img/03_skeleton_comparison_stacked.png" alt="Two frames, well separated in time: the wrong slice decode stays an incoherent tangle at both, the correct decode is a recognizable human figure whose pose visibly changes between them">
 
 <!--
 deck/PRESENTER_NOTES.md: "17 pipeline and metric failure modes -- docs/LANDMINES.md, S1-15
@@ -95,6 +95,22 @@ part-citation, part-judgement rather than attribute it wholly to the heading.
 
 25.81% mean bone-length CV, up to 81.70% -- FORENSICS.md:102 (mean across bones) and
 FORENSICS.md:93 (81.70%, bone 12-15). Both re-verified directly against the file, exact match.
+
+FIGURE: replaced 2026-09-16. The original notebooks/03_skeleton_side_by_side.png (a 2-row x
+4-column strip, aspect 0.539) was the one image in the deck the figure worker never
+produced -- a pre-existing notebook output copied in, so both figure-legibility passes
+scoped to "figures the worker made" missed it. Below the 240px floor at this deck's
+35%-column width (peer-verified ~193px predicted, ~171px measured on the live deck at an
+emulated viewport). Regenerated as a column-friendly, near-square comparison
+(deck/img/03_skeleton_comparison_stacked.png, deck/img/make_fig03_skeleton_stacked.py,
+0.825 aspect, measured directly from the saved file after a tight-bbox-crop iteration, not
+assumed from the requested figsize) -- 2 rows (frames, the widest available temporal
+separation from the original 4-point strip, not reduced to 1) x 2 columns (wrong slice |
+correct decode), preserving the "incoherent over TIME, not a single bad pose" argument
+rather than the peer's literal single-frame suggestion. notebooks/03_skeleton_side_by_side.png
+itself and its generating notebook cell (03_263d_representation_and_f1_bug.ipynb, cell
+af057b27) are untouched -- this is a separate, deck-only asset, not an edit to the
+notebook's own primary record.
 -->
 
 ---
