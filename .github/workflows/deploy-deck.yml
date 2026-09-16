@@ -6,9 +6,19 @@ name: Deploy T2P-Reboot deck
 # since this repo is not a Slidev-only repo.
 #
 # One-time prerequisite this workflow cannot do itself: Pages must already be enabled for
-# this repo (Settings -> Pages -> Source: GitHub Actions), since actions/configure-pages
-# needs repo-admin privilege to *create* a Pages site on first use, which the workflow's
-# own GITHUB_TOKEN never has at any permission level.
+# this repo (Settings -> Pages -> Source: GitHub Actions), since actions/configure-pages'
+# `enablement: true` input below needs repo-admin privilege to *create* a Pages site on
+# first use, which the workflow's own GITHUB_TOKEN never has at any permission level.
+# Confirmed via `gh api repos/.../pages` returning 404 before the one-time admin step;
+# Joel ran that step directly (`gh api -X POST repos/.../pages -f build_type=workflow`,
+# admin-scoped token) on 2026-09-16, so `enablement: true` below now succeeds -- it is
+# not a no-op, it is verifying/confirming a site that already exists rather than
+# attempting to create one. Left as `true` (the standard template default) rather than
+# removed, since it is harmless once the site exists and self-documents the dependency;
+# if this workflow is ever copied to a repo where Pages has NOT been enabled yet, this
+# exact step is where it will fail, with a permissions-shaped error that is actually an
+# account-level one -- see MJS_LIB_TOOLS/codex-skills/build-project-deck/references/
+# slidev-operational.md for the full trap.
 
 on:
   workflow_dispatch:
