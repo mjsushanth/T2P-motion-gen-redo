@@ -200,6 +200,29 @@ html.light body {
   line-height: 1.35;
 }
 
+/* Slide 10 (length confound): 4 bullets (one wraps to 2 lines) above a taller-than-usual
+   figure (fig10_terciles.svg, ~1.59:1, less wide than the deck's other charts) -- found to
+   overflow by 356px only after restarting a stale dev server that had been silently serving
+   an older render; caught by re-measuring against a fresh process, not trusted on the first
+   PASS. */
+.slidev-page-10 img {
+  max-height: 130px;
+}
+.slidev-page-10 li {
+  margin: 2px 0;
+  line-height: 1.25;
+}
+
+/* Slide 12 (exclusion bounds): 3 bullets above fig12_exclusion.svg -- same stale-server
+   false-pass as slide 10, caught the same way. */
+.slidev-page-12 img {
+  max-height: 130px;
+}
+.slidev-page-12 li {
+  margin: 3px 0;
+  line-height: 1.3;
+}
+
 @keyframes bullet-enter {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
