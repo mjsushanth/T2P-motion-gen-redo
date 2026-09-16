@@ -22,7 +22,7 @@ FIGURE: none. STAT: none. Leave it sparse.
 
 ## 2 — The predecessor system: conditioned diffusion over 3D human pose
 
-WHY: Before measuring a pipeline, you have to see what it was built to do.
+WHY: A text-to-motion model turns a written sentence into a sequence of 3D body poses. This is the system the rest of the deck takes apart.
 
 STAT: none.
 
@@ -44,7 +44,7 @@ FIGURE: architecture diagram (right column).
 
 ## 3 — Measurement: what the pipeline reports once it is instrumented
 
-WHY: A model that produces plausible output and raises no exception cannot be judged by looking at it.
+WHY: Motion is stored as long vectors of numbers, not pictures. Read the wrong numbers out and you still get a skeleton — just not a human one, and nothing errors.
 
 STAT: **17** — pipeline and metric failure modes that change the answer and raise no error
 
@@ -70,13 +70,14 @@ FIGURE: none — argued exception. STAT: none; the 0.611 is inline and is the ob
 
 ## 5 — Measurement: does this harness reproduce a published number?
 
-WHY: An instrument that has never agreed with an external reference is not yet an instrument.
+WHY: The reference model's paper reports a score of 0.611 on a standard retrieval benchmark. We rebuilt that scoring pipeline ourselves and ran it to see where we would land.
 
 STAT: **0.0062** — the gap, against the published figure's own ±0.007, n = 4,640
 
-- Generated the full test split from the released checkpoint and scored it: 0.6172 against the paper's own 0.611 ± 0.007. The difference is smaller than the reference's own stated uncertainty.
-- This validates the whole path end to end — checkpoint loading, generation, scoring — not only the evaluator's ability to re-encode motion that was already correct.
-- The FID half of the same check is a non-rejection, not a tight reproduction. That distinction is kept open rather than counted as met.
+- The benchmark asks one question: given a generated motion, does its own caption rank in the top 3 of a 32-candidate pool? Pure chance is 3 in 32, about 0.094.
+- We took their released checkpoint, generated motion for all 4,640 test captions on a laptop, and scored it with a harness rebuilt here from scratch.
+- It came out at 0.6172 against their 0.611 ± 0.007. Nothing was tuned toward their figure — we ran our own pipeline and arrived at it.
+- Landing there independently is what makes the measurements later in this deck worth reading.
 
 FIGURE: `fig05_reproduction.svg`
 
@@ -84,13 +85,13 @@ FIGURE: `fig05_reproduction.svg`
 
 ## 6 — Experiment: can the text encoder tell "left" from "right"?
 
-WHY: If the conditioning signal never carries direction, nothing downstream can recover it.
+WHY: CLIP is the frozen language model that turns a caption into the numbers the generator reads. If it cannot separate "left" from "right", nothing downstream can.
 
 STAT: **d = 0.995** — spatial against comparable non-spatial contrasts
 
 - Sentences differing only by *left* / *right* sit at 0.9707 cosine similarity. Sentences differing by a comparable non-spatial modifier, in the same syntactic slot, sit at 0.9442.
 - Scale first: two sentences on entirely unrelated topics still score 0.72. This encoder compresses ordinary English into a narrow band near the top, so the question is never "is 0.97 high" — it is "is 0.97 higher than it should be."
-- Sample size was fixed by a power calculation run before the full data. The pilot and the extension are each independently significant, which forecloses the objection that easier pairs were written the second time.
+- Sample size was fixed by a power calculation before the data, and the first and second batches of pairs are each significant on their own.
 - 58.4% of the benchmark's captions contain spatial vocabulary.
 
 FIGURE: `fig06_clip_separation.svg`
@@ -99,13 +100,13 @@ FIGURE: `fig06_clip_separation.svg`
 
 ## 7 — Experiment: is the deficit made by pooling, or already inside the encoder?
 
-WHY: The cheap explanation has to be eliminated before the expensive one is worth testing.
+WHY: CLIP produces one vector per word, then averages them into a single vector for the generator. Perhaps the averaging is what loses direction — so we looked at the per-word vectors directly.
 
 STAT: **3 of 3** — representations tested; the gap survives in all of them
 
-- The model reads one pooled vector per caption — that vector is the entire conditioning signal, so its geometry is exactly what the generator sees. If pooling were discarding the distinction, the per-token features would still carry it.
+- That pooled vector is the entire conditioning signal — its geometry is exactly what the generator sees.
 - They do not. Pooled, mean-over-tokens, and most-divergent-token each keep a significant gap after Bonferroni correction for the three comparisons.
-- The orderings differ — the raw gap is largest at the token level, the standardised effect largest for pooled — so the claim is survival, not growth.
+- The gap does not grow in a straight line across the three, so the claim is survival, not growth.
 - This matters because it relocates the weakness onto a frozen component. Nothing in this pipeline updates the text encoder, so more motion data will not move it.
 
 FIGURE: `fig07_pooling.svg`
@@ -114,7 +115,7 @@ FIGURE: `fig07_pooling.svg`
 
 ## 8 — Experiment: does the encoder deficit reach the generated motion?
 
-WHY: A weakness in a component is not automatically a weakness in the system.
+WHY: The encoder is weak on spatial words. That does not automatically make the motions worse, so we generated both halves of the test set and compared them.
 
 STAT: **+0.0070 ± 0.0147** — the measured difference, beside its own standard error
 
@@ -128,7 +129,7 @@ FIGURE: `fig08_effect_vs_floor.svg`
 
 ## 9 — Measurement: does a second, independent evaluator agree?
 
-WHY: A result only one instrument can see is a property of that instrument until a second one is tried.
+WHY: That score depends on which retrieval model does the grading. A second, independently trained grader exists, so we ran the same motions through it as well.
 
 STAT: **r = 0.404** — per-sample agreement between the two evaluators, n = 4,640
 
@@ -146,11 +147,11 @@ FIGURE: `fig09_two_evaluators.svg`
 
 ## 10 — Analysis: was that comparison fair to begin with?
 
-WHY: The two halves were matched on nothing except the property under test.
+WHY: Captions containing spatial words are also longer captions, and longer captions are easier to retrieve. The previous comparison may have been unfair from the start.
 
 STAT: **40%** — how much longer spatial captions are
 
-- Spatial captions average 14.31 words against non-spatial 10.22. Longer captions are easier to retrieve against, so the spatial half started with an advantage.
+- Spatial captions average 14.31 words against non-spatial 10.22, so the spatial half started with an advantage.
 - Controlled by splitting each half into length terciles. On the primary evaluator, length lifts the score for spatial captions (0.509 → 0.587 → 0.598) and does essentially nothing for non-spatial ones (0.572 / 0.544 / 0.569).
 - On the second evaluator the same terciles are non-monotonic, so this pattern is a property of one instrument and is scoped to it here.
 - The interaction was not predicted, and it is not explained here.
@@ -161,7 +162,7 @@ FIGURE: `fig10_terciles.svg`
 
 ## 11 — Measurement: can FID arbitrate at these sample sizes?
 
-WHY: The field's other standard metric was the obvious tiebreaker.
+WHY: FID is the field's other standard score. It compares the statistical shape of a set of generated motions against real ones, and it was the obvious way to break the tie.
 
 STAT: **0.0957 → 0.2573** — the floor, as samples fall from 2,320 to 941
 
@@ -176,7 +177,7 @@ FIGURE: `fig11_fid_floor.svg`
 
 ## 12 — What this establishes, and what it does not
 
-WHY: Saying what a result does not support is the most useful line on a research slide.
+WHY: What the measurements support, what they rule out, and what is still genuinely open.
 
 STAT: **≥ 0.117** — effects excluded at 2σ; anything smaller stays open
 
@@ -190,12 +191,12 @@ FIGURE: `fig12_exclusion.svg`
 
 ## 13 — Where this goes next
 
-WHY: An open question with a known price is a plan, not a gap.
+WHY: The one piece left unresolved, what it would cost to close, and a result published last week that bears on it.
 
 STAT: **4.03h** — one full replication; 76.6h for the published protocol
 
 - Closing the FID half needs independent regenerations, not more resampling of the one that exists. Three replications is about 8.1 hours; the published twenty, about 76.6.
-- A direction being looked at: encoder-capacity asymmetry. A September 2026 result trains a 5×6 grid of CLIP models and reports that oversized text encoders degrade zero-shot performance while specifically damaging cross-modal alignment.
+- A direction being looked at: a September 2026 result trains a 5×6 grid of CLIP models and reports that oversized text encoders degrade performance, damaging cross-modal alignment specifically.
 - That bears directly on slide 7's own open question — whether a larger text encoder would separate spatial language better. The probe is cheap and those checkpoints are public, so it is the next measurement rather than a speculation.
 
 FIGURE: none, or a three-rung cost ladder. Argue the exception.
