@@ -1,0 +1,29 @@
+Loading cached generated batches...
+4640 generated samples loaded, motion shape (4640, 196, 263)
+Loading Evaluation Model Wrapper (Epoch 28) Completed!!
+Embedding text (Guo)...
+Embedding motions (Guo, batches of 32, single-sort-and-invert)...
+Guo embeddings ready (145 full batches, 0 leftover excluded)
+Loading TMR...
+Embedding motions + text (TMR), 4640 samples (matching Guo's usable count)...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/100 [00:00<?, ?it/s]Loading weights: 100%|██████████| 100/100 [00:00<00:00, 9111.52it/s]
+  500/4640 TMR-embedded
+  1000/4640 TMR-embedded
+  1500/4640 TMR-embedded
+  2000/4640 TMR-embedded
+  2500/4640 TMR-embedded
+  3000/4640 TMR-embedded
+  3500/4640 TMR-embedded
+  4000/4640 TMR-embedded
+  4500/4640 TMR-embedded
+{
+  "n_used": 4640,
+  "n_spatial": 2708,
+  "n_nonspatial": 1932,
+  "pearson_r_overall": 0.40365191842086817,
+  "pearson_r_spatial": 0.3917259442098472,
+  "pearson_r_nonspatial": 0.42095491956726544,
+  "note": "Full-scale (n=4,640-batch-usable) equivalent of notebooks/02's own n=128 Guo/TMR per-sample correlation (r=0.328 there). Computed for slide 9 verification -- see scripts/e3_evaluator_correlation.py docstring for why the n=128 figure should not be cited for an n=4,640 claim without checking this first."
+}
+Saved to ../../artifacts/e3/evaluator_correlation.json

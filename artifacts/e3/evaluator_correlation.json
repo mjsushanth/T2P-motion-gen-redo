@@ -1,0 +1,9 @@
+{
+  "n_used": 4640,
+  "n_spatial": 2708,
+  "n_nonspatial": 1932,
+  "pearson_r_overall": 0.40365191842086817,
+  "pearson_r_spatial": 0.3917259442098472,
+  "pearson_r_nonspatial": 0.42095491956726544,
+  "note": "Full-scale (n=4,640-batch-usable) equivalent of notebooks/02's own n=128 Guo/TMR per-sample correlation (r=0.328 there). Computed for slide 9 verification -- see scripts/e3_evaluator_correlation.py docstring for why the n=128 figure should not be cited for an n=4,640 claim without checking this first."
+}

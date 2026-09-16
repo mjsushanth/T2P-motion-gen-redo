@@ -135,6 +135,71 @@ html.light body {
 .slidev-layout li:nth-child(5) { animation-delay: 280ms; }
 .slidev-layout li:nth-child(6) { animation-delay: 350ms; }
 .slidev-layout li:nth-child(7) { animation-delay: 420ms; }
+/* Per-slide overflow tiers -- house-style.md section 1's calibration method: the global
+   default (330px) stays untouched; each slide below overflowed it and gets a tighter,
+   slide-specific cap sized to close that slide's own gap with a small margin, named after
+   its own content shape. Calibrated empirically against scripts/check-overflow.mjs
+   (Slidev renders at a logical ~980x552 canvas then CSS-transform-scales it to the actual
+   viewport -- ~1.3x at this deck's 1280x720 check viewport -- so a fixed pixel value here
+   is a LOGICAL, pre-transform size; the actual on-screen size scales with it, but the ratio
+   to canvas height is what check-overflow.mjs actually measures and what these tiers were
+   tuned against). Re-measured after every change per the documented method, not guessed once.
+
+   Slide 3 (instrumentation): title (2 lines) + why-line + eyebrow/stat + 3 bullets (one
+   wraps) leave very little vertical room before the image -- overflowed by 325px at the
+   330px default. Image cap tightened hard; bullet/paragraph spacing tightened too, since
+   the image alone can't close a gap this size without becoming illegible. */
+.slidev-page-3 img {
+  max-height: 130px;
+}
+.slidev-page-3 li {
+  margin: 2px 0;
+  line-height: 1.3;
+}
+.slidev-page-3 .eyebrow {
+  margin-bottom: 0.2em;
+}
+.slidev-page-3 .stat {
+  margin: 0.15em 0;
+}
+
+/* Slide 5 (reproduction): title + why-line + eyebrow/stat + 3 bullets above a wide
+   (2.36:1) figure -- overflowed by 210px at the 330px default. */
+.slidev-page-5 img {
+  max-height: 100px;
+}
+.slidev-page-5 li {
+  margin: 3px 0;
+  line-height: 1.35;
+}
+
+/* Slide 7 (pooling probe): title + why-line + eyebrow/stat + 4 bullets (the most text of
+   any figure slide) above a wide figure -- overflowed by 449px, the worst of the four.
+   Needs the tightest cap plus tightened bullets. */
+.slidev-page-7 img {
+  max-height: 85px;
+}
+.slidev-page-7 li {
+  margin: 0px 0;
+  line-height: 1.15;
+}
+.slidev-page-7 .eyebrow {
+  margin-bottom: 0.2em;
+}
+.slidev-page-7 .stat {
+  margin: 0.15em 0;
+}
+
+/* Slide 8 (propagation test): title + why-line + eyebrow/stat + 3 bullets above the
+   effect-vs-floor figure -- overflowed by 231px. */
+.slidev-page-8 img {
+  max-height: 95px;
+}
+.slidev-page-8 li {
+  margin: 3px 0;
+  line-height: 1.35;
+}
+
 @keyframes bullet-enter {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
