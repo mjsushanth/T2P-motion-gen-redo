@@ -17,13 +17,10 @@ title: T2P-Reboot — Taking a text-to-motion pipeline apart
 One released checkpoint &middot; 4,640 generated sequences &middot; one laptop
 
 <!--
-DECK STATUS: content assembly in progress. Slides 1-5, 7-8, 10, 12-13 built from
-deck/SLIDE_COPY.md + deck/PRESENTER_NOTES.md, verified against source independently before
-being placed on a face (see per-slide notes below for exact citations). Slides 6 and 11 held
-back on the planner's explicit instruction (known text-collision defect, fig11 provenance
-issue being fixed). Slide 2's architecture diagram not yet built (implementer-authored,
-scheduled last per the agreed build order). Slide 9 held pending planner's reworded copy for
-the real full-scale correlation figure (see that slide's own note).
+DECK STATUS: 12 of 13 slides built and verified against source (see per-slide notes below for
+exact citations). Only slide 2's architecture diagram remains -- implementer-authored, held
+for last since it is the one figure with no measured number behind it and needs its own
+review before landing (planner wants to see it before it's committed).
 -->
 
 ---
@@ -118,9 +115,7 @@ An instrument that has never agreed with an external reference is not yet an ins
 - This validates the whole path end to end — checkpoint loading, generation, scoring — not only the evaluator's ability to re-encode motion that was already correct.
 - The FID half of the same check is a non-rejection, not a tight reproduction. That distinction is kept open rather than counted as met.
 
-<div style="height:100px;display:flex;align-items:center;justify-content:center;border:1px dashed #ccc;color:#828891;font-family:'Geist Mono',monospace;font-size:0.7em;">
-figure pending — regenerating with convention-free ±1 SE labelling
-</div>
+<img src="/img/fig05_reproduction.svg" alt="Published and measured R-Precision values as overlapping intervals with plus-or-minus one standard error labelled, showing the gap smaller than the published figure's own uncertainty">
 
 <!--
 deck/PRESENTER_NOTES.md (updated): "0.6172 measured against 0.611 +- 0.007 published, n =
@@ -148,20 +143,43 @@ project-record note about the convention difference at some point; not urgent.
 docs/EXPERIMENT_DESIGN_E3.md S9.7). "Ground-truth support cites E0b (0.7969), never E0a
 (0.7202)." Verified.
 
-FIGURE HELD per planner: fig05_reproduction.svg is being regenerated with a convention-free
-annotation and explicit +-1 SE labelling. Do not reference the old svg; placeholder above
-until it lands, same treatment as slides 6 and 11.
+FIGURE: fig05_reproduction.svg regenerated with the convention-free annotation and explicit
++-1 SE labelling; planner confirmed by opening it directly (not just the worker's report).
+Unblocked 2026-09-16.
 -->
 
 ---
 
-# Slide 6 — TBD (held back: text-collision fix in progress)
+# Experiment: can the text encoder tell "left" from "right"?
 
-TBD
+If the conditioning signal never carries direction, nothing downstream can recover it.
 
-<!-- SLIDE 6 HELD BACK per planner's explicit instruction: known text-collision defect,
-figure worker fixing. Do not build from the current SLIDE_COPY/PRESENTER_NOTES snapshot until
-the planner re-locks it clean. -->
+<div class="eyebrow">Spatial against comparable non-spatial contrasts</div>
+<span class="stat">d = 0.995<span class="stat-label">Cohen's d, both directions clear Bonferroni</span></span>
+
+- Sentences differing only by *left* / *right* sit at 0.9707 cosine similarity. Sentences differing by a comparable non-spatial modifier, in the same syntactic slot, sit at 0.9442.
+- Scale first: two sentences on entirely unrelated topics still score 0.72. This encoder compresses ordinary English into a narrow band near the top, so the question is never "is 0.97 high" — it is "is 0.97 higher than it should be."
+- Sample size was fixed by a power calculation run before the full data. The pilot and the extension are each independently significant, which forecloses the objection that easier pairs were written the second time.
+- 58.4% of the benchmark's captions contain spatial vocabulary.
+
+<img src="/img/fig06_clip_separation.svg" alt="Paired strip plot of cosine similarity for spatial versus non-spatial minimal-pair contrasts, 40 pairs per group">
+
+<!--
+deck/PRESENTER_NOTES.md: 0.9707/0.9442, Cohen's d=+0.995 -- executed output of
+notebooks/01_clip_spatial_blindness.ipynb, Mann-Whitney one-sided p=0.00000, clears
+Bonferroni 0.0167 for three comparisons. 0.72 unrelated-topics calibration same notebook.
+Power: n=40/group, achieved power 0.913 (pre-registered requirement 27.6/group for 80%);
+pilot (n=16, d=+0.678, p=0.034) and extension (n=24, d=+1.266, p=0.00001) each independently
+significant. 58.4% -- docs/EXPERIMENT_DESIGN_E3.md:156 (2,708/4,640), corroborated by
+notebook 05's 58.3% corpus-wide. These figures were already independently verified earlier
+this project (notebook 01/01b executed outputs); not re-run fresh this session, but consistent
+with the project's own prior record throughout.
+
+If asked about the pairs being hand-written: concede it (per PRESENTER_NOTES.md) -- power
+calculation and independent replication of the two halves stand, but the pairs were authored
+by the same person testing them. 58.4% shows the phenomenon is common in the corpus; it does
+not show these specific sentences are representative. Live limitation, costs nothing to concede.
+-->
 
 ---
 
@@ -215,20 +233,45 @@ a contested one.
 
 ---
 
-# Slide 9 — TBD (held back: awaiting planner's reworded copy for the real r=0.4037 correlation)
+# Measurement: does a second, independent evaluator agree?
 
-TBD
+A result only one instrument can see is a property of that instrument until a second one is tried.
+
+<div class="eyebrow">Per-sample agreement between the two evaluators, n = 4,640</div>
+<span class="stat">r = 0.404<span class="stat-label">measured at full scale, not taken from a smaller sample</span></span>
+
+- A second, independently trained text-motion evaluator scored the same generated motions.
+- It puts the effect in the opposite direction: −0.0263, z = −1.95, against the primary evaluator's +0.0070, z = +0.48.
+- They agree in aggregate and share only 16% of their per-sample variance. Two instruments measuring overlapping but not identical things is what separates a sign flip from noise.
+- Neither clears the pre-registered threshold. Both are reported with the prominence a positive result would have had.
+
+<img src="/img/fig09_two_evaluators.svg" alt="Both evaluators' effect sizes plotted on one shared axis with zero marked and confidence intervals drawn, straddling zero from opposite sides">
 
 <!--
-HELD PENDING PLANNER SIGN-OFF. scripts/e3_evaluator_correlation.py's real n=4,640 result
-(artifacts/e3/evaluator_correlation.json): pearson_r_overall=0.4037, spatial=0.3917,
-non_spatial=0.4210 -- reported to the planner 2026-09-16, meaningfully higher than notebooks/02's
-n=128 figure (0.328) that PRESENTER_NOTES.md previously (and incorrectly) cited for this slide.
-Per the planner's own instruction ("send me the number before you put it on the face... if it
-comes back much higher, slide 9's bullet needs rewording"), this slide is NOT assembled yet --
-STAT and the correlation bullet wait for the planner's reworded text. The rest of the slide's
-claim (E3 S9.1's -0.0263/z=-1.95 figure, the pre-registered-prominence commitment) is already
-verified and ready; only the correlation figure and its bullet are pending.
+deck/PRESENTER_NOTES.md: -0.0263, SE 0.0134, -1.95 sigma, threshold 0.0403 --
+docs/EXPERIMENT_DESIGN_E3.md:166, already independently verified earlier this project.
+
+r=0.404 per-sample correlation, n=4,640 -- artifacts/e3/evaluator_correlation.json, computed by
+scripts/e3_evaluator_correlation.py (reuses e3_score.py's validated embedding conventions, no
+regeneration). r^2=0.163 -- the two evaluators share about 16% of per-sample variance, 84% not
+shared, which is what "overlapping but not identical" means on the face.
+
+Do NOT claim the spatial/non-spatial split differs in evaluator agreement. The record also has
+spatial r=0.392, non-spatial r=0.421 -- independently re-verified via Fisher z on the actual
+per-subset n (2,708 spatial / 1,932 non-spatial): z=(atanh(0.392)-atanh(0.421))/
+sqrt(1/2705+1/1929) = -1.175, matching the planner's -1.17 exactly. Not significant, not on any
+face, not in any bullet.
+
+The withdrawn figure (r=0.328, notebooks/02, n=128 -- the same E0b cached generation whose own
+R-Precision-top3 (0.7578) sits 3.71 sigma from the real n=4,640 value, docs/EXPERIMENT_DESIGN_E3.md
+S9.5) flattered the deck's own argument rather than weakening it: 0.328 implies r^2=10.8%, making
+the two evaluators look LESS alike than the real 16.3% -- an error that ran in the direction of
+the conclusion, which is exactly the kind a motivated check does not catch. The rule this earns:
+verify the sample a number came from, not just whether the conclusion still sounds right.
+
+Presenter-notes note: PRESENTER_NOTES.md's own final paragraph for this slide ("the r=0.328
+correlation is what licenses...") is a stale leftover from before this correction and still
+names the withdrawn figure -- flagged to the planner, not edited here (their file, their call).
 -->
 
 ---
@@ -260,12 +303,30 @@ scopes the claim correctly regardless, so this does not block assembly.
 
 ---
 
-# Slide 11 — TBD (held back: figure provenance issue being fixed)
+# Measurement: can FID arbitrate at these sample sizes?
 
-TBD
+The field's other standard metric was the obvious tiebreaker.
 
-<!-- SLIDE 11 HELD BACK per planner's explicit instruction: fig11 currently carries a false
-claim about its own provenance, figure worker fixing in place. Do not build until re-locked. -->
+<div class="eyebrow">The floor, as samples fall from 2,320 to 941</div>
+<span class="stat">0.0957 &rarr; 0.2573<span class="stat-label">real-vs-real FID floor, 30 trials each</span></span>
+
+- FID estimates a 512×512 covariance — 131,328 parameters from n points. Below a few thousand samples that estimate is rank-deficient.
+- Measured directly: real motion scored against real motion, which should score zero, floors at 0.0957 at n = 2,320 per side and 0.2573 at n = 941. Thirty trials each.
+- Three FID values computed on one bit-identical set of 128 motions: 1.0731, 1.3997, 3.2909.
+- The floor is larger than the effect being measured. FID cannot settle this question at this scale.
+
+<img src="/img/fig11_fid_floor.svg" alt="Three measured real-vs-real FID floors with error bars at decreasing sample sizes, no fitted curve">
+
+<!--
+deck/PRESENTER_NOTES.md: real-vs-real floors 0.0957 (n=2,320/side), 0.1791 (n=1,378), 0.2573
+(n=941), 30 trials each -- artifacts/e3/e3_record.json fid_results.*.real_vs_real_floor.
+1.0731/1.3997/3.2909 on one bit-identical set of 128 motions -- docs/LANDMINES.md:487-489.
+131,328 covariance parameters -- 512x513/2, arithmetic. No fitted curve, binding: this
+project's own earlier C/n floor law claim ("fits to 0.5%" from two points) was contradicted by
+50 trials finding a ~20% spread -- points and error bars only, per PRESENTER_NOTES.md's own
+citation of that correction. All figures already independently verified earlier this project
+(e3_record.json, docs/LANDMINES.md); not re-run fresh this session but consistent throughout.
+-->
 
 ---
 

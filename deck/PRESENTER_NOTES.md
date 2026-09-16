@@ -130,14 +130,30 @@ and changes no conclusion, so the face carries no n at all rather than carrying 
 
 **−0.0263, SE 0.0134, −1.95σ, threshold 0.0403** — `docs/EXPERIMENT_DESIGN_E3.md:166`.
 
-**Per-sample correlation — WITHDRAWN pending re-measurement.** An earlier draft cited r = 0.328
+**r = 0.404 per-sample correlation, n = 4,640** — `artifacts/e3/evaluator_correlation.json`,
+computed by `scripts/e3_evaluator_correlation.py` reusing `e3_score.py`'s validated embedding
+conventions with no regeneration. r² = 0.163, so the two evaluators share about 16% of their
+per-sample variance and 84% is not shared. That is what the face means by "overlapping but not
+identical."
+
+**Do NOT claim the two halves differ in agreement.** The record also reports spatial r = 0.392
+and non-spatial r = 0.421. Under a Fisher z test on the effective denominators that difference is
+z = −1.17, nowhere near significant. It is in the record; it is not a finding.
+
+**The withdrawn figure flattered us, which is why it needed catching.** An earlier draft cited
+r = 0.328
 from `notebooks/02_tmr_second_evaluator.ipynb` and `README.md:60`. That value was computed on the
 **n = 128** cached E0b generation — the same sample whose Guo R-Precision-top3 of 0.7578 was later
 shown to sit **3.71σ** from the n = 4,640 value of 0.6172 (`docs/EXPERIMENT_DESIGN_E3.md:231-232`),
 and which that document explicitly rules out for forward citation (`:286`). Using a statistic from
 that sample to license a conclusion about the n = 4,640 experiment pairs two different populations.
 Caught by the implementer during source verification, not by the planner who wrote it.
-The correct n = 4,640 figure is being computed; this slide waits for it.
+
+The full-scale value came back **higher** — 0.328 to 0.404, r² from 10.8% to 16.3%. The withdrawn
+number made the two evaluators look *less* alike than they are, which made the sign flip easier to
+attribute to instrument-dependence than the evidence supports. The error ran in the direction of
+our own argument. That is the kind a motivated check does not find, and it is the reason the rule
+is to verify the sample rather than to verify the conclusion.
 
 **"Both are reported with the prominence a positive result would have had"** is not a flourish —
 it is the design's own pre-registered commitment, `docs/EXPERIMENT_DESIGN_E3.md` §9.1.

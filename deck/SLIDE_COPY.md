@@ -130,13 +130,11 @@ FIGURE: `fig08_effect_vs_floor.svg`
 
 WHY: A result only one instrument can see is a property of that instrument until a second one is tried.
 
-STAT: **PENDING** — per-sample agreement between the two evaluators at n = 4,640.
-Do not build this slide's stat until C1's `scripts/e3_evaluator_correlation.py` reports.
-The r = 0.328 figure is WITHDRAWN: it was computed on n = 128.
+STAT: **r = 0.404** — per-sample agreement between the two evaluators, n = 4,640
 
 - A second, independently trained text-motion evaluator scored the same generated motions.
 - It puts the effect in the opposite direction: −0.0263, z = −1.95, against the primary evaluator's +0.0070, z = +0.48.
-- They agree closely in aggregate and diverge sample by sample — the per-sample correlation is what separates instrument-dependence from noise, and it is being measured at full scale before it goes here.
+- They agree in aggregate and share only 16% of their per-sample variance. Two instruments measuring overlapping but not identical things is what separates a sign flip from noise.
 - Neither clears the pre-registered threshold. Both are reported with the prominence a positive result would have had.
 
 FIGURE: `fig09_two_evaluators.svg`
