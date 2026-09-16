@@ -94,15 +94,17 @@ html.light body {
   margin-top: -0.3em;
 }
 
-/* Default figure height tier. house-style.md section 1: start with one generous
-   default, then add a slide-specific *tighter* class (named after that slide's own
-   content shape) only once a real slide is measured to overflow -- never shrink
-   this default globally to fix one slide. No such tiers exist yet; this deck has
-   no real figures. */
+/* Default figure height tier. Restructured 2026-09-16: every figure-bearing slide moved
+   to the two-column layout below (bullets left ~65%, figure right ~35%), so the image no
+   longer competes with title/why-line/eyebrow/stat/bullets for vertical space -- it is
+   width-constrained by the column, not height-constrained by the stack above it. That
+   makes a single generous default workable again; no per-slide tiers should be needed at
+   this width. Floor: no figure renders below 240px -- if one still overflows at this
+   default, the fix is a bullet cut (ask first), not shrinking the image further. */
 .slidev-layout img {
   display: block;
   margin: 0.5em auto;
-  max-height: 330px;
+  max-height: 480px;
   width: auto;
   max-width: 100%;
 }
@@ -117,9 +119,30 @@ html.light body {
 
 /* Two-column asymmetric split (house-style.md section 2). Applied via
    `layoutClass: wide-left` on a slide's frontmatter when one column carries the
-   argument and the other is a supporting visual. */
+   argument and the other is a supporting visual. Ratio set to 65/35 (Joel's direct
+   instruction, 2026-09-16) -- every figure-bearing slide in this deck now uses this
+   layout, not just the one two-column slide it was originally introduced for. */
 .wide-left {
-  grid-template-columns: 7fr 3fr !important;
+  grid-template-columns: 65fr 35fr !important;
+}
+
+/* Layout-scoped baseline for the two-column slides above: at a 65%-width left column,
+   the same bullet text wraps onto more lines than it did at full slide width, so the text
+   stack itself can overflow independent of the image (found immediately after the 65/35
+   restructure -- 8 of 9 figure slides overflowed on their left column, not their image).
+   This is a typographic tightening only, no words changed: slightly smaller body text and
+   tighter line-height/bullet spacing than the deck's original single-column defaults, which
+   assumed full-width text. Re-measured per slide; a handful still needed a small additional
+   per-slide nudge on top of this baseline (below), same calibration method as before. */
+.wide-left .col-left {
+  font-size: 0.92em;
+}
+.wide-left .col-left li {
+  margin: 3px 0;
+  line-height: 1.3;
+}
+.wide-left .col-left p {
+  margin: 0.4em 0;
 }
 
 /* Staggered bullet entrance, deck-wide. Plain CSS animation (opacity/transform
@@ -135,122 +158,6 @@ html.light body {
 .slidev-layout li:nth-child(5) { animation-delay: 280ms; }
 .slidev-layout li:nth-child(6) { animation-delay: 350ms; }
 .slidev-layout li:nth-child(7) { animation-delay: 420ms; }
-/* Per-slide overflow tiers -- house-style.md section 1's calibration method: the global
-   default (330px) stays untouched; each slide below overflowed it and gets a tighter,
-   slide-specific cap sized to close that slide's own gap with a small margin, named after
-   its own content shape. Calibrated empirically against scripts/check-overflow.mjs
-   (Slidev renders at a logical ~980x552 canvas then CSS-transform-scales it to the actual
-   viewport -- ~1.3x at this deck's 1280x720 check viewport -- so a fixed pixel value here
-   is a LOGICAL, pre-transform size; the actual on-screen size scales with it, but the ratio
-   to canvas height is what check-overflow.mjs actually measures and what these tiers were
-   tuned against). Re-measured after every change per the documented method, not guessed once.
-
-   Slide 3 (instrumentation): title (2 lines) + why-line + eyebrow/stat + 3 bullets (one
-   wraps) leave very little vertical room before the image -- overflowed by 325px at the
-   330px default. Image cap tightened hard; bullet/paragraph spacing tightened too, since
-   the image alone can't close a gap this size without becoming illegible. */
-.slidev-page-3 img {
-  max-height: 130px;
-}
-.slidev-page-3 li {
-  margin: 2px 0;
-  line-height: 1.3;
-}
-.slidev-page-3 .eyebrow {
-  margin-bottom: 0.2em;
-}
-.slidev-page-3 .stat {
-  margin: 0.15em 0;
-}
-
-/* Slide 5 (reproduction): title + why-line + eyebrow/stat + 3 bullets above a wide
-   (2.36:1) figure -- overflowed by 210px at the 330px default. */
-.slidev-page-5 img {
-  max-height: 100px;
-}
-.slidev-page-5 li {
-  margin: 3px 0;
-  line-height: 1.35;
-}
-
-/* Slide 7 (pooling probe): title + why-line + eyebrow/stat + 4 bullets (the most text of
-   any figure slide) above a wide figure -- overflowed by 449px, the worst of the four.
-   Needs the tightest cap plus tightened bullets. */
-.slidev-page-7 img {
-  max-height: 85px;
-}
-.slidev-page-7 li {
-  margin: 0px 0;
-  line-height: 1.15;
-}
-.slidev-page-7 .eyebrow {
-  margin-bottom: 0.2em;
-}
-.slidev-page-7 .stat {
-  margin: 0.15em 0;
-}
-
-/* Slide 8 (propagation test): title + why-line + eyebrow/stat + 3 bullets above the
-   effect-vs-floor figure -- overflowed by 231px. */
-.slidev-page-8 img {
-  max-height: 95px;
-}
-.slidev-page-8 li {
-  margin: 3px 0;
-  line-height: 1.35;
-}
-
-/* Slide 10 (length confound): 4 bullets (one wraps to 2 lines) above a taller-than-usual
-   figure (fig10_terciles.svg, ~1.59:1, less wide than the deck's other charts) -- found to
-   overflow by 356px only after restarting a stale dev server that had been silently serving
-   an older render; caught by re-measuring against a fresh process, not trusted on the first
-   PASS. */
-.slidev-page-10 img {
-  max-height: 130px;
-}
-.slidev-page-10 li {
-  margin: 2px 0;
-  line-height: 1.25;
-}
-
-/* Slide 12 (exclusion bounds): 3 bullets above fig12_exclusion.svg -- same stale-server
-   false-pass as slide 10, caught the same way. */
-.slidev-page-12 img {
-  max-height: 130px;
-}
-.slidev-page-12 li {
-  margin: 3px 0;
-  line-height: 1.3;
-}
-
-/* Slide 6 (encoder probe): title+why+eyebrow/stat+4 bullets above fig06_clip_separation.svg --
-   same content-heavy shape as slides 3/7/10, fixed the same way. */
-.slidev-page-6 img {
-  max-height: 40px;
-}
-.slidev-page-6 li {
-  margin: 2px 0;
-  line-height: 1.2;
-}
-
-/* Slide 9 (second evaluator): 4 bullets above fig09_two_evaluators.svg. */
-.slidev-page-9 img {
-  max-height: 70px;
-}
-.slidev-page-9 li {
-  margin: 2px 0;
-  line-height: 1.25;
-}
-
-/* Slide 11 (FID floor): 4 bullets above fig11_fid_floor.svg. */
-.slidev-page-11 img {
-  max-height: 100px;
-}
-.slidev-page-11 li {
-  margin: 2px 0;
-  line-height: 1.25;
-}
-
 @keyframes bullet-enter {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }

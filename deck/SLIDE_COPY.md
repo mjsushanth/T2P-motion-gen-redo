@@ -132,10 +132,13 @@ WHY: A result only one instrument can see is a property of that instrument until
 
 STAT: **r = 0.404** — per-sample agreement between the two evaluators, n = 4,640
 
-- A second, independently trained text-motion evaluator scored the same generated motions.
-- It puts the effect in the opposite direction: −0.0263, z = −1.95, against the primary evaluator's +0.0070, z = +0.48.
-- They agree in aggregate and share only 16% of their per-sample variance. Two instruments measuring overlapping but not identical things is what separates a sign flip from noise.
-- Neither clears the pre-registered threshold. Both are reported with the prominence a positive result would have had.
+- A second, independently trained evaluator scored the same motions and reversed the sign: −0.0263, z = −1.95, against the primary's +0.0070, z = +0.48.
+- They agree in aggregate and share only 16% of their per-sample variance — overlapping instruments, not identical ones.
+- Neither clears the pre-registered threshold; both are reported as a positive result would have been.
+
+> NOT FACE TEXT — cut from four bullets to three on 2026-09-16 to give fig09 vertical room.
+> It is the deck's strongest figure and was rendering at roughly 16% of canvas width. The
+> dropped setup sentence is recoverable from the WHY-line and the figure's own row labels.
 
 FIGURE: `fig09_two_evaluators.svg`
 

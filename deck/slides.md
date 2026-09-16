@@ -18,8 +18,12 @@ One released checkpoint &middot; 4,640 generated sequences &middot; one laptop
 
 <!--
 DECK STATUS: 12 of 13 slides built and verified against source (see per-slide notes below for
-exact citations). Only slide 2's architecture diagram remains -- implementer-authored, held
-for last since it is the one figure with no measured number behind it and needs its own
+exact citations). Restructured 2026-09-16 (Joel's direct instruction): every figure-bearing
+slide now uses the two-column layout (bullets left ~65%, figure right ~35%) instead of
+stacking the image below the text -- the earlier single-column layout forced the image to
+compete with the whole text stack for vertical room, which produced the tiny per-slide caps
+this file no longer has. Only slide 2's architecture diagram remains -- implementer-authored,
+held for last since it is the one figure with no measured number behind it and needs its own
 review before landing (planner wants to see it before it's committed).
 -->
 
@@ -40,9 +44,7 @@ These are the right things to want from a text-to-pose model. The open question 
 
 ::right::
 
-<div style="height:280px;display:flex;align-items:center;justify-content:center;border:1px dashed #ccc;color:#828891;font-family:'Geist Mono',monospace;font-size:0.7em;text-align:center;">
-architecture diagram<br>(pending — implementer-authored,<br>last in build order)
-</div>
+<img src="/img/architecture.svg" alt="Left-to-right pipeline: caption text into a frozen CLIP text encoder, projected into pose-conditioning space, injected via cross-attention into a four-resolution-level UNet diffusion backbone, producing 66-dimensional skeletal pose output, with bone-length, joint-limit and kinematic-chain losses annotated at training time">
 
 <!--
 deck/PRESENTER_NOTES.md: "No number on this face, deliberately. An earlier draft carried
@@ -53,9 +55,16 @@ structure, which the diagram may depict as a design fact without asserting a mea
 'failed', 'broken' or 'wrong' appears on this face or in this diagram -- standing editorial
 rule, DECK_PLAN.md S2."
 
-TODO(implementer): architecture diagram not yet built. Placeholder in the right column above.
+Architecture diagram: planner-authored (deck/img/architecture.svg, 400x660 portrait, teal
+accent, "FROZEN -- NEVER UPDATED" label on the text encoder -- load-bearing for slides 6/7).
+CFG deliberately not drawn (see PRESENTER_NOTES.md slide 2 for the reasoning: drawing it at
+sampling time implies a corrected architecture, drawing it in the loss puts a defect on a
+neutral-establishment slide; the bullet already covers it as a conditioning-strength control).
 -->
 
+---
+layout: two-cols
+layoutClass: wide-left
 ---
 
 # Measurement: what the pipeline reports once it is instrumented
@@ -68,6 +77,8 @@ A model that produces plausible output and raises no exception cannot be judged 
 - Rebuilding with measurement at every stage produced a catalogue of silent failure modes in the pipeline and the metric stack, each verified rather than asserted.
 - The load-bearing one is a decode check. Bone lengths in this dataset are constant by construction; measured under the original slice they vary by 25.81% on average, and up to 81.70% on individual bones.
 - The number is not the finding. The invariant is — bone length is checkable with no model, no label and no metric.
+
+::right::
 
 <img src="/img/03_skeleton_side_by_side.png" alt="Skeleton decoded correctly next to the same motion decoded with the wrong slice, side by side">
 
@@ -103,6 +114,9 @@ this project. No figure, argued exception per DECK_PLAN S5's own framing.
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Measurement: does this harness reproduce a published number?
 
@@ -114,6 +128,8 @@ An instrument that has never agreed with an external reference is not yet an ins
 - Generated the full test split from the released checkpoint and scored it: 0.6172 against the paper's own 0.611 ± 0.007. The difference is smaller than the reference's own stated uncertainty.
 - This validates the whole path end to end — checkpoint loading, generation, scoring — not only the evaluator's ability to re-encode motion that was already correct.
 - The FID half of the same check is a non-rejection, not a tight reproduction. That distinction is kept open rather than counted as met.
+
+::right::
 
 <img src="/img/fig05_reproduction.svg" alt="Published and measured R-Precision values as overlapping intervals with plus-or-minus one standard error labelled, showing the gap smaller than the published figure's own uncertainty">
 
@@ -149,6 +165,9 @@ Unblocked 2026-09-16.
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Experiment: can the text encoder tell "left" from "right"?
 
@@ -161,6 +180,8 @@ If the conditioning signal never carries direction, nothing downstream can recov
 - Scale first: two sentences on entirely unrelated topics still score 0.72. This encoder compresses ordinary English into a narrow band near the top, so the question is never "is 0.97 high" — it is "is 0.97 higher than it should be."
 - Sample size was fixed by a power calculation run before the full data. The pilot and the extension are each independently significant, which forecloses the objection that easier pairs were written the second time.
 - 58.4% of the benchmark's captions contain spatial vocabulary.
+
+::right::
 
 <img src="/img/fig06_clip_separation.svg" alt="Paired strip plot of cosine similarity for spatial versus non-spatial minimal-pair contrasts, 40 pairs per group">
 
@@ -182,6 +203,9 @@ not show these specific sentences are representative. Live limitation, costs not
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Experiment: is the deficit made by pooling, or already inside the encoder?
 
@@ -195,6 +219,8 @@ The cheap explanation has to be eliminated before the expensive one is worth tes
 - The orderings differ — the raw gap is largest at the token level, the standardised effect largest for pooled — so the claim is survival, not growth.
 - This matters because it relocates the weakness onto a frozen component. Nothing in this pipeline updates the text encoder, so more motion data will not move it.
 
+::right::
+
 <img src="/img/fig07_pooling.svg" alt="Bar comparison of the spatial-vs-non-spatial gap across three CLIP representations: pooled, mean-over-tokens, most-divergent-token">
 
 <!--
@@ -207,6 +233,9 @@ wording.
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Experiment: does the encoder deficit reach the generated motion?
 
@@ -218,6 +247,8 @@ A weakness in a component is not automatically a weakness in the system.
 - Split the full test set by whether the caption carries spatial vocabulary, generated both halves from the same checkpoint, scored both.
 - Spatial 0.5971, non-spatial 0.5901. The difference is smaller than one standard error, against a **3σ threshold fixed before the run**.
 - The minimum effect this test could have resolved was 0.039 — about four times tighter than any earlier generation-side comparison here. This is a null with the power to mean something, not a null from a small sample.
+
+::right::
 
 <img src="/img/fig08_effect_vs_floor.svg" alt="The measured spatial-minus-non-spatial effect plotted against its own pre-registered 3-sigma threshold, showing the effect well inside the noise band">
 
@@ -232,6 +263,9 @@ a contested one.
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Measurement: does a second, independent evaluator agree?
 
@@ -240,10 +274,11 @@ A result only one instrument can see is a property of that instrument until a se
 <div class="eyebrow">Per-sample agreement between the two evaluators, n = 4,640</div>
 <span class="stat">r = 0.404<span class="stat-label">measured at full scale, not taken from a smaller sample</span></span>
 
-- A second, independently trained text-motion evaluator scored the same generated motions.
-- It puts the effect in the opposite direction: −0.0263, z = −1.95, against the primary evaluator's +0.0070, z = +0.48.
-- They agree in aggregate and share only 16% of their per-sample variance. Two instruments measuring overlapping but not identical things is what separates a sign flip from noise.
-- Neither clears the pre-registered threshold. Both are reported with the prominence a positive result would have had.
+- A second, independently trained evaluator scored the same motions and reversed the sign: −0.0263, z = −1.95, against the primary's +0.0070, z = +0.48.
+- They agree in aggregate and share only 16% of their per-sample variance — overlapping instruments, not identical ones.
+- Neither clears the pre-registered threshold; both are reported as a positive result would have been.
+
+::right::
 
 <img src="/img/fig09_two_evaluators.svg" alt="Both evaluators' effect sizes plotted on one shared axis with zero marked and confidence intervals drawn, straddling zero from opposite sides">
 
@@ -269,11 +304,15 @@ the two evaluators look LESS alike than the real 16.3% -- an error that ran in t
 the conclusion, which is exactly the kind a motivated check does not catch. The rule this earns:
 verify the sample a number came from, not just whether the conclusion still sounds right.
 
-Presenter-notes note: PRESENTER_NOTES.md's own final paragraph for this slide ("the r=0.328
-correlation is what licenses...") is a stale leftover from before this correction and still
-names the withdrawn figure -- flagged to the planner, not edited here (their file, their call).
+Trimmed from four bullets to three 2026-09-16 (Joel/planner) to give this figure -- the deck's
+best -- vertical room; the dropped setup sentence is recoverable from the WHY-line and the
+figure's own row labels. Combined with the wide-left column restructure, the image no longer
+needs a tight per-slide cap at all.
 -->
 
+---
+layout: two-cols
+layoutClass: wide-left
 ---
 
 # Analysis: was that comparison fair to begin with?
@@ -287,6 +326,8 @@ The two halves were matched on nothing except the property under test.
 - Controlled by splitting each half into length terciles. On the primary evaluator, length lifts the score for spatial captions (0.509 → 0.587 → 0.598) and does essentially nothing for non-spatial ones (0.572 / 0.544 / 0.569).
 - On the second evaluator the same terciles are non-monotonic, so this pattern is a property of one instrument and is scoped to it here.
 - The interaction was not predicted, and it is not explained here.
+
+::right::
 
 <img src="/img/fig10_terciles.svg" alt="Two lines showing R-Precision across caption-length terciles, spatial rising and non-spatial flat">
 
@@ -302,6 +343,9 @@ scopes the claim correctly regardless, so this does not block assembly.
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # Measurement: can FID arbitrate at these sample sizes?
 
@@ -314,6 +358,8 @@ The field's other standard metric was the obvious tiebreaker.
 - Measured directly: real motion scored against real motion, which should score zero, floors at 0.0957 at n = 2,320 per side and 0.2573 at n = 941. Thirty trials each.
 - Three FID values computed on one bit-identical set of 128 motions: 1.0731, 1.3997, 3.2909.
 - The floor is larger than the effect being measured. FID cannot settle this question at this scale.
+
+::right::
 
 <img src="/img/fig11_fid_floor.svg" alt="Three measured real-vs-real FID floors with error bars at decreasing sample sizes, no fitted curve">
 
@@ -329,6 +375,9 @@ citation of that correction. All figures already independently verified earlier 
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # What this establishes, and what it does not
 
@@ -340,6 +389,8 @@ Saying what a result does not support is the most useful line on a research slid
 - Established: the text encoder under-separates spatial language, in every representation tested, on a frozen component that additional motion training cannot reach.
 - Not established: that the deficit propagates into generated motion. Effects ≥ 0.175 are excluded at 3σ and ≥ 0.117 at 2σ. Smaller effects remain open.
 - Once the hardware path was fixed, the decisive experiment became affordable — an overnight run — and it was declined. The effect size it targeted was the experiment's own noise reading rather than a hypothesis-motivated one.
+
+::right::
 
 <img src="/img/fig12_exclusion.svg" alt="Bar showing the region of effect sizes excluded at 2 and 3 sigma against the region that remains open">
 

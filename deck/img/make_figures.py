@@ -40,6 +40,23 @@ OUT_DIR = pathlib.Path(__file__).resolve().parent
 DEFAULT_FIGSIZE = (6.0, 3.5)
 DPI = 150
 
+# Four figures (fig05, fig08, fig09, fig12) render in a narrow ~35%-width
+# slide column instead of full-width, at a target on-slide width of about
+# 340px -- roughly half their native pixel width, so text and lines sized for
+# the wide layout would come out too small to read. They use this taller,
+# closer-to-square canvas and larger type/line weights instead of the shared
+# defaults above. All four are single- or double-row "value on a number
+# line" figures, so the extra height goes to row spacing and stacking labels
+# above their marks, not to rotating the content.
+COLUMN_FIGSIZE = (4.5, 4.0)
+COL_FONT_L = 15.0      # row labels, gap/estimate call-outs
+COL_FONT_M = 13.0      # axis labels, in-plot annotations
+COL_FONT_S = 11.5      # secondary/muted annotations
+COL_AXIS_LW = 1.3
+COL_ERR_LW = 2.2
+COL_CAPSIZE = 7
+COL_MARKERSIZE = 10
+
 
 def apply_style() -> None:
     plt.rcParams.update({
@@ -57,11 +74,11 @@ def apply_style() -> None:
     })
 
 
-def despine(ax: plt.Axes, keep: tuple[str, ...] = ("left", "bottom")) -> None:
+def despine(ax: plt.Axes, keep: tuple[str, ...] = ("left", "bottom"), linewidth: float = 0.8) -> None:
     for side in ("top", "right", "left", "bottom"):
         spine = ax.spines[side]
         if side in keep:
-            spine.set_linewidth(0.8)
+            spine.set_linewidth(linewidth)
             spine.set_color(INK)
         else:
             spine.set_visible(False)
@@ -247,28 +264,36 @@ def save_fig(fig: Figure, name: str) -> None:
 # --------------------------------------------------------------------------
 
 def fig05_reproduction() -> None:
-    fig, ax = new_fig((6.0, 2.6))
+    # Column layout: tall and narrow, row labels stacked above their marks
+    # instead of sitting in a y-axis label column (which would eat most of a
+    # ~35%-width slide column), generous vertical spacing, larger type.
+    fig, ax = new_fig(COLUMN_FIGSIZE)
 
-    y_published, y_measured = 1, 0
+    y_published, y_measured = 2.0, -1.35
     published = (0.611, 0.007)
     measured = (0.6172, 0.0072)
 
     ax.errorbar(
         published[0], y_published, xerr=published[1],
-        fmt="o", color=MUTED, ecolor=MUTED, elinewidth=1.2, capsize=4,
-        markersize=6, markeredgewidth=0,
+        fmt="o", color=MUTED, ecolor=MUTED, elinewidth=COL_ERR_LW, capsize=COL_CAPSIZE,
+        markersize=COL_MARKERSIZE, markeredgewidth=0,
     )
+    ax.text(published[0], y_published + 0.5, "Published (MDM paper)",
+            ha="center", va="bottom", fontsize=COL_FONT_L, color=INK)
+
     ax.errorbar(
         measured[0], y_measured, xerr=measured[1],
-        fmt="o", color=ACCENT, ecolor=ACCENT, elinewidth=1.4, capsize=4,
-        markersize=7, markeredgewidth=0,
+        fmt="o", color=ACCENT, ecolor=ACCENT, elinewidth=COL_ERR_LW, capsize=COL_CAPSIZE,
+        markersize=COL_MARKERSIZE + 1, markeredgewidth=0,
     )
+    ax.text(measured[0], y_measured - 0.5, "This harness (n=4,640)",
+            ha="center", va="top", fontsize=COL_FONT_L, color=ACCENT)
 
-    ax.set_yticks([y_published, y_measured])
-    ax.set_yticklabels(["Published (MDM paper)", "This harness (n=4,640)"])
-    ax.set_ylim(-0.8, 1.8)
-    ax.set_xlim(0.59, 0.64)
-    ax.set_xlabel("R-Precision top-3  (error bars: ±1 SE)")
+    ax.set_yticks([])
+    ax.set_ylim(-2.3, 3.0)
+    ax.set_xlim(0.588, 0.642)
+    ax.set_xlabel("R-Precision top-3  (error bars: ±1 SE)", fontsize=COL_FONT_M)
+    ax.tick_params(axis="x", labelsize=COL_FONT_S)
 
     # Convention-free separation annotation: state the gap itself and compare
     # it directly to the published interval's own half-width, rather than to
@@ -279,28 +304,28 @@ def fig05_reproduction() -> None:
     # just show the two lengths side by side and let the reader compare.)
     gap = measured[0] - published[0]
 
-    y_gap = 0.62
+    y_gap = 0.95
     ax.annotate(
         "", xy=(measured[0], y_gap), xytext=(published[0], y_gap),
-        arrowprops=dict(arrowstyle="<->", color=INK, lw=0.8),
+        arrowprops=dict(arrowstyle="<->", color=INK, lw=COL_AXIS_LW),
     )
     ax.text(
-        (published[0] + measured[0]) / 2, y_gap + 0.14, f"gap = {gap:.4f}",
-        ha="center", va="bottom", fontsize=9, color=INK,
+        (published[0] + measured[0]) / 2, y_gap + 0.22, f"gap = {gap:.4f}",
+        ha="center", va="bottom", fontsize=COL_FONT_M, color=INK,
     )
 
-    y_ref = 0.40
+    y_ref = 0.05
     ax.annotate(
         "", xy=(published[0] + published[1], y_ref), xytext=(published[0], y_ref),
-        arrowprops=dict(arrowstyle="<->", color=MUTED, lw=0.8),
+        arrowprops=dict(arrowstyle="<->", color=MUTED, lw=COL_AXIS_LW),
     )
     ax.text(
-        published[0] + published[1] / 2, y_ref - 0.13,
+        published[0] + published[1] / 2, y_ref - 0.22,
         f"published's own ±{published[1]:.3f}",
-        ha="center", va="top", fontsize=8, color=MUTED,
+        ha="center", va="top", fontsize=COL_FONT_S, color=MUTED,
     )
 
-    despine(ax, keep=("bottom",))
+    despine(ax, keep=("bottom",), linewidth=COL_AXIS_LW)
     ax.tick_params(axis="y", length=0)
     fig.tight_layout()
     save_fig(fig, "fig05_reproduction")
@@ -461,7 +486,10 @@ def fig07_pooling() -> None:
 # --------------------------------------------------------------------------
 
 def fig08_effect_vs_floor() -> None:
-    fig, ax = new_fig((6.0, 2.6))
+    # Column layout: taller canvas, larger type, and the "95% CI" call-out
+    # stacked above the point instead of beside it -- beside would either run
+    # into the right edge of a narrow column or need shrinking to fit.
+    fig, ax = new_fig(COLUMN_FIGSIZE)
 
     estimate = 0.0070
     se = 0.0147
@@ -469,34 +497,38 @@ def fig08_effect_vs_floor() -> None:
 
     ax.axvspan(-se, se, color=MUTED, alpha=0.25, zorder=1)
     ax.text(
-        -0.013, 0.68, "noise floor (±1 SE)", ha="right", fontsize=7.5,
+        -0.013, 0.40, "noise floor\n(±1 SE)", ha="right", va="center", fontsize=COL_FONT_S,
         color=MUTED, transform=ax.get_xaxis_transform(),
     )
 
-    ax.axvline(0, color=INK, linewidth=1.0, zorder=2)
+    ax.axvline(0, color=INK, linewidth=COL_AXIS_LW, zorder=2)
     ax.text(
-        0.006, 0.95, "zero effect", ha="left", fontsize=8, color=INK,
+        0.006, 0.92, "zero effect", ha="left", fontsize=COL_FONT_M, color=INK,
         transform=ax.get_xaxis_transform(),
     )
 
     ax.errorbar(
         estimate, 0, xerr=ci, fmt="o", color=ACCENT, ecolor=ACCENT,
-        elinewidth=1.6, capsize=5, markersize=7, zorder=3,
+        elinewidth=COL_ERR_LW, capsize=COL_CAPSIZE, markersize=COL_MARKERSIZE, zorder=3,
     )
     # The shaded band is +/-1 SE; this error bar is a 95% CI (+/-1.96 SE) --
     # a different, wider quantity, and the figure must not let the two get
-    # silently conflated.
-    ax.annotate(
-        "95% CI", xy=(estimate + ci, 0), xytext=(10, 0), textcoords="offset points",
-        ha="left", va="center", fontsize=8, color=ACCENT,
+    # silently conflated. Stacked above the point rather than beside the
+    # interval so it reads at column width; anchored to grow away from x=0
+    # since the zero line spans the full plot height and the estimate sits
+    # close to it.
+    ax.text(
+        estimate + 0.003, 0.62, "95% CI", ha="left", va="bottom", fontsize=COL_FONT_M, color=ACCENT,
+        transform=ax.get_xaxis_transform(),
     )
 
     ax.set_xlim(-0.045, 0.05)
-    ax.set_ylim(-1, 1.5)
+    ax.set_ylim(-1.4, 1.4)
     ax.set_yticks([])
-    ax.set_xlabel("difference in R-Precision top-3 (spatial minus non-spatial)")
+    ax.set_xlabel("difference in R-Precision top-3\n(spatial minus non-spatial)", fontsize=COL_FONT_M)
+    ax.tick_params(axis="x", labelsize=COL_FONT_S)
 
-    despine(ax, keep=("bottom",))
+    despine(ax, keep=("bottom",), linewidth=COL_AXIS_LW)
     fig.tight_layout()
     save_fig(fig, "fig08_effect_vs_floor")
 
@@ -506,34 +538,42 @@ def fig08_effect_vs_floor() -> None:
 # --------------------------------------------------------------------------
 
 def fig09_two_evaluators() -> None:
-    fig, ax = new_fig((6.6, 3.0))
+    # Column layout: same treatment as fig05 -- row names stacked above their
+    # marks instead of in a y-tick label column, taller canvas, larger type.
+    fig, ax = new_fig(COLUMN_FIGSIZE)
 
-    guo = dict(y=1, estimate=0.0070, se=0.0147, z=0.48, label="Guo evaluator (primary)")
-    tmr = dict(y=0, estimate=-0.0263, se=0.0135, z=-1.95, label="TMR evaluator (independent)")
+    guo = dict(y=1.6, estimate=0.0070, se=0.0147, z=0.48, label="Guo evaluator (primary)")
+    tmr = dict(y=-0.95, estimate=-0.0263, se=0.0135, z=-1.95, label="TMR evaluator (independent)")
 
     for row, color in [(guo, INK), (tmr, ACCENT)]:
         ci = 1.96 * row["se"]
         ax.errorbar(
             row["estimate"], row["y"], xerr=ci, fmt="o", color=color, ecolor=color,
-            elinewidth=1.6, capsize=5, markersize=7, zorder=3,
+            elinewidth=COL_ERR_LW, capsize=COL_CAPSIZE, markersize=COL_MARKERSIZE, zorder=3,
         )
-        # offset the z-annotation away from x=0 so it never sits on the zero line
-        x_off = 0.012 if row["estimate"] >= 0 else -0.012
+        # the zero line spans the whole plot height, so any label centred at
+        # an estimate close to x=0 would straddle it; anchor name and z
+        # labels to grow away from zero instead of centring on the point
         ha = "left" if row["estimate"] >= 0 else "right"
+        ax.text(row["estimate"], row["y"] + 0.55, row["label"],
+                ha=ha, va="bottom", fontsize=COL_FONT_L, color=color)
+        x_off = 0.014 if row["estimate"] >= 0 else -0.014
         ax.text(
-            row["estimate"] + x_off, row["y"] + 0.3, f"z = {row['z']:+.2f}",
-            ha=ha, fontsize=8.5, color=color,
+            row["estimate"] + x_off, row["y"] + 0.27, f"z = {row['z']:+.2f}",
+            ha=ha, fontsize=COL_FONT_M, color=color,
         )
 
-    ax.axvline(0, color=INK, linewidth=1.2, zorder=1)
+    ax.axvline(0, color=INK, linewidth=COL_AXIS_LW, zorder=1)
 
-    ax.set_yticks([guo["y"], tmr["y"]])
-    ax.set_yticklabels([guo["label"], tmr["label"]])
-    ax.set_ylim(-0.8, 1.8)
-    ax.set_xlim(-0.08, 0.06)
-    ax.set_xlabel("difference in R-Precision top-3 (spatial minus non-spatial)")
+    ax.set_yticks([])
+    ax.set_ylim(-1.6, 2.5)
+    ax.set_xlim(-0.085, 0.065)
+    ax.set_xticks([-0.08, 0.00, 0.06])  # explicit, sparse: default locator
+    # packs ticks too densely for this narrower, larger-font column layout
+    ax.set_xlabel("difference in R-Precision top-3\n(spatial minus non-spatial)", fontsize=COL_FONT_M)
+    ax.tick_params(axis="x", labelsize=COL_FONT_S)
 
-    despine(ax, keep=("bottom",))
+    despine(ax, keep=("bottom",), linewidth=COL_AXIS_LW)
     ax.tick_params(axis="y", length=0)
     fig.tight_layout()
     save_fig(fig, "fig09_two_evaluators")
@@ -637,32 +677,53 @@ def fig11_fid_floor() -> None:
 # --------------------------------------------------------------------------
 
 def fig12_exclusion() -> None:
-    fig, ax = new_fig((6.6, 2.8))
+    # Column layout: taller canvas and larger type. The x data range (0 to
+    # 0.25) and the shaded-region boundaries are UNCHANGED from the wide
+    # version -- the width of "still open" relative to the shaded bands is
+    # the honest content of this figure and must not shrink just because the
+    # canvas got taller. The extra height goes to spacing the zone labels and
+    # the retrieval-effect call-out further apart, not to rescaling x.
+    fig, ax = new_fig(COLUMN_FIGSIZE)
 
     ax.axvspan(0.117, 0.25, color=MUTED, alpha=0.28, zorder=1)
     ax.axvspan(0.175, 0.25, color=MUTED, alpha=0.35, zorder=2)
 
     ax.set_xlim(0, 0.25)
-    ax.set_ylim(0, 1)
+    ax.set_ylim(0, 1.9)
     ax.set_yticks([])
-    ax.set_xlabel("true effect size in R-Precision top-3")
+    ax.set_xlabel("true effect size in R-Precision top-3", fontsize=COL_FONT_M)
+    ax.tick_params(axis="x", labelsize=COL_FONT_S)
 
-    ax.text(0.0585, 0.5, "still open", ha="center", va="center", fontsize=9, color=INK)
-    # kept clear of the retrieval-effect line at x=0.145 by sitting left of it
-    ax.text(0.128, 0.82, "excluded\nat 2σ", ha="center", va="center", fontsize=8, color=INK)
-    ax.text(0.2125, 0.5, "excluded\nat 3σ", ha="center", va="center", fontsize=8, color=INK)
+    ax.text(0.0585, 0.95, "still open", ha="center", va="center", fontsize=COL_FONT_L, color=INK)
+    ax.text(0.2125, 0.95, "excluded\nat 3σ", ha="center", va="center", fontsize=COL_FONT_M, color=INK)
 
-    retrieval_effect = 0.145
-    ax.axvline(retrieval_effect, color=ACCENT, linewidth=1.4, zorder=3)
+    # The "2 sigma but not 3 sigma" sub-band is only 0.058 wide (0.117-0.175)
+    # and the retrieval-effect line sits inside it, splitting it into two
+    # slivers -- there is no font size at column width that fits a two-line
+    # label in either sliver without the label crossing the line, so this one
+    # label is pulled out above the axes as a leader callout instead, the
+    # same treatment as the retrieval-effect line itself.
     ax.annotate(
-        f"retrieval-space effect\n(motivating): {retrieval_effect:.3f}",
-        xy=(retrieval_effect, 1.0), xytext=(retrieval_effect, 1.3),
-        ha="center", fontsize=8, color=ACCENT,
-        arrowprops=dict(arrowstyle="-", color=ACCENT, lw=0.8),
+        "excluded\nat 2σ", xy=(0.122, 1.9), xytext=(0.02, 3.55),
+        ha="center", fontsize=COL_FONT_M, color=INK,
+        arrowprops=dict(arrowstyle="-", color=INK, lw=COL_AXIS_LW),
         annotation_clip=False,
     )
 
-    despine(ax, keep=("bottom",))
+    retrieval_effect = 0.145
+    ax.axvline(retrieval_effect, color=ACCENT, linewidth=COL_AXIS_LW + 0.2, zorder=3)
+    # the vertical line itself only spans up to ylim (1.9); the label and its
+    # leader sit above that, in space the line never reaches, so there is no
+    # ambiguity about a label deliberately masking part of the line
+    ax.annotate(
+        f"retrieval-space effect\n(motivating): {retrieval_effect:.3f}",
+        xy=(retrieval_effect, 1.9), xytext=(retrieval_effect, 2.4),
+        ha="center", fontsize=COL_FONT_S, color=ACCENT,
+        arrowprops=dict(arrowstyle="-", color=ACCENT, lw=COL_AXIS_LW),
+        annotation_clip=False,
+    )
+
+    despine(ax, keep=("bottom",), linewidth=COL_AXIS_LW)
     fig.tight_layout()
     save_fig(fig, "fig12_exclusion")
 

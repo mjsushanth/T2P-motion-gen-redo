@@ -19,6 +19,25 @@ design fact without asserting a measurement.
 No "failed", "broken" or "wrong" appears on this face or in this diagram. That is a standing
 editorial rule for the whole deck, recorded in `DECK_PLAN.md` §2.
 
+**What the diagram asserts, and at what strength.** `deck/img/architecture.svg` labels the four
+resolution levels semantically — global posture, limb orientation, hand and foot placement,
+joint-to-joint detail. Those are the **author's own description of the design's intent**, not a
+measured property of the trained network. Nobody probed those levels to confirm each attends to
+what it was meant to. That is legitimate for a slide whose job is to establish what the system was
+built to do, but if a reviewer asks whether the levels were verified to specialise that way, the
+answer is no, and say so plainly.
+
+**"FROZEN — NEVER UPDATED" on the text encoder is load-bearing and is verified.** Nothing in this
+pipeline updates CLIP. It is what makes slides 6 and 7 matter — a deficit in a frozen component
+cannot be trained away with more motion data. Do not let that label get dropped for visual
+tidiness.
+
+**Classifier-free guidance is deliberately absent from the diagram.** Showing it at sampling time
+would depict a corrected architecture rather than the one that existed; showing it inside the loss
+would put a defect on a slide whose job is neutral establishment. The bullet mentions guidance as
+a conditioning-strength control, which is true at either position, and the diagram stays out of
+the question.
+
 ## Slide 3 — instrumentation
 
 **17 pipeline and metric failure modes** — `docs/LANDMINES.md`, §1-15 plus §24-25. Corrected down
@@ -159,9 +178,10 @@ is to verify the sample rather than to verify the conclusion.
 it is the design's own pre-registered commitment, `docs/EXPERIMENT_DESIGN_E3.md` §9.1.
 
 **Do not claim either evaluator is correct.** If challenged that a disagreement means one is
-broken rather than that the result is instrument-dependent, the r = 0.328 correlation is what
-licenses the weaker and defensible reading: the two measure overlapping but non-identical
-things. The face makes no claim about which is right, and should not start.
+broken rather than that the result is instrument-dependent, the r = 0.404 correlation is what
+licenses the weaker and defensible reading: at r² = 0.163 the two share about a sixth of their
+per-sample variance, so they measure overlapping but non-identical things. The face makes no
+claim about which is right, and should not start.
 
 ## Slide 10 — length confound
 
