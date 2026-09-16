@@ -41,3 +41,10 @@ artifacts/demo/embedding_retrieval_cache.pkl
 # scored results) is the small, committed artifact that matters
 artifacts/e3/batches/
 artifacts/e3/_smoketest/
+
+# Slidev deck (deck/) is the one Node subproject in an otherwise Python repo -- node_modules/
+# and dist/ are fully restorable via `npm ci` / `npm run build` against deck/package-lock.json,
+# so they stay out of the repo rather than adding hundreds of MB of packages.
+deck/node_modules/
+deck/dist/
+deck/.slidev/

@@ -1,0 +1,20 @@
+{
+  "name": "t2p-reboot-deck",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --open",
+    "build": "slidev build slides.md --base /T2P-motion-gen-redo/ -o dist",
+    "export": "slidev export slides.md",
+    "check-overflow": "node scripts/check-overflow.mjs"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.19.1",
+    "@slidev/theme-seriph": "^0.25.0",
+    "@slidev/theme-default": "^0.25.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

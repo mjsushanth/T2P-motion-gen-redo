@@ -1,0 +1,141 @@
+/*
+Accent layer on top of @slidev/theme-seriph (light mode). Ported from the FinSights
+deck's house style (references/house-style.md + example-style.css in
+MJS_LIB_TOOLS/codex-skills/build-project-deck/) -- same structural patterns, T2P's
+own accent color (a muted teal, distinct from FinSights' orange, since these are
+different projects that could plausibly sit side by side in a portfolio). Pipeline
+scaffold only: no per-slide overflow tiers yet, since no real slide content exists to
+calibrate them against -- see the "Height tiers" section below for the method to use
+once real slides are written.
+*/
+
+:root {
+  --slidev-theme-primary: #2f8f7d;
+}
+
+html.light body {
+  background: #f8f8f6;
+  color: #2d323a;
+}
+
+.slidev-layout {
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.slidev-layout h1 {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  color: #2d323a;
+  /* Fixed-width signature bar rather than a full-width underline -- consistent
+     across every slide regardless of that slide's own title length. */
+  position: relative;
+  padding-bottom: 6px;
+}
+.slidev-layout h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 56px;
+  height: 2.5px;
+  background: #2f8f7d;
+  transform-origin: left;
+  animation: title-sweep 0.6s ease-out;
+}
+@keyframes title-sweep {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.slidev-layout h2 {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  font-size: 1.7em;
+  line-height: 1.25;
+  color: #2d323a;
+  max-width: 38ch;
+}
+
+/* Stat/eyebrow component (house-style.md section 3) -- one big number, cited plainly. */
+.slidev-layout .eyebrow {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.55em;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #5a6571;
+  margin-bottom: 0.6em;
+}
+
+.slidev-layout .stat {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 1.6em;
+  color: #2f8f7d;
+  margin: 0.5em 0;
+  letter-spacing: -0.01em;
+  animation: stat-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes stat-pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.slidev-layout .stat-label {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.4em;
+  font-weight: 400;
+  color: #828891;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: -0.3em;
+}
+
+/* Default figure height tier. house-style.md section 1: start with one generous
+   default, then add a slide-specific *tighter* class (named after that slide's own
+   content shape) only once a real slide is measured to overflow -- never shrink
+   this default globally to fix one slide. No such tiers exist yet; this deck has
+   no real figures. */
+.slidev-layout img {
+  display: block;
+  margin: 0.5em auto;
+  max-height: 330px;
+  width: auto;
+  max-width: 100%;
+}
+
+/* Slidev's v-click hides by opacity, not display -- a hidden element still
+   reserves its layout space, which can push later content (or an image) off the
+   bottom of the canvas before the click that reveals it ever fires. Structural
+   fix, not tied to any specific slide -- see slidev-operational.md. */
+.slidev-layout .slidev-vclick-hidden {
+  display: none;
+}
+
+/* Two-column asymmetric split (house-style.md section 2). Applied via
+   `layoutClass: wide-left` on a slide's frontmatter when one column carries the
+   argument and the other is a supporting visual. */
+.wide-left {
+  grid-template-columns: 7fr 3fr !important;
+}
+
+/* Staggered bullet entrance, deck-wide. Plain CSS animation (opacity/transform
+   only) -- doesn't change final layout, so it needs no overflow re-check.
+   nth-child delays cover up to 7 bullets; extend if a slide ever needs more. */
+.slidev-layout li {
+  animation: bullet-enter 0.5s ease-out backwards;
+}
+.slidev-layout li:nth-child(1) { animation-delay: 0ms; }
+.slidev-layout li:nth-child(2) { animation-delay: 70ms; }
+.slidev-layout li:nth-child(3) { animation-delay: 140ms; }
+.slidev-layout li:nth-child(4) { animation-delay: 210ms; }
+.slidev-layout li:nth-child(5) { animation-delay: 280ms; }
+.slidev-layout li:nth-child(6) { animation-delay: 350ms; }
+.slidev-layout li:nth-child(7) { animation-delay: 420ms; }
+@keyframes bullet-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
