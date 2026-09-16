@@ -145,6 +145,16 @@ html.light body {
   margin: 0.4em 0;
 }
 
+/* Slide 5: the longer title ("does our own rebuilt pipeline land on the published
+   number?", 2026-09-16) pushed this slide 0.4px past the canvas -- razor-thin, the same
+   shape of margin the FinSights reference house-style notes for its own .compact-list
+   tier ("0.33px past the boundary... too close to trust across font-rendering variance").
+   A typographic nudge, not a word cut: tighten this slide's own line-height slightly
+   rather than asking the planner to cut a word over four tenths of a pixel. */
+.slidev-page-5 .col-left li {
+  line-height: 1.22;
+}
+
 /* Staggered bullet entrance, deck-wide. Plain CSS animation (opacity/transform
    only) -- doesn't change final layout, so it needs no overflow re-check.
    nth-child delays cover up to 7 bullets; extend if a slide ever needs more. */

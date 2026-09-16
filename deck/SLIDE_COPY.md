@@ -68,7 +68,7 @@ FIGURE: none — argued exception. STAT: none; the 0.611 is inline and is the ob
 
 ---
 
-## 5 — Measurement: does this harness reproduce a published number?
+## 5 — Measurement: does our own rebuilt pipeline land on the published number?
 
 WHY: The reference model's paper reports a score of 0.611 on a standard retrieval benchmark. We rebuilt that scoring pipeline ourselves and ran it to see where we would land.
 
