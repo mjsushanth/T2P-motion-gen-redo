@@ -125,19 +125,42 @@ recover_from_ric from third_party/motion-diffusion-model's own motion_process.py
 -->
 
 ---
+layout: two-cols
+layoutClass: wide-left
+---
 
 # The question: what does a benchmark score certify?
 
-A text-to-motion model is scored by a retrieval benchmark. The published figure for the reference model is **0.611**.
+Text-to-motion models are graded by two standard measures. Neither of them asks, directly, whether the motion did what the sentence said.
 
-That number cannot, on its own, separate a model that followed the sentence from one that produced a plausible motion.
+- **R-Precision** is a retrieval score. It takes one generated motion, drops its true caption into a pool with 31 wrong ones, and asks whether a retrieval model ranks the true one near the top. Pure chance is 3 in 32, about 0.094.
+- **FID** is a distribution distance. It compares the statistical shape of a whole set of generated motions against a set of real ones, and never reads a caption at all.
+- So a motion can score well by being more caption-like than 31 random distractors, or by being statistically unremarkable. Neither is the same as following the instruction.
+- Everything that follows measures how much that difference costs.
 
-Everything that follows is an attempt to find out which.
+::right::
+
+<img src="/img/fig04_two_metrics.svg" alt="Two-panel diagram: top panel shows a 32-candidate ranked retrieval list with the true caption bracketed in the top 3, bottom panel shows two point clouds compared as a distance, with what each metric is blind to noted beside it">
 
 <!--
-deck/PRESENTER_NOTES.md cites e3_record.json published_reproduction.published_value for 0.611;
-also LANDSCAPE.md line 47 (paper's own table), both already independently verified earlier
-this project. No figure, argued exception per DECK_PLAN S5's own framing.
+Slide 4 rebuilt 2026-09-16: Joel reviewed the original bare version (49 words, argued as a
+deliberate no-figure exception per DECK_PLAN S5) and found it the weakest slide in the deck --
+"a text-to-motion model is scored by a retrieval benchmark" never said what the benchmark
+measures, what family of metric, or how it connects to anything later. The "argue the
+exception" call was backwards: bareness only works when the few words present are doing real
+work, and here they were abstract enough that the empty canvas read as missing content, not
+restraint.
+
+This version introduces both metric families the rest of the deck depends on: slide 5
+reproduces the R-Precision number, slide 8 splits the test set on it, slide 11 shows FID
+cannot arbitrate at this project's sample sizes -- none of that lands if the reader was never
+told what the two metrics are.
+
+Verified independently before building: 3/32 = 0.09375, rounds to 0.094 -- exact match, the
+only number on this slide or its figure. fig04_two_metrics.svg is a concept diagram (encodes
+no measurement, so nothing else to verify against a source), planner-authored, viewBox
+400x640 (aspect 1.6), teal accent only (grepped, no #eb6c36). Measured rendered height before
+trusting the peer's own estimate: see below.
 -->
 
 ---

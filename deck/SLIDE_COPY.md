@@ -58,15 +58,14 @@ FIGURE: `notebooks/03_skeleton_side_by_side.png`
 
 ## 4 — The question: what does a benchmark score certify?
 
-A text-to-motion model is scored by a retrieval benchmark. The published figure for the reference model is **0.611**.
+WHY: Text-to-motion models are graded by two standard measures. Neither of them asks, directly, whether the motion did what the sentence said.
 
-That number cannot, on its own, separate a model that followed the sentence from one that produced a plausible motion.
+- **R-Precision** is a retrieval score. It takes one generated motion, drops its true caption into a pool with 31 wrong ones, and asks whether a retrieval model ranks the true one near the top. Pure chance is 3 in 32, about 0.094.
+- **FID** is a distribution distance. It compares the statistical shape of a whole set of generated motions against a set of real ones, and never reads a caption at all.
+- So a motion can score well by being more caption-like than 31 random distractors, or by being statistically unremarkable. Neither is the same as following the instruction.
+- Everything that follows measures how much that difference costs.
 
-Everything that follows is an attempt to find out which.
-
-FIGURE: none — argued exception. STAT: none; the 0.611 is inline and is the object of study, not a result.
-
----
+FIGURE: `fig04_two_metrics.svg` — vertical two-panel concept diagram, right column.
 
 ## 5 — Measurement: does our own rebuilt pipeline land on the published number?
 

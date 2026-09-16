@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640" width="400" height="640" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5a6571"/>
+    </marker>
+    <marker id="a4t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f8f7d"/>
+    </marker>
+    <marker id="a4s" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f8f7d"/>
+    </marker>
+  </defs>
+
+  <!-- ============ PANEL 1: R-PRECISION ============ -->
+  <text x="8" y="16" font-size="11.5" fill="#2f8f7d" letter-spacing="1.5" font-weight="600">R-PRECISION — A RETRIEVAL SCORE</text>
+  <line x1="8" y1="24" x2="392" y2="24" stroke="#2f8f7d" stroke-width="1"/>
+
+  <!-- one generated motion -->
+  <rect x="8" y="38" width="120" height="44" rx="4" fill="#f2f6f5" stroke="#2f8f7d" stroke-width="1.2"/>
+  <text x="68" y="57" text-anchor="middle" font-size="12" fill="#2d323a" font-weight="600">one generated</text>
+  <text x="68" y="72" text-anchor="middle" font-size="12" fill="#2d323a" font-weight="600">motion</text>
+  <line x1="130" y1="60" x2="158" y2="60" stroke="#5a6571" stroke-width="1.2" marker-end="url(#a4)"/>
+  <text x="272" y="52" text-anchor="middle" font-size="12" fill="#5a6571">ranked against a pool of</text>
+  <text x="272" y="70" text-anchor="middle" font-size="12" fill="#5a6571"><tspan font-weight="600" fill="#2d323a">32 captions</tspan> — 1 true, 31 wrong</text>
+
+  <!-- ranked list -->
+  <g font-size="11.5">
+    <rect x="30" y="96" width="340" height="24" rx="3" fill="#e8f2f0" stroke="#2f8f7d" stroke-width="1.3"/>
+    <text x="42" y="112" fill="#2f8f7d" font-weight="600">1.</text>
+    <text x="62" y="112" fill="#2d323a">"a person walks forward, then turns left"</text>
+    <text x="358" y="112" text-anchor="end" fill="#2f8f7d" font-size="10.5">TRUE</text>
+
+    <rect x="30" y="124" width="340" height="22" rx="3" fill="#fafafa" stroke="#d3d7dc"/>
+    <text x="42" y="139" fill="#828891">2.</text><text x="62" y="139" fill="#828891">"a man raises both arms slowly"</text>
+
+    <rect x="30" y="150" width="340" height="22" rx="3" fill="#fafafa" stroke="#d3d7dc"/>
+    <text x="42" y="165" fill="#828891">3.</text><text x="62" y="165" fill="#828891">"someone sits down on a chair"</text>
+
+    <text x="200" y="186" text-anchor="middle" fill="#b9bec6" font-size="13" letter-spacing="3">· · ·</text>
+    <text x="200" y="202" text-anchor="middle" fill="#828891" font-size="11">down to 32</text>
+  </g>
+
+  <!-- top-3 bracket -->
+  <path d="M 22 98 L 14 98 L 14 170 L 22 170" fill="none" stroke="#2f8f7d" stroke-width="1.2"/>
+  <text x="8" y="134" font-size="10.5" fill="#2f8f7d" transform="rotate(-90 8 134)" text-anchor="middle">TOP 3</text>
+
+  <text x="200" y="226" text-anchor="middle" font-size="12" fill="#2d323a">Scores a hit if the true caption lands in the top 3.</text>
+  <text x="200" y="244" text-anchor="middle" font-size="12" fill="#5a6571">Pure chance is 3 in 32 — about <tspan font-weight="600" fill="#2d323a">0.094</tspan>.</text>
+
+  <rect x="8" y="258" width="384" height="34" rx="4" fill="none" stroke="#b9bec6" stroke-dasharray="4 3"/>
+  <text x="200" y="279" text-anchor="middle" font-size="11.5" fill="#5a6571">It reads the caption — but only has to beat 31 random ones.</text>
+
+  <!-- ============ PANEL 2: FID ============ -->
+  <text x="8" y="336" font-size="11.5" fill="#2f8f7d" letter-spacing="1.5" font-weight="600">FID — A DISTRIBUTION DISTANCE</text>
+  <line x1="8" y1="344" x2="392" y2="344" stroke="#2f8f7d" stroke-width="1"/>
+
+  <!-- two clouds -->
+  <g>
+    <ellipse cx="104" cy="424" rx="76" ry="52" fill="#f2f6f5" stroke="#2f8f7d" stroke-width="1.2"/>
+    <g fill="#2f8f7d" opacity="0.75">
+      <circle cx="78" cy="404" r="3.4"/><circle cx="104" cy="396" r="3.4"/><circle cx="128" cy="412" r="3.4"/>
+      <circle cx="86" cy="432" r="3.4"/><circle cx="112" cy="440" r="3.4"/><circle cx="136" cy="430" r="3.4"/>
+      <circle cx="96" cy="418" r="3.4"/><circle cx="120" cy="424" r="3.4"/><circle cx="70" cy="424" r="3.4"/>
+    </g>
+    <text x="104" y="492" text-anchor="middle" font-size="12" fill="#2d323a" font-weight="600">generated set</text>
+
+    <ellipse cx="296" cy="424" rx="76" ry="52" fill="#fafafa" stroke="#b9bec6" stroke-width="1.2"/>
+    <g fill="#828891" opacity="0.85">
+      <circle cx="272" cy="408" r="3.4"/><circle cx="298" cy="400" r="3.4"/><circle cx="322" cy="414" r="3.4"/>
+      <circle cx="280" cy="436" r="3.4"/><circle cx="306" cy="442" r="3.4"/><circle cx="328" cy="432" r="3.4"/>
+      <circle cx="290" cy="420" r="3.4"/><circle cx="314" cy="426" r="3.4"/><circle cx="264" cy="426" r="3.4"/>
+    </g>
+    <text x="296" y="492" text-anchor="middle" font-size="12" fill="#2d323a" font-weight="600">real set</text>
+  </g>
+
+  <!-- distance -->
+  <line x1="184" y1="424" x2="216" y2="424" stroke="#2f8f7d" stroke-width="1.6" marker-start="url(#a4s)" marker-end="url(#a4s)"/>
+
+  <text x="200" y="524" text-anchor="middle" font-size="12" fill="#2d323a">Compares the statistical shape of two whole sets.</text>
+  <text x="200" y="542" text-anchor="middle" font-size="12" fill="#5a6571">No individual motion is matched to any caption.</text>
+
+  <rect x="8" y="556" width="384" height="34" rx="4" fill="none" stroke="#b9bec6" stroke-dasharray="4 3"/>
+  <text x="200" y="577" text-anchor="middle" font-size="11.5" fill="#5a6571">It never reads the caption at all.</text>
+
+  <!-- closing band -->
+  <rect x="8" y="602" width="384" height="32" rx="4" fill="#f2f6f5" stroke="#2f8f7d" stroke-width="1.2"/>
+  <text x="200" y="622" text-anchor="middle" font-size="12" fill="#2d323a" font-weight="600">Neither asks whether the motion did what the sentence said.</text>
+</svg>
